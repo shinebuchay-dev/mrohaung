@@ -1,0 +1,21 @@
+{
+    "name": "social-media-root",
+    "version": "1.0.0",
+    "scripts": {
+        "dev:backend": "cd backend && npm run dev",
+        "dev:web": "cd web && npm run dev",
+        "dev": "npx concurrently \"npm run dev:backend\" \"npm run dev:web\"",
+        "install:all": "npm install && cd backend && npm install && cd ../web && npm install",
+        "build": "cd web && npm run build",
+        "start": "cd web && npm run start",
+        "deploy:backend": "node deploy-backend.js"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1",
+        "ftp-deploy": "^2.4.7"
+    },
+    "dependencies": {
+        "browser-image-compression": "^2.0.2",
+        "dotenv": "^17.2.3"
+    }
+}

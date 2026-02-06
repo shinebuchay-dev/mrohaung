@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String                     @id @default(uuid())
+  username              String                     @unique
+  displayName           String?
+  email                 String                     @unique
+  password              String
+  bio                   String?
+  avatarUrl             String?
+  coverUrl              String?
+  coverOffset           Int                        @default(50)
+  isPrivate             Boolean                    @default(false)
+  posts                 Post[]
+  friends               Friendship[]               @relation("user")
+  friendOf              Friendship[]               @relation("friend")
+  likes                 Like[]
+  comments              Comment[]
+  notifications         Notification[]             @relation("notificationUser")
+  sentNotifications     Notification[]             @relation("notificationFrom")
+  conversations         ConversationParticipant[]
+  sentMessages          Message[]
+  stories               Story[]
+  storyViews            StoryView[]
+  
+  // Relations for Blocking and Reporting
+  blockedUsers          BlockedUser[]              @relation("userBlocker")
+  blockedBy             BlockedUser[]              @relation("userBlocked")
+  reportsMade           Report[]                   @relation("reporter")
+  reportsReceived       Report[]                   @relation("reportedUser")
+  
+  interests             UserInterest[]
+  badges                Badge[]
+  reputation            Int                        @default(0)
+  
+  
+  createdAt             DateTime                   @default(now())
+}
+
+model Post {
+  id            String         @id @default(uuid())
+  content       String         @db.LongText
+  imageUrl      String?
+  privacy       String         @default("public") // 'public', 'friends', 'private'
+  authorId      String
+  author        User           @relation(fields: [authorId], references: [id])
+  likes         Like[]
+  comments      Comment[]
+  notifications Notification[]
+  reports       Report[]
+  tags          String?
+  createdAt     DateTime       @default(now())
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userId    String
+  friendId  String
+  status    String
+  user      User     @relation("user", fields: [userId], references: [id])
+  friend    User     @relation("friend", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
+}
+
+model Like {
+  id     String @id @default(uuid())
+  postId String
+  userId String
+  type   String @default("like") // like, love, haha, wow, sad, angry
+  post   Post   @relation(fields: [postId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([postId, userId])
+}
+
+model UserInterest {
+  id        String   @id @default(uuid())
+  userId    String
+  topic     String
+  score     Int      @default(0)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, topic])
+}
+
+model Badge {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // top_contributor, one_year_club, verified
+  awardedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String?  @db.Text // Content can be optional if audio is present
+  audioUrl  String?
+  stickerUrl String?
+  postId    String
+  userId    String
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  post      Post     @relation(fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // 'like', 'comment', 'friend_request', 'friend_accept'
+  message   String
+  userId    String
+  fromUserId String
+  postId    String?
+  read      Boolean  @default(false)
+  user      User     @relation("notificationUser", fields: [userId], references: [id])
+  fromUser  User     @relation("notificationFrom", fields: [fromUserId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id            String                     @id @default(uuid())
+  participants  ConversationParticipant[]
+  messages      Message[]
+  lastMessageAt DateTime?
+  createdAt     DateTime                   @default(now())
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid())
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id])
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String       @db.Text
+  read           Boolean      @default(false)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model Story {
+  id        String      @id @default(uuid())
+  userId    String
+  type      String      @default("image") // image, video, text
+  mediaUrl  String?
+  content   String?     @map("caption") // Reuse caption as content/text
+  fontStyle String?     // For text stories
+  background String?    // For text stories (gradient/color)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views     StoryView[]
+  expiresAt DateTime    // 24 hours from creation
+  createdAt DateTime    @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model StoryView {
+  id        String   @id @default(uuid())
+  storyId   String
+  userId    String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  viewedAt  DateTime @default(now())
+
+  @@unique([storyId, userId])
+}
+
+model BlockedUser {
+  id        String   @id @default(uuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker   User     @relation("userBlocker", fields: [blockerId], references: [id])
+  blocked   User     @relation("userBlocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+}
+
+model Report {
+  id           String   @id @default(uuid())
+  reporterId   String
+  reason       String
+  details      String?  @db.Text
+  status       String   @default("pending") // pending, resolved, dismissed
+  postId       String?
+  targetUserId String?
+  
+  reporter     User     @relation("reporter", fields: [reporterId], references: [id])
+  post         Post?    @relation(fields: [postId], references: [id])
+  targetUser   User?    @relation("reportedUser", fields: [targetUserId], references: [id])
+
+  createdAt    DateTime @default(now())
+}
