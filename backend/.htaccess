@@ -1,9 +1,10 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  
-  # Exclude deploy.php and other files from proxy
-  RewriteCond %{REQUEST_URI} !^/deploy\.php$
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
-</IfModule>
+RewriteEngine On
+RewriteBase /
+
+# If the file exists on disk, serve it directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Otherwise, proxy to Node.js
+RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
