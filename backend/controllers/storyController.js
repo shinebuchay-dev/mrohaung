@@ -28,7 +28,7 @@ exports.createStory = async (req, res) => {
 
         const storyId = uuidv4();
         await pool.execute(
-            'INSERT INTO Story (id, userId, type, mediaUrl, content, fontStyle, background, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO Story (id, userId, type, mediaUrl, caption, fontStyle, background, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [storyId, userId, type, mediaUrl, content || null, fontStyle || null, background || null, expiresAt]
         );
 
@@ -153,7 +153,7 @@ exports.getStories = async (req, res) => {
                 id: story.id,
                 type: story.type,
                 mediaUrl: story.mediaUrl,
-                content: story.content,
+                content: story.caption,
                 fontStyle: story.fontStyle,
                 background: story.background,
                 viewCount: parseInt(story.viewCount || 0),
