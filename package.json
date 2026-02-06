@@ -2,14 +2,10 @@
     "name": "mrohaung-root",
     "version": "1.0.0",
     "private": true,
-    "workspaces": [
-        "backend",
-        "web"
-    ],
     "scripts": {
-        "dev": "npm run dev --workspace=web",
-        "build": "npm run build --workspace=web",
-        "start": "npm run start --workspace=web"
+        "build": "cd web && npm install && npm run build",
+        "start": "cd web && npm start",
+        "dev": "cd web && npm run dev"
     },
     "dependencies": {
         "next": "latest",
