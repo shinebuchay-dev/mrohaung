@@ -30,8 +30,12 @@ exports.createPost = async (req, res) => {
 
         await updateReputation(req.userId, REPUTATION_POINTS.CREATE_POST);
 
-        const [posts] = await pool.execute(
+        const [posts] = await executeWithFallback(
             `SELECT p.*, u.username, u.avatarUrl, u.displayName 
+             FROM Post p 
+             JOIN User u ON p.authorId = u.id 
+             WHERE p.id = ?`,
+            `SELECT p.*, u.username, u.avatarUrl 
              FROM Post p 
              JOIN User u ON p.authorId = u.id 
              WHERE p.id = ?`,
