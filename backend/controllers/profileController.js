@@ -6,6 +6,7 @@ exports.getProfile = async (req, res) => {
         const identifier = req.params.id;
         let users;
         try {
+            // Attempt 1: Full features
             [users] = await pool.execute(
                 `SELECT u.id, u.username, u.displayName, u.bio, u.avatarUrl, u.coverUrl, u.coverOffset, u.createdAt,
                 (SELECT COUNT(*) FROM Post WHERE authorId = u.id) as postCount,
@@ -15,18 +16,31 @@ exports.getProfile = async (req, res) => {
                 [identifier, identifier]
             );
         } catch (e) {
-            // Fallback if coverUrl/coverOffset columns don't exist yet
-            [users] = await pool.execute(
-                `SELECT u.id, u.username, u.displayName, u.bio, u.avatarUrl, u.createdAt,
-                (SELECT COUNT(*) FROM Post WHERE authorId = u.id) as postCount,
-                (SELECT COUNT(*) FROM Friendship WHERE (userId = u.id OR friendId = u.id) AND status = 'ACCEPTED') as friendCount
-                FROM User u WHERE u.id = ? OR u.username = ?
-                LIMIT 1`,
-                [identifier, identifier]
-            );
+            try {
+                // Attempt 2: Without cover columns but with displayName
+                [users] = await pool.execute(
+                    `SELECT u.id, u.username, u.displayName, u.bio, u.avatarUrl, u.createdAt,
+                    (SELECT COUNT(*) FROM Post WHERE authorId = u.id) as postCount,
+                    (SELECT COUNT(*) FROM Friendship WHERE (userId = u.id OR friendId = u.id) AND status = 'ACCEPTED') as friendCount
+                    FROM User u WHERE u.id = ? OR u.username = ?
+                    LIMIT 1`,
+                    [identifier, identifier]
+                );
+            } catch (e2) {
+                // Attempt 3: Without cover columns AND without displayName
+                [users] = await pool.execute(
+                    `SELECT u.id, u.username, u.bio, u.avatarUrl, u.createdAt,
+                    (SELECT COUNT(*) FROM Post WHERE authorId = u.id) as postCount,
+                    (SELECT COUNT(*) FROM Friendship WHERE (userId = u.id OR friendId = u.id) AND status = 'ACCEPTED') as friendCount
+                    FROM User u WHERE u.id = ? OR u.username = ?
+                    LIMIT 1`,
+                    [identifier, identifier]
+                );
+            }
             if (users.length > 0) {
                 users[0].coverUrl = null;
                 users[0].coverOffset = 50;
+                if (users[0].displayName === undefined) users[0].displayName = users[0].username;
             }
         }
 

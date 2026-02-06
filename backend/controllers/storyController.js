@@ -27,10 +27,18 @@ exports.createStory = async (req, res) => {
         expiresAt.setHours(expiresAt.getHours() + 24);
 
         const storyId = uuidv4();
-        await pool.execute(
-            'INSERT INTO Story (id, userId, type, mediaUrl, caption, fontStyle, background, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [storyId, userId, type, mediaUrl, content || null, fontStyle || null, background || null, expiresAt]
-        );
+        try {
+            await pool.execute(
+                'INSERT INTO Story (id, userId, type, mediaUrl, caption, fontStyle, background, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [storyId, userId, type, mediaUrl, content || null, fontStyle || null, background || null, expiresAt]
+            );
+        } catch (e) {
+            // Fallback for older schema where column is still 'content'
+            await pool.execute(
+                'INSERT INTO Story (id, userId, type, mediaUrl, content, fontStyle, background, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [storyId, userId, type, mediaUrl, content || null, fontStyle || null, background || null, expiresAt]
+            );
+        }
 
 
 
@@ -149,11 +157,10 @@ exports.getStories = async (req, res) => {
 
 
             groupedStories[story.userId].stories.push({
-
                 id: story.id,
                 type: story.type,
                 mediaUrl: story.mediaUrl,
-                content: story.caption,
+                content: story.caption || story.content,
                 fontStyle: story.fontStyle,
                 background: story.background,
                 viewCount: parseInt(story.viewCount || 0),
