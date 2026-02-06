@@ -9,7 +9,7 @@
     "scripts": {
         "build": "cd web && npm install && npm run build && cd .. && rm -rf .next && cp -r web/.next .",
         "start": "cd web && npm start",
-        "dev": "concurrently \"cd web && npm run dev\" \"cd backend && npm run dev\""
+        "dev": "npx concurrently \"cd web && npm run dev\" \"cd backend && npm run dev\""
     },
     "dependencies": {
         "express": "^5.2.1",
