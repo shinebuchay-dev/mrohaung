@@ -9,15 +9,18 @@
     "scripts": {
         "build": "cd web && npm install && npm run build && cd .. && rm -rf .next && cp -r web/.next .",
         "start": "cd web && npm start",
-        "dev": "cd web && npm run dev"
+        "dev": "concurrently \"cd web && npm run dev\" \"cd backend && npm run dev\""
     },
     "dependencies": {
-        "next": "16.1.6",
         "express": "^5.2.1",
+        "next": "16.1.6",
         "react": "19.2.3",
         "react-dom": "19.2.3"
     },
     "engines": {
         "node": ">=18.0.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
     }
 }
