@@ -62,7 +62,7 @@ exports.getFeed = async (req, res) => {
             // Guest Feed: Show only public posts
             const offset = (page - 1) * totalLimit;
             const guestQuery = `
-                SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+                SELECT p.*, u.username, u.avatarUrl, u.isPrivate,
                 (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
                 (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
                 'suggested' as feedType
@@ -73,7 +73,13 @@ exports.getFeed = async (req, res) => {
                 LIMIT ? OFFSET ?
             `;
 
-            const [posts] = await pool.execute(guestQuery, [totalLimit, offset]);
+            let [posts] = [[], []];
+            try {
+                const guestQueryWithDN = guestQuery.replace('u.avatarUrl,', 'u.avatarUrl, u.displayName,');
+                [posts] = await pool.execute(guestQueryWithDN, [totalLimit, offset]);
+            } catch (e) {
+                [posts] = await pool.execute(guestQuery, [totalLimit, offset]);
+            }
 
             const formattedPosts = posts.map(post => {
                 const formatted = {
@@ -110,7 +116,7 @@ exports.getFeed = async (req, res) => {
 
         // 1. Fetch Friends & Own Posts
         const friendsQuery = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+            SELECT p.*, u.username, u.avatarUrl, u.isPrivate,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             'friend' as feedType
@@ -136,7 +142,7 @@ exports.getFeed = async (req, res) => {
 
         // 2. Fetch Suggested Posts (Public posts from non-friends)
         const suggestedQuery = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+            SELECT p.*, u.username, u.avatarUrl, u.isPrivate,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             'suggested' as feedType
@@ -159,17 +165,41 @@ exports.getFeed = async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        const [friendPosts] = await pool.execute(friendsQuery, [
-            currentUserId, currentUserId,
-            currentUserId, currentUserId, currentUserId,
-            friendLimit, friendOffset
-        ]);
+        // We use u.username as a fallback if displayName is missing in the database schema check
+        // but for simplicity and robustness in this environment, we'll try to get displayName only if it exists
 
-        const [suggestedPosts] = await pool.execute(suggestedQuery, [
-            currentUserId, currentUserId, currentUserId,
-            currentUserId, currentUserId,
-            suggestedLimit, suggestedOffset
-        ]);
+        let [friendPosts] = [[], []];
+        let [suggestedPosts] = [[], []];
+
+        try {
+            const fQueryWithDN = friendsQuery.replace('u.avatarUrl,', 'u.avatarUrl, u.displayName,');
+            [friendPosts] = await pool.execute(fQueryWithDN, [
+                currentUserId, currentUserId,
+                currentUserId, currentUserId, currentUserId,
+                friendLimit, friendOffset
+            ]);
+        } catch (e) {
+            [friendPosts] = await pool.execute(friendsQuery, [
+                currentUserId, currentUserId,
+                currentUserId, currentUserId, currentUserId,
+                friendLimit, friendOffset
+            ]);
+        }
+
+        try {
+            const sQueryWithDN = suggestedQuery.replace('u.avatarUrl,', 'u.avatarUrl, u.displayName,');
+            [suggestedPosts] = await pool.execute(sQueryWithDN, [
+                currentUserId, currentUserId, currentUserId,
+                currentUserId, currentUserId,
+                suggestedLimit, suggestedOffset
+            ]);
+        } catch (e) {
+            [suggestedPosts] = await pool.execute(suggestedQuery, [
+                currentUserId, currentUserId, currentUserId,
+                currentUserId, currentUserId,
+                suggestedLimit, suggestedOffset
+            ]);
+        }
 
         // Combine
         let allPosts = [...friendPosts, ...suggestedPosts];
