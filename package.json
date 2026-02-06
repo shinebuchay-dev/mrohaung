@@ -2,20 +2,16 @@
     "name": "mrohaung-root",
     "version": "1.0.0",
     "private": true,
-    "workspaces": [
-        "backend",
-        "web"
-    ],
     "scripts": {
-        "build": "cd web && npm install && npm run build && cp -r .next ../.next && cp -r public ../public",
-        "start": "next start",
-        "dev": "cd web && npm run dev"
+        "build": "cd web && npm install && npm run build && cd ../backend && npm install && npx prisma generate",
+        "start": "node index.js",
+        "dev": "npm run dev --workspace=web"
     },
     "dependencies": {
-        "next": "latest",
-        "express": "latest",
-        "react": "latest",
-        "react-dom": "latest"
+        "next": "16.1.6",
+        "express": "^5.2.1",
+        "react": "19.2.3",
+        "react-dom": "19.2.3"
     },
     "engines": {
         "node": ">=18.0.0"
