@@ -3,6 +3,6 @@ RewriteEngine On
 # Proxy only API requests to Node.js on port 3000
 RewriteRule ^api/(.*)$ http://127.0.0.1:3000/api/$1 [P,L]
 
-# Serve existing files directly (like deploy.php)
+# Serve existing files directly
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
