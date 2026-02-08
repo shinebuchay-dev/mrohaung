@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /profile/settings/
+Disallow: /_next/
+Disallow: /private/
+
+# Sitemaps
+Sitemap: https://mrohaung.com/sitemap.xml

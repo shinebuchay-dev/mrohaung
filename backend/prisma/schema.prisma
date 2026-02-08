@@ -41,7 +41,7 @@ model User {
   interests             UserInterest[]
   badges                Badge[]
   reputation            Int                        @default(0)
-  
+  role                  String                     @default("user") // 'user', 'admin', 'moderator'
   
   createdAt             DateTime                   @default(now())
 }

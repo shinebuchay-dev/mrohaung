@@ -127,15 +127,55 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/privacy', privacyRoutes);
 
-// SQLite Image Serving Route
+const authMiddleware = require('./middleware/authMiddleware');
+
+// Public SQLite Image Serving Route
 app.get(['/api/images/:id', '/api/image/:id'], (req, res) => {
-  const image = imageStore.getImage(req.params.id);
-  if (image) {
-    res.setHeader('Content-Type', image.mime_type);
+  try {
+    const image = imageStore.getImage(req.params.id);
+    if (!image) {
+      return res.status(404).json({ message: 'Image not found' });
+    }
+
+    // Dynamic MIME Type handling
+    const mimeType = image.mime_type || 'image/jpeg';
+    res.setHeader('Content-Type', mimeType);
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
     res.send(image.data);
-  } else {
-    res.status(404).send('Image not found');
+  } catch (error) {
+    console.error('Error serving public image:', error);
+    res.status(500).send('Internal server error');
+  }
+});
+
+// PRIVATE Secure Media Serving Route (Sensitive Docs)
+app.get('/api/media/private/:id', authMiddleware, (req, res) => {
+  try {
+    const image = imageStore.getPrivateImage(req.params.id);
+
+    if (!image) {
+      return res.status(404).json({ message: 'Private media not found' });
+    }
+
+    // Security Check: Only owner can view or Admin
+    // We check admin status from a session/request if available, 
+    // but for now strictly ownership. 
+    // If you want admins to see it, you'd need to fetch their role here too.
+    if (image.owner_id !== req.userId) {
+      // Check if current user is admin
+      // This is a quick check, but adminMiddleware should ideally be used if we had a combined middleware
+      return res.status(403).json({ message: 'Unauthorized to view this private media' });
+    }
+
+    // SECURITY HEADERS
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow'); // Prevents Search Engines
+    res.setHeader('Content-Type', image.mime_type || 'application/octet-stream');
+    res.setHeader('Cache-Control', 'private, max-age=0, no-cache'); // Do not cache private docs
+
+    res.send(image.data);
+  } catch (error) {
+    console.error('Error serving private media:', error);
+    res.status(500).send('Internal server error');
   }
 });
 

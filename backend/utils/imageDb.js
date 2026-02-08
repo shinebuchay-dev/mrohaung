@@ -12,14 +12,22 @@ if (!fs.existsSync(dbDir)) {
 
 const db = new Database(dbPath);
 
-// Initialize table
+// Initialize tables
 db.exec(`
   CREATE TABLE IF NOT EXISTS images (
     id TEXT PRIMARY KEY,
     data BLOB,
     mimeType TEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
+  );
+
+  CREATE TABLE IF NOT EXISTS private_images (
+    id TEXT PRIMARY KEY,
+    data BLOB,
+    mimeType TEXT,
+    ownerId TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 module.exports = {
@@ -33,6 +41,19 @@ module.exports = {
     },
     deleteImage: (id) => {
         const stmt = db.prepare('DELETE FROM images WHERE id = ?');
+        return stmt.run(id);
+    },
+    // Private Image Logic
+    savePrivateImage: (id, buffer, mimeType, ownerId) => {
+        const stmt = db.prepare('INSERT OR REPLACE INTO private_images (id, data, mimeType, ownerId) VALUES (?, ?, ?, ?)');
+        return stmt.run(id, buffer, mimeType, ownerId);
+    },
+    getPrivateImage: (id) => {
+        const stmt = db.prepare('SELECT data, mimeType, ownerId FROM private_images WHERE id = ?');
+        return stmt.get(id);
+    },
+    deletePrivateImage: (id) => {
+        const stmt = db.prepare('DELETE FROM private_images WHERE id = ?');
         return stmt.run(id);
     }
 };
