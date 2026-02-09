@@ -44,26 +44,14 @@ const io = new Server(server, {
 
 
 
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:5173',
-  'http://127.0.0.1:3000',
-  'http://127.0.0.1:3001',
-  'https://mrohaung.com',
-  'https://www.mrohaung.com'
-];
-
-const corsOptions = {
-  origin: true, // Temporarily allow all origins to fix development connectivity
+// Temporary "Nuclear Option" CORS to fix development connectivity
+app.use(cors({
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   exposedHeaders: ['Set-Cookie']
-};
-
-app.use(cors(corsOptions));
+}));
 
 app.use(express.json());
 
