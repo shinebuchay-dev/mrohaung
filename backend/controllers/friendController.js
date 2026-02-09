@@ -4,7 +4,7 @@ const { sendNotification } = require('../utils/notificationHelper');
 
 exports.sendFriendRequest = async (req, res) => {
     try {
-        const { friendId } = req.body;
+        const friendId = req.body.friendId || req.params.userId || req.params.friendId;
 
         if (req.userId === friendId) {
             return res.status(400).json({ message: 'Cannot add yourself' });

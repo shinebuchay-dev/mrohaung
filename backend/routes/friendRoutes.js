@@ -5,6 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Friends management
 router.post('/request', authMiddleware, friendController.sendFriendRequest);
+router.post('/request/:userId', authMiddleware, friendController.sendFriendRequest);
 router.post('/accept/:requestId', authMiddleware, friendController.acceptFriendRequest);
 router.delete('/reject/:requestId', authMiddleware, friendController.rejectFriendRequest);
 router.get('/requests', authMiddleware, friendController.getPendingRequests);
