@@ -67,11 +67,20 @@ const corsOptions = {
       return callback(new Error('Origin required in production'));
     }
 
-    // Check if origin is allowed
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    // List of explicitly allowed production domains
+    const isAllowedOrigin = allowedOrigins.includes(origin);
+
+    // Check if it's a local development origin
+    const isLocalhost = origin && (
+      origin.startsWith('http://localhost') ||
+      origin.startsWith('http://127.0.0.1') ||
+      origin.startsWith('https://localhost')
+    );
+
+    if (isAllowedOrigin || isLocalhost || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
-      console.error('CORS blocked origin:', origin);
+      console.error('❌ CORS Blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
