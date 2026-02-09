@@ -11,6 +11,7 @@ const dotenv = require('dotenv');
 const { initBucket } = require('./utils/minio');
 
 const path = require('path');
+const fs = require('fs');
 const imageStore = require('./services/imageStore');
 
 
@@ -45,22 +46,36 @@ const io = new Server(server, {
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://social.shinebuchay.com',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
   'https://mrohaung.com',
-  'https://www.mrohaung.com',
-  'https://api.mrohaung.com'
+  'https://www.mrohaung.com'
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    // In development, allow requests with no origin (Postman, curl, etc.)
+    if (!origin && process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+
+    // In production, MUST have an origin and it must be in allowedOrigins
+    if (process.env.NODE_ENV === 'production' && !origin) {
+      return callback(new Error('Origin required in production'));
+    }
+
+    // Check if origin is allowed
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
+      console.error('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
+  // ⚠️ CRITICAL: Must be true for HttpOnly cookies to work
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
@@ -181,11 +196,7 @@ app.get('/api/media/private/:id', authMiddleware, (req, res) => {
 
 
 
-app.get('/', (req, res) => {
 
-  res.send('Social Media API is running...');
-
-});
 
 
 
@@ -308,11 +319,50 @@ app.set('io', io);
 
 
 
+
+// --- FRONTEND STATIC SERVING ---
+// Serve static files from the root directory
+const staticPath = path.join(__dirname, '..');
+
+// 1. Serve Next.js static assets with high caching
+app.use('/_next', express.static(path.join(staticPath, '_next'), {
+  maxAge: '365d',
+  immutable: true
+}));
+
+// 2. Serve other static files (images, favicon, etc)
+app.use(express.static(staticPath, {
+  maxAge: '1h'
+}));
+
+// 3. SPA Fallback: Map clean URLs to .html files or fallback to index.html
+app.get('*', (req, res) => {
+  // Skip API and Socket.io
+  if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io')) {
+    return res.status(404).json({ message: 'API Route Not Found' });
+  }
+
+  // Try to serve the specific .html file for clean URLs (e.g., /login -> login.html)
+  const possibleFile = req.path === '/' ? 'index.html' : `${req.path.replace(/\/$/, '')}.html`;
+  const filePath = path.join(staticPath, possibleFile);
+
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+
+  // Default to index.html for SPA routing
+  res.sendFile(path.join(staticPath, 'index.html'));
+});
+
 const PORT = process.env.PORT || 5000;
-
-server.listen(PORT, () => {
-
-  console.log(`Server is running on port ${PORT}`);
-
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`
+🚀 MROHAUNG SERVER ACTIVE
+----------------------------
+Port: ${PORT}
+Mode: ${process.env.NODE_ENV || 'development'}
+API: https://mrohaung.com/api
+----------------------------
+`);
 });
 
