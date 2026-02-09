@@ -305,7 +305,7 @@ app.use(express.static(staticPath, {
 }));
 
 // 3. SPA Fallback: Map clean URLs to .html files or fallback to index.html
-app.get('*', (req, res) => {
+app.get('(.*)', (req, res) => {
   // Skip API and Socket.io
   if (req.path.startsWith('/api/') || req.path.startsWith('/socket.io')) {
     return res.status(404).json({ message: 'API Route Not Found' });
