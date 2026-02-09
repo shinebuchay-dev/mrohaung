@@ -56,35 +56,7 @@ const allowedOrigins = [
 ];
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    // In development, allow requests with no origin (Postman, curl, etc.)
-    if (!origin && process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-
-    // In production, MUST have an origin and it must be in allowedOrigins
-    if (process.env.NODE_ENV === 'production' && !origin) {
-      return callback(new Error('Origin required in production'));
-    }
-
-    // List of explicitly allowed production domains
-    const isAllowedOrigin = allowedOrigins.includes(origin);
-
-    // Check if it's a local development origin
-    const isLocalhost = origin && (
-      origin.startsWith('http://localhost') ||
-      origin.startsWith('http://127.0.0.1') ||
-      origin.startsWith('https://localhost')
-    );
-
-    if (isAllowedOrigin || isLocalhost || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      console.error('❌ CORS Blocked:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  // ⚠️ CRITICAL: Must be true for HttpOnly cookies to work
+  origin: true, // Temporarily allow all origins to fix development connectivity
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
