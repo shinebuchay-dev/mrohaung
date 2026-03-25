@@ -98,7 +98,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onUpdat
         if (cover) formData.append('cover', cover);
 
         try {
-            const response = await api.put('/profile', formData);
+            const response = await api.put('profile', formData);
             // Update local storage with new user data
             const updatedUser = response.data;
             if (updatedUser) {

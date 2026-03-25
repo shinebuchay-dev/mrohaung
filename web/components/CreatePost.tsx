@@ -217,94 +217,91 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
     return (
         <>
-            {/* Compact Card - Click to open modal */}
-            <div
-                onClick={() => setShowModal(true)}
-                className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-3xl p-4 sm:p-5 mb-6 shadow-sm hover:shadow-md transition-shadow cursor-text"
-            >
-                <div className="flex gap-4 items-center">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex-shrink-0 bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
-                        {currentUser?.avatarUrl ? (
-                            <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-white font-bold text-sm">
-                                {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/5 rounded-full px-4 py-2.5 sm:py-3 text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-medium">
-                        What's on your mind?
-                    </div>
+            {/* Trigger Row - Clean Minimal */}
+            <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100 dark:border-white/5">
+                {/* Avatar */}
+                <div className="w-9 h-9 rounded-full flex-shrink-0 bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                    {currentUser?.avatarUrl ? (
+                        <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-sm">
+                            {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    )}
                 </div>
+
+                {/* Fake input pill */}
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="flex-1 text-left px-4 py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-slate-400 dark:text-slate-500 text-sm font-medium transition-colors"
+                >
+                    What's on your mind{currentUser?.displayName ? `, ${currentUser.displayName.split(' ')[0]}` : ''}?
+                </button>
+
+                {/* Quick photo button */}
+                <label className="w-9 h-9 flex items-center justify-center rounded-full text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors cursor-pointer flex-shrink-0">
+                    <ImageIcon className="w-5 h-5" />
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => { handleImageChange(e); setShowModal(true); }} />
+                </label>
             </div>
 
             {/* Modal Popup */}
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm sm:p-4 p-0">
-                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
-                        
-                        {/* Mobile Sticky Header */}
-                        <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 py-3 flex-shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
-                            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Create Post</h2>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4 p-0">
+                    <div className="bg-white dark:bg-[#1e293b] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden shadow-xl">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/5">
+                            <h2 className="text-base font-bold text-slate-800 dark:text-white">Create Post</h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                                className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* Desktop Header */}
-                        <div className="hidden sm:flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b]">
-                            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Create Post</h2>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-white dark:bg-[#1e293b]">
-                            {/* User Header Section */}
-                            <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/5">
-                                        {currentUser?.avatarUrl ? (
-                                            <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-white font-bold text-sm">
-                                                {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="relative">
+                        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                            {/* User + Privacy Row */}
+                            <div className="flex items-center gap-3 px-5 pt-4 pb-2">
+                                <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 flex-shrink-0">
+                                    {currentUser?.avatarUrl ? (
+                                        <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-sm">
+                                            {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800 dark:text-white leading-none">
+                                        {currentUser?.displayName || currentUser?.username}
+                                    </p>
+                                    <div className="relative mt-1">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setShowPrivacyMenu(!showPrivacyMenu); }}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl transition-colors font-semibold text-slate-700 dark:text-slate-300 text-sm"
+                                            className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md transition-colors text-slate-600 dark:text-slate-300 text-xs font-semibold"
                                         >
-                                            <currentPrivacy.icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                            <currentPrivacy.icon className="w-3 h-3" />
                                             {currentPrivacy.label}
-                                            <ChevronDown className="w-4 h-4 text-slate-400" />
+                                            <ChevronDown className="w-3 h-3 text-slate-400" />
                                         </button>
-                                        
+
                                         {showPrivacyMenu && (
                                             <>
-                                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
+                                                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-lg overflow-hidden z-50">
                                                     {privacyOptions.map((option) => (
                                                         <button
                                                             key={option.value}
-                                                            onClick={() => {
-                                                                setPrivacy(option.value as any);
-                                                                setShowPrivacyMenu(false);
-                                                            }}
-                                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
+                                                            onClick={() => { setPrivacy(option.value as any); setShowPrivacyMenu(false); }}
+                                                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
                                                         >
-                                                            <option.icon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{option.label}</p>
-                                                                <p className="text-xs font-semibold text-slate-500">{option.description}</p>
+                                                            <option.icon className="w-4 h-4 text-slate-400" />
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-slate-800 dark:text-white">{option.label}</p>
+                                                                <p className="text-[11px] text-slate-400">{option.description}</p>
                                                             </div>
                                                         </button>
                                                     ))}
@@ -316,14 +313,15 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                                 </div>
                             </div>
 
+
                             {/* Post Input Area */}
-                            <div className="px-4 sm:px-6 pb-4">
+                            <div className="px-5 pb-4">
                                 <textarea
                                     ref={textareaRef}
                                     value={content}
                                     onChange={handleContentChange}
                                     placeholder="What's on your mind?"
-                                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 resize-none py-2 text-[16px] sm:text-[18px] leading-relaxed"
+                                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none py-1 text-[16px] leading-relaxed"
                                     style={{ minHeight: TEXTAREA_MIN_HEIGHT, maxHeight: TEXTAREA_MAX_HEIGHT }}
                                     rows={1}
                                     autoFocus
@@ -368,9 +366,9 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                             )}
                         </div>
 
-                        {/* Footer / Actions */}
-                        <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] flex items-center justify-between gap-4">
-                            <label className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 cursor-pointer transition-colors flex-shrink-0 text-blue-500">
+                        {/* Footer */}
+                        <div className="flex items-center gap-3 px-5 py-3.5 border-t border-slate-100 dark:border-white/5">
+                            <label className="w-9 h-9 flex items-center justify-center rounded-full text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer transition-colors flex-shrink-0">
                                 <ImageIcon className="w-5 h-5" />
                                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                             </label>
@@ -378,15 +376,12 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                             <button
                                 onClick={handlePost}
                                 disabled={(!content.trim() && !image) || loading}
-                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                className="flex-1 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
                             >
                                 {loading ? (
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
-                                    <>
-                                        <Send className="w-4 h-4" />
-                                        Post
-                                    </>
+                                    'Post'
                                 )}
                             </button>
                         </div>

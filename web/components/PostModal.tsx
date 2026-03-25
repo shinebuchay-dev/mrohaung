@@ -303,7 +303,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm sm:p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4"
             onClick={onClose}
             role="presentation"
         >
@@ -312,14 +312,14 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 role="dialog"
                 aria-modal="true"
                 aria-label="Post details"
-                className="bg-white dark:bg-[#1e293b] sm:border border-none border-slate-200 dark:border-[#334155]/60 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl relative"
+                className="bg-white dark:bg-[#1e293b] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
             >
-                {/* Main Header Bar (Mobile Only) */}
-                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 h-[44px] flex items-center justify-between border-none">
-                    <h2 className="text-[15px] font-bold text-slate-900 dark:text-white tracking-wide">Post</h2>
+                {/* Mobile Sticky Header */}
+                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 h-[44px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                    <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">Post</h2>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-slate-500 dark:text-[#94a3b8] hover:text-white transition-all duration-200"
+                        className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -328,7 +328,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {/* Post Header (Author Info) - Sticky */}
-                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#1e293b] px-4 sm:py-3 pt-8 pb-3 mt-0 flex items-center justify-between border-b border-slate-200 dark:border-[#334155]/10">
+                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
                         <div className="flex items-center gap-3">
                             <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0 group" onClick={onClose}>
                                 <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#334155] bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
@@ -402,7 +402,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             {/* Desktop Close Button */}
                             <button
                                 onClick={onClose}
-                                className="hidden sm:flex w-8 h-8 items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-slate-500 dark:text-[#94a3b8] hover:text-white transition-all duration-200"
+                                className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -410,7 +410,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                     </div>
 
                     {/* Post Body & Details */}
-                    <div className="px-4 pt-3 pb-0 bg-slate-50 dark:bg-[#0f172a]/30">
+                    <div className="px-4 pt-3 pb-0">
                         {/* Body */}
                         <div className={isEditing ? "mb-1" : "mb-3"}>
                             {isEditing ? (
@@ -485,12 +485,8 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                     </div>
 
                     {/* Comments */}
-                    <div className="border-t border-slate-200 dark:border-[#334155]/30 px-4 py-2 bg-slate-50 dark:bg-[#0f172a]/20">
-                        {/* Comments Section */}
-                        <div
-                            className="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-[#0f172a]/20 custom-scrollbar"
-                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                        >
+                    <div className="border-t border-slate-100 dark:border-white/5 px-4 py-2">
+                        <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                             <div className="p-4">
                                 <CommentSection
                                     comments={comments}
@@ -503,7 +499,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="flex-none px-3 py-2 bg-slate-50 dark:bg-[#0f172a]/20 z-10 w-full">
+                <div className="flex-none px-3 py-2 bg-white dark:bg-[#1e293b] border-t border-slate-100 dark:border-white/5 z-10 w-full">
                     {currentUserId ? (
                         <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full">
                             {/* Left: Input Area */}

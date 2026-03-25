@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   description: "Connect with friends and share moments on MROHAUNG",
 };
 
+const BUILD_ID = Date.now();
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,10 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `console.log("Current Build: V3-CLEAN-REINSTALL-" + ${Date.now()});` }} />
+        <script dangerouslySetInnerHTML={{ __html: `console.log("Current Build: V3-CLEAN-REINSTALL-${BUILD_ID}");` }} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         <ThemeProvider>
           <AuthProvider>
@@ -44,3 +47,4 @@ export default function RootLayout({
     </html>
   );
 }
+
