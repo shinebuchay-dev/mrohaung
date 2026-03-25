@@ -42,7 +42,7 @@ echo "=== Backend Setup ==="
 cd backend
 npm install
 # Production .env for backend
-printf "PORT=5001\nDATABASE_URL=\"mysql://u860480593_social_media:SBCsmdb1234@153.92.15.35:3306/u860480593_social_media\"\nJWT_SECRET=\"shinetwon_secret_key_2024\"\nNODE_ENV=production\nADMIN_USER_IDS=\"admin_id_here\"\nBASE_URL=\"http://139.162.62.45\"\n" > .env
+printf "# MySQL Configuration - REMOTE (Hostinger)\n# Construction for Prisma\nDATABASE_URL=\"mysql://u860480593_social_media:SBCsmdb1234@153.92.15.35:3306/u860480593_social_media\"\n\n# Individual variables for mysql2 pool fallback\nDB_HOST=153.92.15.35\nDB_USER=u860480593_social_media\nDB_PASS=SBCsmdb1234\nDB_PASSWORD=SBCsmdb1234\nDB_NAME=u860480593_social_media\nDB_PORT=3306\n\n# Backend Configuration\nJWT_SECRET=shinetwon_secret_key_2024\nNODE_ENV=production\n\n# Frontend Configuration\nNEXT_PUBLIC_API_URL=https://mrohaung.com/api\nNEXT_PUBLIC_SOCKET_URL=https://mrohaung.com\nFRONTEND_URL=https://mrohaung.com\nBASE_URL=https://mrohaung.com\n" > .env
 npx prisma generate
 
 # Ensure uploads directories exist
