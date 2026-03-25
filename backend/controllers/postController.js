@@ -368,7 +368,7 @@ exports.addComment = async (req, res) => {
         let audioUrl = null;
 
         if (req.file) {
-            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'posts');
+            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'comments');
             audioUrl = uploadResult.url;
         }
 

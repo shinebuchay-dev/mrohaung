@@ -1,6 +1,7 @@
 node_modules/
 .env
 .env.local
+vps_backend.env
 .env.production
 backend/storage/
 *.db
@@ -20,3 +21,4 @@ docker-compose.override.yml
 
 # AI Assistant
 .gemini/
+node_errors.log
