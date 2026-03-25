@@ -20,11 +20,22 @@ const fs = require('fs');
 // Initialize MinIO
 initBucket();
 
-// Global Logger for Hostinger Debugging
+// Global Logger for VPS Debugging — capped at 50 MB to prevent disk-full crashes
 const logFile = path.join(__dirname, '../node_errors.log');
+const LOG_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
 const logger = (msg) => {
-  const time = new Date().toISOString();
-  fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+  try {
+    // Rotate (truncate) if log exceeds the cap
+    if (fs.existsSync(logFile)) {
+      const { size } = fs.statSync(logFile);
+      if (size > LOG_MAX_BYTES) {
+        fs.truncateSync(logFile, 0);
+        fs.appendFileSync(logFile, `[${new Date().toISOString()}] --- Log rotated (exceeded ${LOG_MAX_BYTES / 1024 / 1024} MB cap) ---\n`);
+      }
+    }
+    const time = new Date().toISOString();
+    fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+  } catch (_) { /* never crash on log failure */ }
   console.log(msg);
 };
 

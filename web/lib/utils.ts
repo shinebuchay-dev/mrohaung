@@ -6,6 +6,12 @@
 export const fixUrl = (url?: string | null): string | undefined => {
     if (!url) return undefined;
 
+    // Guard: blob: URLs are temporary object URLs — never send to the API
+    if (url.startsWith('blob:')) {
+        console.warn('[fixUrl] Blocked a blob: URL from being used as a remote URL:', url);
+        return undefined;
+    }
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://139.162.62.45/api';
     const PRODUCTION_URL = API_URL.replace(/\/api$/, '');
 

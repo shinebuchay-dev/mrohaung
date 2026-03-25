@@ -48,23 +48,30 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
     useEffect(() => {
         const savedDraft = localStorage.getItem('createPostDraft');
         if (savedDraft) {
-            const draft = JSON.parse(savedDraft);
-            setContent(draft.content || '');
-            setPrivacy(draft.privacy || 'public');
-            if (draft.imagePreview) {
-                setImagePreview(draft.imagePreview);
+            try {
+                const draft = JSON.parse(savedDraft);
+                setContent(draft.content || '');
+                setPrivacy(draft.privacy || 'public');
+                // Only restore non-blob imagePreview URLs (blobs are invalid after page reload)
+                if (draft.imagePreview && !draft.imagePreview.startsWith('blob:')) {
+                    setImagePreview(draft.imagePreview);
+                }
+                setHasDraft(true);
+            } catch {
+                localStorage.removeItem('createPostDraft');
             }
-            setHasDraft(true);
         }
     }, []);
 
     // Draft auto-save: Save to localStorage whenever content/privacy/image changes
+    // NOTE: Never save blob: URLs — they expire after page reload and cause API errors
     useEffect(() => {
         if (showModal) {
             const draft = {
                 content,
                 privacy,
-                imagePreview,
+                // Only save real (non-blob) imagePreview URLs
+                imagePreview: imagePreview && !imagePreview.startsWith('blob:') ? imagePreview : null,
                 timestamp: Date.now()
             };
             localStorage.setItem('createPostDraft', JSON.stringify(draft));
