@@ -25,7 +25,7 @@ export default function AuthPageContent({ initialMode = 'login' }: AuthPageConte
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full max-w-[420px] bg-[#0f172a]/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/5 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] p-8 md:p-10 relative z-10"
+                className="w-full max-w-[420px] bg-slate-50 dark:bg-[#0f172a]/80 backdrop-blur-2xl rounded-[2.5rem] border border-white/5 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] p-8 md:p-10 relative z-10"
             >
                 {/* Form Switcher */}
                 <AnimatePresence mode="wait">

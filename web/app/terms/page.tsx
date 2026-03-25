@@ -7,10 +7,10 @@ export default function TermsOfService() {
     return (
         <AppShell>
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="bg-[#1e293b]/50 border border-[#334155] rounded-3xl p-8 md:p-12 shadow-xl">
+                <div className="bg-white dark:bg-[#1e293b]/50 border border-slate-200 dark:border-[#334155] rounded-3xl p-8 md:p-12 shadow-xl">
                     <div className="text-center mb-12">
                         <h1 className="text-3xl md:text-4xl font-black text-white mb-4">Terms of Service</h1>
-                        <p className="text-[#94a3b8] text-lg">Last updated: February 6, 2026</p>
+                        <p className="text-slate-500 dark:text-[#94a3b8] text-lg">Last updated: February 6, 2026</p>
                     </div>
 
                     <div className="space-y-12">
@@ -31,11 +31,11 @@ export default function TermsOfService() {
                                 <Copyright className="w-6 h-6" />
                                 <h2 className="text-xl font-bold">2. User Content & Copyright</h2>
                             </div>
-                            <div className="bg-[#0f172a]/50 rounded-xl p-6 border border-[#334155]/50">
+                            <div className="bg-slate-50 dark:bg-[#0f172a]/50 rounded-xl p-6 border border-slate-200 dark:border-[#334155]/50">
                                 <p className="text-[#cbd5e1] leading-relaxed mb-4">
                                     Our service allows you to post links, store, share and otherwise make available certain information, text, graphics, videos, or other material ("Content").
                                 </p>
-                                <ul className="space-y-3 list-disc pl-5 text-[#94a3b8]">
+                                <ul className="space-y-3 list-disc pl-5 text-slate-500 dark:text-[#94a3b8]">
                                     <li>You are responsible for the Content that you post to the service, including its legality, reliability, and appropriateness.</li>
                                     <li>We do not claim ownership of user-generated content, but by posting content, you grant us a license to use it for the operation of the service.</li>
                                     <li><strong>Copyright Infringement:</strong> Users must not upload content that violates intellectual property rights. We reserve the right to remove any content that allegedly infringes copyright.</li>
@@ -61,7 +61,7 @@ export default function TermsOfService() {
                                     "Distributing malware",
                                     "Violating privacy of others"
                                 ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-2 text-[#94a3b8]">
+                                    <li key={i} className="flex items-center gap-2 text-slate-500 dark:text-[#94a3b8]">
                                         <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
                                         {item}
                                     </li>
@@ -92,7 +92,7 @@ export default function TermsOfService() {
                         </section>
                     </div>
 
-                    <div className="mt-12 pt-8 border-t border-[#334155] text-center text-[#64748b] text-sm">
+                    <div className="mt-12 pt-8 border-t border-slate-200 dark:border-[#334155] text-center text-slate-500 dark:text-[#64748b] text-sm">
                         <p>Questions? Contact us at support@shinebuchay.com</p>
                     </div>
                 </div>

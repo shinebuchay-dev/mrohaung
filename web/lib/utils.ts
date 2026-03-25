@@ -6,23 +6,17 @@
 export const fixUrl = (url?: string | null): string | undefined => {
     if (!url) return undefined;
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
-    const BASE_URL = API_URL.replace(/\/api$/, '');
-    const OLD_PRODUCTION_URL = 'https://mrohaung.com';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://139.162.62.45/api';
+    const PRODUCTION_URL = API_URL.replace(/\/api$/, '');
 
     let fixedUrl = url;
-    const PRODUCTION_URL = 'https://mrohaung.com';
 
     // 1. Replace localhost or 127.0.0.1 with production URL
     if (fixedUrl.includes('localhost') || fixedUrl.includes('127.0.0.1')) {
-        fixedUrl = fixedUrl.replace(/http:\/\/localhost:\d+/, PRODUCTION_URL)
-            .replace(/http:\/\/127.0.0.1:\d+/, PRODUCTION_URL);
+        fixedUrl = fixedUrl.replace(/http:\/\/(localhost|127\.0\.0\.1):\d+/, PRODUCTION_URL);
     }
 
-    // 2. Replace old production URL with current if specific legacy one is found
-    // (Only if needed, but the main fix is the localhost one)
-
-    // 3. Handle relative paths (e.g., /uploads/...)
+    // 2. Handle relative paths (e.g., /uploads/...)
     if (fixedUrl.startsWith('/')) {
         fixedUrl = `${PRODUCTION_URL}${fixedUrl}`;
     }

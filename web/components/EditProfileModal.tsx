@@ -119,15 +119,15 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onUpdat
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-[#1e293b] border border-[#334155] rounded-3xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-3xl w-full max-w-lg mx-4 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-[#334155]">
+                <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-[#334155]">
                     <h2 className="text-xl font-bold text-white">Edit Profile</h2>
                     <button
                         onClick={onClose}
                         className="p-2 hover:bg-[#334155] rounded-full transition-colors"
                     >
-                        <X className="w-5 h-5 text-[#94a3b8]" />
+                        <X className="w-5 h-5 text-slate-500 dark:text-[#94a3b8]" />
                     </button>
                 </div>
 
@@ -135,8 +135,8 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onUpdat
                 <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[80vh] no-scrollbar">
                     {/* Cover Upload */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#94a3b8]">Cover Photo</label>
-                        <div className="relative h-32 w-full rounded-xl overflow-hidden bg-[#0f172a] border border-[#334155]">
+                        <label className="text-sm font-semibold text-slate-500 dark:text-[#94a3b8]">Cover Photo</label>
+                        <div className="relative h-32 w-full rounded-xl overflow-hidden bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-[#334155]">
                             {coverPreview || currentUser?.coverUrl ? (
                                 <img
                                     src={coverPreview || fixUrl(currentUser.coverUrl)}
@@ -162,7 +162,7 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onUpdat
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative">
-                            <div className="w-24 h-24 rounded-full overflow-hidden bg-[#334155] border-4 border-[#1e293b]">
+                            <div className="w-24 h-24 rounded-full overflow-hidden bg-[#334155] border-4 border-slate-200 dark:border-[#1e293b]">
                                 {preview || currentUser?.avatarUrl ? (
                                     <img
                                         src={preview || fixUrl(currentUser.avatarUrl)}
@@ -187,20 +187,20 @@ export default function EditProfileModal({ isOpen, onClose, currentUser, onUpdat
                                 />
                             </label>
                         </div>
-                        <p className="text-sm text-[#64748b]">Click to upload new avatar</p>
+                        <p className="text-sm text-slate-500 dark:text-[#64748b]">Click to upload new avatar</p>
                     </div>
 
                     {/* Bio */}
                     <div className="space-y-2">
-                        <label className="text-sm font-semibold text-[#94a3b8]">Bio</label>
+                        <label className="text-sm font-semibold text-slate-500 dark:text-[#94a3b8]">Bio</label>
                         <textarea
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
                             placeholder="Tell us about yourself..."
-                            className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-32"
+                            className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-[#334155] rounded-xl px-4 py-3 text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none h-32"
                             maxLength={160}
                         />
-                        <p className="text-xs text-[#64748b] text-right">{bio.length}/160</p>
+                        <p className="text-xs text-slate-500 dark:text-[#64748b] text-right">{bio.length}/160</p>
                     </div>
 
                     {/* Buttons */}

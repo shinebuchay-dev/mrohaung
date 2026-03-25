@@ -42,14 +42,7 @@ echo "=== Backend Setup ==="
 cd backend
 npm install
 # Production .env for backend
-cat > .env <<EOF
-PORT=5001
-DATABASE_URL="mysql://u860480593_social_media:SBCsmdb1234@153.92.15.35:3306/u860480593_social_media"
-JWT_SECRET="shinetwon_secret_key_2024"
-NODE_ENV=production
-ADMIN_USER_IDS="admin_id_here"
-BASE_URL="http://139.162.62.45"
-EOF
+printf "PORT=5001\nDATABASE_URL=\"mysql://u860480593_social_media:SBCsmdb1234@153.92.15.35:3306/u860480593_social_media\"\nJWT_SECRET=\"shinetwon_secret_key_2024\"\nNODE_ENV=production\nADMIN_USER_IDS=\"admin_id_here\"\nBASE_URL=\"http://139.162.62.45\"\n" > .env
 
 # Ensure uploads directories exist
 mkdir -p uploads/users
@@ -63,10 +56,7 @@ cd ../web
 npm install
 
 # Production .env for frontend
-cat > .env.production <<EOF
-NEXT_PUBLIC_API_URL=http://139.162.62.45/api
-NEXT_PUBLIC_SOCKET_URL=http://139.162.62.45
-EOF
+printf "NEXT_PUBLIC_API_URL=http://139.162.62.45/api\nNEXT_PUBLIC_SOCKET_URL=http://139.162.62.45\n" > .env.production
 
 npm run build
 
@@ -79,52 +69,7 @@ pm2 save
 env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u root --hp /root || true
 
 echo "=== Nginx Setup ==="
-cat > /etc/nginx/sites-available/mrohaung <<EOF
-server {
-    listen 80;
-    server_name 139.162.62.45; # Replace with mrohaung.com later
-
-    client_max_body_size 100M;
-
-    # Frontend
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-    }
-
-    # Backend API
-    location /api/ {
-        proxy_pass http://localhost:5001/api/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_cache_bypass \$http_upgrade;
-    }
-
-    # Static Uploads
-    location /uploads/ {
-        proxy_pass http://localhost:5001/uploads/;
-        proxy_set_header Host \$host;
-        # Add caching
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
-    }
-
-    # Socket.io
-    location /socket.io/ {
-        proxy_pass http://localhost:5001/socket.io/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-    }
-}
-EOF
+printf "server {\n    listen 80;\n    server_name 139.162.62.45;\n\n    client_max_body_size 100M;\n\n    location / {\n        proxy_pass http://localhost:3000;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade \$http_upgrade;\n        proxy_set_header Connection 'upgrade';\n        proxy_set_header Host \$host;\n        proxy_cache_bypass \$http_upgrade;\n    }\n\n    location /api/ {\n        proxy_pass http://localhost:5001/api/;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade \$http_upgrade;\n        proxy_set_header Connection 'upgrade';\n        proxy_set_header Host \$host;\n        proxy_cache_bypass \$http_upgrade;\n    }\n\n    location /uploads/ {\n        proxy_pass http://localhost:5001/uploads/;\n        proxy_set_header Host \$host;\n        expires 30d;\n        add_header Cache-Control \"public, no-transform\";\n    }\n\n    location /socket.io/ {\n        proxy_pass http://localhost:5001/socket.io/;\n        proxy_http_version 1.1;\n        proxy_set_header Upgrade \$http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_set_header Host \$host;\n    }\n}\n" > /etc/nginx/sites-available/mrohaung
 
 ln -sf /etc/nginx/sites-available/mrohaung /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default

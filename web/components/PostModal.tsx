@@ -208,7 +208,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
             case 'sad': return <Frown className="w-4 h-4 text-blue-400" />;
             case 'angry': return <Angry className="w-4 h-4 text-orange-500" />;
             case 'like': return <ThumbsUp className="w-4 h-4 text-blue-500 fill-blue-500" />;
-            default: return <Heart className="w-4 h-4 text-[#64748b]" />;
+            default: return <Heart className="w-4 h-4 text-slate-500 dark:text-[#64748b]" />;
         }
     };
 
@@ -312,14 +312,14 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 role="dialog"
                 aria-modal="true"
                 aria-label="Post details"
-                className="bg-[#1e293b] sm:border border-none border-[#334155]/60 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl relative"
+                className="bg-white dark:bg-[#1e293b] sm:border border-none border-slate-200 dark:border-[#334155]/60 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-2xl relative"
             >
                 {/* Main Header Bar (Mobile Only) */}
-                <div className="sm:hidden sticky top-0 z-[50] bg-[#1e293b] px-4 h-[44px] flex items-center justify-between border-none">
-                    <h2 className="text-[15px] font-bold text-white tracking-wide">Post</h2>
+                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 h-[44px] flex items-center justify-between border-none">
+                    <h2 className="text-[15px] font-bold text-slate-900 dark:text-white tracking-wide">Post</h2>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-[#94a3b8] hover:text-white transition-all duration-200"
+                        className="w-8 h-8 flex items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-slate-500 dark:text-[#94a3b8] hover:text-white transition-all duration-200"
                     >
                         <X className="w-4 h-4" />
                     </button>
@@ -328,17 +328,17 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {/* Post Header (Author Info) - Sticky */}
-                    <div className="sticky top-0 z-[40] bg-[#1e293b] px-4 sm:py-3 pt-8 pb-3 mt-0 flex items-center justify-between border-b border-[#334155]/10">
+                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#1e293b] px-4 sm:py-3 pt-8 pb-3 mt-0 flex items-center justify-between border-b border-slate-200 dark:border-[#334155]/10">
                         <div className="flex items-center gap-3">
                             <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0 group" onClick={onClose}>
-                                <div className="w-10 h-10 rounded-full bg-[#334155] bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
-                                <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#1e293b]" />
+                                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#334155] bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
+                                <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#1e293b]" />
                             </Link>
                             <div className="flex flex-col justify-center">
-                                <Link href={`/profile/${post.author.username}`} className="text-white font-bold text-[15px] hover:underline decoration-blue-500/50 underline-offset-2 leading-tight" onClick={onClose}>
+                                <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-bold text-[15px] hover:underline decoration-blue-500/50 underline-offset-2 leading-tight" onClick={onClose}>
                                     {post.author.displayName || post.author.username}
                                 </Link>
-                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#64748b] mt-0.5">
+                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-[#64748b] mt-0.5">
                                     <Clock className="w-3 h-3" />
                                     <p>{formatTimeRelative(post.createdAt)}</p>
                                     <span className="w-1 h-1 rounded-full bg-[#334155]" />
@@ -352,7 +352,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
-                                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${showMenu ? 'bg-[#334155] text-white' : 'hover:bg-[#334155]/50 text-[#94a3b8] hover:text-white'}`}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${showMenu ? 'bg-slate-200 dark:bg-[#334155] text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-[#334155]/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 >
                                     <MoreHorizontal className="w-5 h-5" />
                                 </button>
@@ -363,14 +363,14 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                                 initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                className="absolute right-0 mt-1 w-48 bg-[#1e293b]/98 backdrop-blur-2xl border border-[#334155]/70 rounded-xl shadow-2xl overflow-hidden z-[110] border border-[#334155]/50"
+                                                className="absolute right-0 mt-1 w-48 bg-white dark:bg-[#1e293b] backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden z-[110]"
                                             >
                                                 <div className="py-1">
                                                     {isOwnPost ? (
                                                         <>
                                                             <button
                                                                 onClick={() => { setShowMenu(false); setIsEditing(true); }}
-                                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#334155]/50 text-white transition-colors text-sm font-medium group"
+                                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white transition-colors text-sm font-bold group"
                                                             >
                                                                 <Edit2 className="w-4 h-4 text-blue-400" />
                                                                 Edit Post
@@ -402,7 +402,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             {/* Desktop Close Button */}
                             <button
                                 onClick={onClose}
-                                className="hidden sm:flex w-8 h-8 items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-[#94a3b8] hover:text-white transition-all duration-200"
+                                className="hidden sm:flex w-8 h-8 items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-slate-500 dark:text-[#94a3b8] hover:text-white transition-all duration-200"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -410,27 +410,27 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                     </div>
 
                     {/* Post Body & Details */}
-                    <div className="px-4 pt-3 pb-0 bg-[#0f172a]/30">
+                    <div className="px-4 pt-3 pb-0 bg-slate-50 dark:bg-[#0f172a]/30">
                         {/* Body */}
                         <div className={isEditing ? "mb-1" : "mb-3"}>
                             {isEditing ? (
                                 <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <textarea ref={editTextareaRef} value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full bg-transparent border-none outline-none focus:ring-0 text-white placeholder-[#64748b] resize-none py-1 text-[15px] leading-relaxed overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ minHeight: EDIT_TEXTAREA_MIN_HEIGHT, maxHeight: EDIT_TEXTAREA_MAX_HEIGHT }} rows={1} placeholder="Edit your post..." autoFocus maxLength={65000} />
+                                    <textarea ref={editTextareaRef} value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none py-1 text-[15px] leading-relaxed overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ minHeight: EDIT_TEXTAREA_MIN_HEIGHT, maxHeight: EDIT_TEXTAREA_MAX_HEIGHT }} rows={1} placeholder="Edit your post..." autoFocus maxLength={65000} />
                                 </div>
                             ) : (
-                                <>{post.content && <p className="text-[#e2e8f0] text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>}</>
+                                <>{post.content && <p className="text-slate-800 dark:text-slate-100 text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>}</>
                             )}
                         </div>
-                        {post.imageUrl && <div className="rounded-lg overflow-hidden bg-black mb-3 border border-[#334155]/50"><img src={fixUrl(post.imageUrl)} alt="Post" className="w-full h-auto max-h-[400px] object-contain mx-auto" /></div>}
+                        {post.imageUrl && <div className="rounded-lg overflow-hidden bg-black mb-3 border border-slate-200 dark:border-[#334155]/50"><img src={fixUrl(post.imageUrl)} alt="Post" className="w-full h-auto max-h-[400px] object-contain mx-auto" /></div>}
 
                         {isEditing && (
-                            <div className="flex justify-center gap-3 py-4 border-t border-[#334155]/40 mt-2">
-                                <button onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} className="px-6 py-2.5 text-sm font-semibold text-[#94a3b8] hover:text-white transition-colors bg-[#334155]/30 hover:bg-[#334155]/50 rounded-xl border border-[#334155]/50 min-w-[120px]">Cancel</button>
-                                <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()} className="px-8 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 text-sm font-bold text-white rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2 min-w-[160px]">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> <span>Save Changes</span></>}</button>
+                            <div className="flex justify-center gap-3 py-4 border-t border-slate-200 dark:border-[#334155]/40 mt-2">
+                                <button onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl min-w-[120px]">Cancel</button>
+                                <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()} className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-bold text-white rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 min-w-[160px]">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> <span>Save Changes</span></>}</button>
                             </div>
                         )}
                         {!isEditing && (
-                            <div className="px-4 h-[50px] flex items-center justify-between border-t border-[#334155]/30">
+                            <div className="px-4 h-[50px] flex items-center justify-between border-t border-slate-200 dark:border-[#334155]/30">
                                 <div className="flex items-center gap-3">
                                     <div
                                         className="relative"
@@ -453,12 +453,12 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                             <div className="p-2 rounded-full group-hover/like:bg-white/5 transition-colors">
                                                 {getReactionIcon(reactionType)}
                                             </div>
-                                            <span className={`text-xs font-bold transition-colors ${reactionType ? 'text-blue-500' : 'text-[#64748b] group-hover/like:text-blue-500'}`}>{likeCount}</span>
+                                            <span className={`text-xs font-bold transition-colors ${reactionType ? 'text-blue-500' : 'text-slate-500 dark:text-[#64748b] group-hover/like:text-blue-500'}`}>{likeCount}</span>
                                         </motion.button>
                                     </div>
                                     <div className="flex items-center gap-1.5 group/comment translate-y-[1px]">
-                                        <div className="p-2 rounded-full group-hover/comment:bg-blue-500/10 transition-colors"><MessageCircle className="w-4 h-4 text-[#64748b] group-hover/comment:text-blue-500 transition-colors" /></div>
-                                        <span className="text-xs font-bold text-[#64748b] group-hover/comment:text-blue-500 transition-colors">{comments.length}</span>
+                                        <div className="p-2 rounded-full group-hover/comment:bg-blue-500/10 transition-colors"><MessageCircle className="w-4 h-4 text-slate-500 dark:text-[#64748b] group-hover/comment:text-blue-500 transition-colors" /></div>
+                                        <span className="text-xs font-bold text-slate-500 dark:text-[#64748b] group-hover/comment:text-blue-500 transition-colors">{comments.length}</span>
                                     </div>
                                 </div>
                                 <motion.button
@@ -476,7 +476,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                             alert('Link copied to clipboard!');
                                         }
                                     }}
-                                    className="p-2 rounded-full hover:bg-white/5 transition-colors text-[#64748b] hover:text-white group/share translate-y-[1px]"
+                                    className="p-2 rounded-full hover:bg-white/5 transition-colors text-slate-500 dark:text-[#64748b] hover:text-white group/share translate-y-[1px]"
                                 >
                                     <Share2 className="w-4 h-4" />
                                 </motion.button>
@@ -485,10 +485,10 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                     </div>
 
                     {/* Comments */}
-                    <div className="border-t border-[#334155]/30 px-4 py-2 bg-[#0f172a]/20">
+                    <div className="border-t border-slate-200 dark:border-[#334155]/30 px-4 py-2 bg-slate-50 dark:bg-[#0f172a]/20">
                         {/* Comments Section */}
                         <div
-                            className="flex-1 overflow-y-auto min-h-0 bg-[#0f172a]/20 custom-scrollbar"
+                            className="flex-1 overflow-y-auto min-h-0 bg-slate-50 dark:bg-[#0f172a]/20 custom-scrollbar"
                             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                         >
                             <div className="p-4">
@@ -503,15 +503,15 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="flex-none px-3 py-2 bg-[#0f172a]/20 z-10 w-full">
+                <div className="flex-none px-3 py-2 bg-slate-50 dark:bg-[#0f172a]/20 z-10 w-full">
                     {currentUserId ? (
                         <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full">
                             {/* Left: Input Area */}
-                            <div className="flex-1 bg-[#1e293b]/40 hover:bg-[#1e293b]/60 transition-colors rounded-2xl px-3 py-2 min-h-[44px] flex items-center">
+                            <div className="flex-1 bg-white dark:bg-[#1e293b]/40 hover:bg-white dark:bg-[#1e293b]/60 transition-colors rounded-2xl px-3 py-2 min-h-[44px] flex items-center">
                                 {selectedSticker ? (
-                                    <div className="flex items-center gap-2 bg-[#1e293b] px-3 py-1 rounded-xl border border-[#334155] w-fit">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-[#1e293b] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit">
                                         <img src={fixUrl(selectedSticker)} alt="Selected" className="w-8 h-8 object-contain" />
-                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-white/10 rounded-full text-[#94a3b8]"><X className="w-3 h-3" /></button>
+                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-white/10 rounded-full text-slate-500 dark:text-[#94a3b8]"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : audioBlob ? (
                                     <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 w-fit">
@@ -540,7 +540,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                         }}
                                         placeholder="Write a comment..."
                                         rows={1}
-                                        className="w-full bg-transparent border-none outline-none text-[15px] text-white placeholder-[#64748b] resize-none overflow-hidden min-h-[24px] py-0 break-words whitespace-pre-wrap"
+                                        className="w-full bg-transparent border-none outline-none text-[15px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden min-h-[24px] py-0 break-words whitespace-pre-wrap"
                                         style={{ height: 'auto' }}
                                         maxLength={10000}
                                     />
@@ -555,7 +555,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                             <button
                                                 type="button"
                                                 onClick={() => setShowStickers(!showStickers)}
-                                                className="p-2 text-[#94a3b8] hover:bg-[#334155] hover:text-blue-400 rounded-full transition-all"
+                                                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-500 rounded-full transition-all"
                                             >
                                                 <Smile className="w-5 h-5" />
                                             </button>
@@ -583,8 +583,8 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             </div>
                         </form>
                     ) : (
-                        <div className="flex items-center justify-center py-2 px-4 bg-[#1e293b]/40 rounded-xl border border-[#334155]/50">
-                            <p className="text-sm text-[#94a3b8]">Please login to join the conversation</p>
+                        <div className="flex items-center justify-center py-2 px-4 bg-white dark:bg-[#1e293b]/40 rounded-xl border border-slate-200 dark:border-[#334155]/50">
+                            <p className="text-sm text-slate-500 dark:text-[#94a3b8]">Please login to join the conversation</p>
                         </div>
                     )}
                 </div>

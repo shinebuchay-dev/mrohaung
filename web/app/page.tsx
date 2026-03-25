@@ -146,8 +146,8 @@ export default function FeedPage() {
             <CheckCircle2 className="w-5 h-5 text-green-500" />
           </div>
           <div className="flex-1">
-            <h4 className="text-white font-bold text-sm">Identity Secured</h4>
-            <p className="text-green-400/80 text-xs">Your email has been verified. Welcome to the Infinity network.</p>
+            <h4 className="text-slate-900 dark:text-white font-bold text-sm">Identity Secured</h4>
+            <p className="text-green-600 dark:text-green-400/80 text-xs">Your email has been verified. Welcome to MROHAUNG.</p>
           </div>
         </div>
       )}
@@ -172,7 +172,7 @@ export default function FeedPage() {
           {loading ? (
             <div className="space-y-6">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-[#1e293b]/30 rounded-3xl h-64 animate-pulse border border-white/5" />
+                <div key={i} className="bg-slate-100 dark:bg-slate-800 rounded-3xl h-64 animate-pulse border border-slate-200 dark:border-white/5" />
               ))}
             </div>
           ) : (
@@ -214,8 +214,8 @@ export default function FeedPage() {
               </AnimatePresence>
 
               {posts.length === 0 && !loading && (
-                <div className="text-center py-20 bg-[#1e293b]/20 rounded-[2.5rem] border border-dashed border-[#334155] mb-8">
-                  <p className="text-[#64748b] font-medium">The void is empty. Be the first to speck it.</p>
+                <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/20 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 mb-8">
+                  <p className="text-slate-500 dark:text-slate-400 font-medium">No posts yet. Be the first to share something!</p>
                 </div>
               )}
 
@@ -225,7 +225,7 @@ export default function FeedPage() {
                   <div className="w-8 h-8 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                 )}
                 {!hasMore && posts.length > 0 && (
-                  <p className="text-[#64748b] text-sm font-medium">You've reached the edge of the universe</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">You've reached the end of the feed.</p>
                 )}
               </div>
             </div>

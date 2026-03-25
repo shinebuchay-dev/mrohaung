@@ -25,7 +25,7 @@ export default function MessageBubble({ message, currentUserId, formatTime }: Me
                 {/* Profile Icon for others */}
                 {!isOwnMessage && (
                     <div className="relative flex-shrink-0 mb-0.5">
-                        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 ring-2 ring-white/5 shadow-md bg-[#1e293b]">
+                        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 ring-2 ring-white/5 shadow-md bg-white dark:bg-[#1e293b]">
                             {message.sender?.avatarUrl ? (
                                 <img src={fixUrl(message.sender.avatarUrl)} alt="" className="w-full h-full object-cover" />
                             ) : (

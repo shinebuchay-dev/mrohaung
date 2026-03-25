@@ -55,16 +55,16 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdate }: EditP
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-[#334155]/60 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-slate-200 dark:border-[#334155]/60 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-[#334155]/40 bg-white/5 relative">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#334155]/40 bg-white/5 relative">
                     <div className="flex items-center gap-3 pr-10">
                         <div className="w-1.5 h-6 bg-gradient-to-t from-blue-600 to-purple-600 rounded-full" />
                         <h2 className="text-lg font-bold text-white tracking-tight">Edit Post</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full transition-all duration-200 text-[#94a3b8] hover:text-white z-20 backdrop-blur-sm"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full transition-all duration-200 text-slate-500 dark:text-[#94a3b8] hover:text-white z-20 backdrop-blur-sm"
                         aria-label="Close"
                     >
                         <X className="w-4 h-4" />
@@ -88,7 +88,7 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdate }: EditP
 
                         {/* Current Image Preview */}
                         {post.imageUrl && (
-                            <div className="relative rounded-2xl overflow-hidden border border-[#334155]/50 group">
+                            <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-[#334155]/50 group">
                                 <img
                                     src={post.imageUrl}
                                     alt="Post"
@@ -101,8 +101,8 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdate }: EditP
                             </div>
                         )}
 
-                        <div className="flex items-center justify-end border-t border-[#334155]/40 pt-4">
-                            <span className="text-[11px] font-medium text-[#64748b] uppercase tracking-widest">{content.length}/500 characters</span>
+                        <div className="flex items-center justify-end border-t border-slate-200 dark:border-[#334155]/40 pt-4">
+                            <span className="text-[11px] font-medium text-slate-500 dark:text-[#64748b] uppercase tracking-widest">{content.length}/500 characters</span>
                         </div>
                     </div>
 
@@ -111,7 +111,7 @@ export default function EditPostModal({ isOpen, onClose, post, onUpdate }: EditP
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-2.5 bg-[#334155]/50 hover:bg-[#475569]/50 text-white font-semibold rounded-xl border border-[#334155]/50 transition-all active:scale-95"
+                            className="flex-1 px-6 py-2.5 bg-[#334155]/50 hover:bg-[#475569]/50 text-white font-semibold rounded-xl border border-slate-200 dark:border-[#334155]/50 transition-all active:scale-95"
                         >
                             Cancel
                         </button>

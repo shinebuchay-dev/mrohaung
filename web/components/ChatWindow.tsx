@@ -130,16 +130,16 @@ export default function ChatWindow({
     const messageGroups = groupMessagesByDate(messages);
 
     return (
-        <div className="flex flex-col h-full bg-[#0f172a]/20 backdrop-blur-xl relative overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0f172a]/20 backdrop-blur-xl relative overflow-hidden">
             {/* Header */}
-            <header className="p-4 border-b border-[#1e293b] flex items-center justify-between bg-[#0f172a]/60 backdrop-blur-md z-10">
+            <header className="p-4 border-b border-slate-200 dark:border-[#1e293b] flex items-center justify-between bg-slate-50 dark:bg-[#0f172a]/60 backdrop-blur-md z-10">
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div
-                            className="w-10 h-10 rounded-full bg-[#334155] bg-cover bg-center border border-[#334155]"
+                            className="w-10 h-10 rounded-full bg-[#334155] bg-cover bg-center border border-slate-200 dark:border-[#334155]"
                             style={{ backgroundImage: recipient.avatarUrl ? `url(${fixUrl(recipient.avatarUrl)})` : undefined }}
                         />
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-[#1e293b]" />
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-200 dark:border-[#1e293b]" />
                     </div>
                     <div>
                         <h2 className="font-bold text-white leading-tight">{recipient.displayName || recipient.username}</h2>
@@ -153,17 +153,17 @@ export default function ChatWindow({
                     </div>
                 </div>
                 <div className="flex items-center gap-1">
-                    <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-[#64748b]">
+                    <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500 dark:text-[#64748b]">
                         <Search className="w-5 h-5" />
                     </button>
                     <button
                         onClick={() => setShowSidebar(!showSidebar)}
-                        className={`p-2 rounded-full transition-colors ${showSidebar ? 'bg-blue-600/20 text-blue-400' : 'text-[#64748b] hover:bg-white/5'}`}
+                        className={`p-2 rounded-full transition-colors ${showSidebar ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:bg-white/5'}`}
                     >
                         <Info className="w-5 h-5" />
                     </button>
                     <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                        <MoreVertical className="w-5 h-5 text-[#64748b]" />
+                        <MoreVertical className="w-5 h-5 text-slate-500 dark:text-[#64748b]" />
                     </button>
                 </div>
             </header>
@@ -177,16 +177,16 @@ export default function ChatWindow({
                     >
                         {messages.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center opacity-30 select-none">
-                                <div className="w-20 h-20 rounded-full bg-[#1e293b] flex items-center justify-center mb-4">
+                                <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1e293b] flex items-center justify-center mb-4">
                                     <MessageCircle className="w-10 h-10 text-white" />
                                 </div>
-                                <p className="text-[#64748b] text-sm">No messages yet. Start a conversation!</p>
+                                <p className="text-slate-500 dark:text-[#64748b] text-sm">No messages yet. Start a conversation!</p>
                             </div>
                         ) : (
                             Object.entries(messageGroups).map(([date, groupMessages]) => (
                                 <div key={date} className="space-y-4">
                                     <div className="flex justify-center my-6">
-                                        <div className="bg-[#1e293b]/50 backdrop-blur-md border border-[#334155]/30 px-4 py-1 rounded-full text-[11px] font-bold text-[#64748b] uppercase tracking-widest flex items-center gap-2">
+                                        <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-md border border-slate-200 dark:border-[#334155]/30 px-4 py-1 rounded-full text-[11px] font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-widest flex items-center gap-2">
                                             <Calendar className="w-3 h-3" />
                                             {date === new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) ? 'Today' : date}
                                         </div>
@@ -208,7 +208,7 @@ export default function ChatWindow({
                                 animate={{ opacity: 1, x: 0 }}
                                 className="flex justify-start"
                             >
-                                <div className="bg-[#1e293b]/40 px-3 py-1.5 rounded-full flex gap-1 items-center">
+                                <div className="bg-white dark:bg-[#1e293b]/40 px-3 py-1.5 rounded-full flex gap-1 items-center">
                                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
@@ -218,20 +218,20 @@ export default function ChatWindow({
                     </div>
 
                     {/* Input Area */}
-                    <footer className="p-4 bg-[#0f172a]/80 backdrop-blur-xl border-t border-[#1e293b] relative">
+                    <footer className="p-4 bg-slate-50 dark:bg-[#0f172a]/80 backdrop-blur-xl border-t border-slate-200 dark:border-[#1e293b] relative">
                         {replyTo && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
-                                className="mb-2 bg-[#1e293b]/80 border-l-4 border-blue-500 p-3 rounded-r-xl flex items-center justify-between group"
+                                className="mb-2 bg-white dark:bg-[#1e293b]/80 border-l-4 border-blue-500 p-3 rounded-r-xl flex items-center justify-between group"
                             >
                                 <div className="min-w-0">
                                     <p className="text-xs font-bold text-blue-400">Replying to {replyTo.senderId === currentUserId ? 'yourself' : (replyTo.sender?.displayName || replyTo.sender?.username)}</p>
-                                    <p className="text-xs text-[#94a3b8] truncate mt-0.5">{replyTo.content}</p>
+                                    <p className="text-xs text-slate-500 dark:text-[#94a3b8] truncate mt-0.5">{replyTo.content}</p>
                                 </div>
                                 <button
                                     onClick={() => setReplyTo(null)}
-                                    className="p-1 hover:bg-white/10 rounded-full text-[#64748b] hover:text-white"
+                                    className="p-1 hover:bg-white/10 rounded-full text-slate-500 dark:text-[#64748b] hover:text-white"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -258,7 +258,7 @@ export default function ChatWindow({
                                     <img
                                         src={previewUrl}
                                         alt="Preview"
-                                        className="h-32 rounded-xl border border-[#334155] shadow-lg"
+                                        className="h-32 rounded-xl border border-slate-200 dark:border-[#334155] shadow-lg"
                                     />
                                     <button
                                         onClick={removeImage}
@@ -298,14 +298,14 @@ export default function ChatWindow({
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="p-2 hover:bg-white/5 rounded-full transition-colors text-[#64748b] hover:text-white"
+                                    className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500 dark:text-[#64748b] hover:text-white"
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                    className={`p-2 rounded-full transition-colors ${showEmojiPicker ? 'bg-blue-600/20 text-blue-400' : 'text-[#64748b] hover:bg-white/5 hover:text-white'}`}
+                                    className={`p-2 rounded-full transition-colors ${showEmojiPicker ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:bg-white/5 hover:text-white'}`}
                                 >
                                     <Smile className="w-5 h-5" />
                                 </button>
@@ -316,7 +316,7 @@ export default function ChatWindow({
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
                                     placeholder="Type a message..."
-                                    className="w-full bg-[#1e293b]/50 text-white px-5 py-3 rounded-2xl border border-[#334155] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-[#475569]"
+                                    className="w-full bg-white dark:bg-[#1e293b]/50 text-white px-5 py-3 rounded-2xl border border-slate-200 dark:border-[#334155] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-[#475569]"
                                 />
                             </div>
                             <button
@@ -337,11 +337,11 @@ export default function ChatWindow({
                             initial={{ width: 0, opacity: 0 }}
                             animate={{ width: 320, opacity: 1 }}
                             exit={{ width: 0, opacity: 0 }}
-                            className="bg-[#0f172a]/60 backdrop-blur-2xl border-l border-[#1e293b] overflow-hidden flex flex-col"
+                            className="bg-slate-50 dark:bg-[#0f172a]/60 backdrop-blur-2xl border-l border-slate-200 dark:border-[#1e293b] overflow-hidden flex flex-col"
                         >
                             <div className="p-6 flex flex-col items-center text-center">
                                 <div
-                                    className="w-24 h-24 rounded-full bg-[#1e293b] bg-cover bg-center border-4 border-blue-500/20 shadow-2xl mb-4"
+                                    className="w-24 h-24 rounded-full bg-white dark:bg-[#1e293b] bg-cover bg-center border-4 border-blue-500/20 shadow-2xl mb-4"
                                     style={{ backgroundImage: recipient.avatarUrl ? `url(${fixUrl(recipient.avatarUrl)})` : undefined }}
                                 />
                                 <h3 className="text-xl font-bold text-white">{recipient.displayName || recipient.username}</h3>
@@ -349,10 +349,10 @@ export default function ChatWindow({
 
                                 <div className="w-full space-y-4">
                                     <div className="text-left">
-                                        <h4 className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-4">Shared Media</h4>
+                                        <h4 className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-4">Shared Media</h4>
                                         <div className="grid grid-cols-3 gap-2">
                                             {sharedMedia.length > 0 ? sharedMedia.map(item => (
-                                                <div key={item.id} className="aspect-square rounded-lg bg-[#1e293b] overflow-hidden group cursor-pointer border border-[#334155]/50 hover:border-blue-500/50 transition-all">
+                                                <div key={item.id} className="aspect-square rounded-lg bg-white dark:bg-[#1e293b] overflow-hidden group cursor-pointer border border-slate-200 dark:border-[#334155]/50 hover:border-blue-500/50 transition-all">
                                                     <img src={fixUrl(item.imageUrl)} alt="Shared" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 </div>
                                             )) : (

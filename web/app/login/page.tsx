@@ -1,7 +1,21 @@
 'use client';
 
-import AuthPageContent from '@/components/auth/AuthPageContent';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function LoginPage() {
-    return <AuthPageContent initialMode="login" />;
+    const router = useRouter();
+    const { openAuthModal, user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            router.replace('/');
+        } else {
+            openAuthModal('login');
+            router.replace('/');
+        }
+    }, []);
+
+    return null;
 }

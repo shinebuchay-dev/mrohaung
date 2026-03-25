@@ -213,19 +213,19 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
             {/* Compact Card - Click to open modal */}
             <div
                 onClick={() => setShowModal(true)}
-                className="relative bg-gradient-to-br from-[#1e293b]/60 to-[#0f172a]/40 backdrop-blur-xl border border-[#334155]/50 rounded-3xl p-5 mb-6 overflow-visible hover:border-[#475569]/70 transition-all duration-300 cursor-pointer"
+                className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-3xl p-4 sm:p-5 mb-6 shadow-sm hover:shadow-md transition-shadow cursor-text"
             >
                 <div className="flex gap-4 items-center">
-                    <div className="w-11 h-11 rounded-full border-2 border-[#1e293b] flex-shrink-0 ring-2 ring-blue-500/10 overflow-hidden">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex-shrink-0 bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
                         {currentUser?.avatarUrl ? (
                             <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-white font-bold text-sm">
                                 {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
                             </div>
                         )}
                     </div>
-                    <div className="flex-1 bg-[#0f172a]/50 border border-[#334155]/50 rounded-full px-4 py-3 text-[#64748b] text-[15px] hover:border-[#475569]/70 transition-colors">
+                    <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/5 rounded-full px-4 py-2.5 sm:py-3 text-slate-500 dark:text-slate-400 text-sm sm:text-[15px] hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-medium">
                         What's on your mind?
                     </div>
                 </div>
@@ -233,40 +233,41 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
 
             {/* Modal Popup */}
             {showModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4 p-0">
-                    <div className="bg-[#1e293b] sm:border border-none border-[#334155]/60 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm sm:p-4 p-0">
+                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 sm:rounded-3xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
+                        
                         {/* Mobile Sticky Header */}
-                        <div className="sm:hidden sticky top-0 z-[50] bg-[#1e293b] px-4 h-[44px] flex-shrink-0 flex items-center justify-between border-b border-[#334155]/20">
-                            <h2 className="text-[15px] font-bold text-white tracking-wide">Create Post</h2>
+                        <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 py-3 flex-shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">Create Post</h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="w-8 h-8 flex items-center justify-center bg-[#334155]/50 hover:bg-[#475569]/70 rounded-full text-[#94a3b8] hover:text-white transition-all duration-200"
+                                className="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Desktop Header */}
-                        <div className="hidden sm:flex items-center justify-between px-6 py-3 border-b border-[#334155]/50 bg-[#1e293b]">
-                            <h2 className="text-lg font-bold text-white tracking-tight">Create Post</h2>
+                        <div className="hidden sm:flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b]">
+                            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">Create Post</h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="w-9 h-9 flex items-center justify-center hover:bg-[#334155] rounded-full text-[#94a3b8] hover:text-white transition-all duration-200"
+                                className="w-9 h-9 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all"
                             >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Content Area */}
-                        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-[#1e293b]">
-                            {/* User Header Section - Sticky for Mobile, Normal Flow for Desktop */}
-                            <div className="sm:relative sticky top-0 z-[40] bg-[#1e293b] px-4 sm:px-6 sm:py-2.5 pt-8 pb-2.5 mt-0 flex items-center justify-between sm:border-none border-b border-[#334155]/10">
+                        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] bg-white dark:bg-[#1e293b]">
+                            {/* User Header Section */}
+                            <div className="px-4 sm:px-6 py-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full border-2 border-[#334155] flex-shrink-0 ring-2 ring-blue-500/10 overflow-hidden">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-white/5">
                                         {currentUser?.avatarUrl ? (
                                             <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-white font-bold text-sm">
                                                 {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                         )}
@@ -274,15 +275,16 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                                     <div className="relative">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setShowPrivacyMenu(!showPrivacyMenu); }}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-[#334155]/30 hover:bg-[#334155]/50 rounded-xl transition-colors group sm:w-auto w-auto"
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl transition-colors font-semibold text-slate-700 dark:text-slate-300 text-sm"
                                         >
-                                            <currentPrivacy.icon className="sm:w-4 sm:h-4 w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
-                                            <span className="sm:text-sm text-[13px] font-semibold text-[#e2e8f0]">{currentPrivacy.label}</span>
-                                            <ChevronDown className="sm:w-4 sm:h-4 w-3.5 h-3.5 text-[#64748b] ml-0.5" />
+                                            <currentPrivacy.icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                            {currentPrivacy.label}
+                                            <ChevronDown className="w-4 h-4 text-slate-400" />
                                         </button>
+                                        
                                         {showPrivacyMenu && (
                                             <>
-                                                <div className="absolute top-full left-0 mt-1 w-56 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl overflow-hidden z-20">
+                                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
                                                     {privacyOptions.map((option) => (
                                                         <button
                                                             key={option.value}
@@ -290,17 +292,17 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                                                                 setPrivacy(option.value as any);
                                                                 setShowPrivacyMenu(false);
                                                             }}
-                                                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#334155]/50 transition-colors text-left"
+                                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
                                                         >
-                                                            <option.icon className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                                            <option.icon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-sm font-semibold text-white">{option.label}</p>
-                                                                <p className="text-xs text-[#64748b]">{option.description}</p>
+                                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{option.label}</p>
+                                                                <p className="text-xs font-semibold text-slate-500">{option.description}</p>
                                                             </div>
                                                         </button>
                                                     ))}
                                                 </div>
-                                                <div className="fixed inset-0 z-10" onClick={() => setShowPrivacyMenu(false)} />
+                                                <div className="fixed inset-0 z-40" onClick={() => setShowPrivacyMenu(false)} />
                                             </>
                                         )}
                                     </div>
@@ -308,81 +310,75 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
                             </div>
 
                             {/* Post Input Area */}
-                            <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+                            <div className="px-4 sm:px-6 pb-4">
                                 <textarea
                                     ref={textareaRef}
                                     value={content}
                                     onChange={handleContentChange}
                                     placeholder="What's on your mind?"
-                                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-white placeholder-[#64748b] resize-none py-2 sm:text-[18px] text-[16px] leading-relaxed overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                                    className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 resize-none py-2 text-[16px] sm:text-[18px] leading-relaxed"
                                     style={{ minHeight: TEXTAREA_MIN_HEIGHT, maxHeight: TEXTAREA_MAX_HEIGHT }}
                                     rows={1}
                                     autoFocus
-                                    maxLength={65000}
                                 />
                             </div>
 
                             {/* Mention Dropdown */}
                             {showMentions && mentionSuggestions.length > 0 && (
-                                <div className="relative mt-1">
-                                    <div className="absolute top-0 left-0 w-full bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl overflow-hidden z-20 max-h-48 overflow-y-auto">
+                                <div className="px-4 sm:px-6 pb-4">
+                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-2xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
                                         {mentionSuggestions.map((user) => (
                                             <button
                                                 key={user.id}
                                                 onClick={() => handleMentionSelect(user)}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#334155]/50 transition-colors text-left"
+                                                className="w-full flex items-center gap-3 px-4 py-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
                                             >
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-600 flex-shrink-0" />
+                                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-xs text-slate-500 dark:text-white flex-shrink-0">
+                                                    {(user.displayName || user.username)[0].toUpperCase()}
+                                                </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold text-white truncate">{user.displayName || user.username}</p>
+                                                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.displayName || user.username}</p>
+                                                    <p className="text-xs text-slate-500 truncate">@{user.username}</p>
                                                 </div>
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="fixed inset-0 z-10" onClick={() => setShowMentions(false)} />
                                 </div>
                             )}
 
                             {imagePreview && (
-                                <div className="relative mt-3 rounded-xl overflow-hidden border border-[#334155]/50 group">
-                                    <img src={imagePreview} alt="Preview" className="w-full h-auto max-h-96 object-cover" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <button
-                                        onClick={() => { setImage(null); setImagePreview(null); }}
-                                        className="absolute top-2 right-2 p-1.5 bg-black/70 backdrop-blur-sm text-white rounded-full hover:bg-black/90 transition-all transform hover:scale-110"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
+                                <div className="px-4 sm:px-6 pb-4">
+                                    <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-white/10 group">
+                                        <img src={imagePreview} alt="Preview" className="w-full h-auto max-h-[300px] object-cover" />
+                                        <button
+                                            onClick={() => { setImage(null); setImagePreview(null); }}
+                                            className="absolute top-2 right-2 p-2 bg-slate-900/60 backdrop-blur-sm text-white rounded-full hover:bg-slate-900/80 transition-all"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             )}
-
                         </div>
 
                         {/* Footer / Actions */}
-                        <div className="p-4 sm:p-5 border-t border-[#334155]/50 bg-[#1e293b] space-y-3">
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center gap-2.5 px-4 py-2 bg-[#334155]/30 hover:bg-[#334155]/50 rounded-xl cursor-pointer transition-all group border border-[#334155]/20">
-                                    <ImageIcon className="w-4 h-4 text-green-400 group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm font-semibold text-[#e2e8f0]">Add Photo</span>
-                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                                </label>
-
-                                {image && (
-                                    <span className="text-[12px] text-blue-400 font-medium">Image selected</span>
-                                )}
-                            </div>
+                        <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b] flex items-center justify-between gap-4">
+                            <label className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 cursor-pointer transition-colors flex-shrink-0 text-blue-500">
+                                <ImageIcon className="w-5 h-5" />
+                                <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                            </label>
 
                             <button
                                 onClick={handlePost}
                                 disabled={(!content.trim() && !image) || loading}
-                                className="w-full h-[48px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50 disabled:grayscale text-white font-bold rounded-xl transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 {loading ? (
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
                                     <>
-                                        <Send className="w-4 h-4 mr-1" />
-                                        <span>Post to Newsfeed</span>
+                                        <Send className="w-4 h-4" />
+                                        Post
                                     </>
                                 )}
                             </button>

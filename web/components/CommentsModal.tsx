@@ -76,24 +76,24 @@ export default function CommentsModal({ isOpen, onClose, post, onCommentAdded }:
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 transition={{ duration: 0.2 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-[#334155]/50 rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
+                className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-[#334155]/50 bg-[#1e293b]/80 backdrop-blur-xl flex-shrink-0">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-white/5 flex-shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-white">Comments</h2>
-                        <p className="text-sm text-[#64748b] mt-0.5">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</p>
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Comments</h2>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5">{comments.length} {comments.length === 1 ? 'comment' : 'comments'}</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2.5 hover:bg-[#334155]/50 rounded-full transition-all duration-200 group"
+                        className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-all duration-200 group"
                     >
-                        <X className="w-5 h-5 text-[#94a3b8] group-hover:text-white transition-colors" />
+                        <X className="w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
                     </button>
                 </div>
 
                 {/* Post Preview */}
-                <div className="px-6 py-5 border-b border-[#334155]/30 flex-shrink-0 bg-[#0f172a]/30">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex-shrink-0 bg-slate-50 dark:bg-slate-800/50">
                     <div className="flex items-start gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex-shrink-0 overflow-hidden ring-2 ring-blue-500/20">
                             {post.author.avatarUrl ? (
@@ -105,9 +105,9 @@ export default function CommentsModal({ isOpen, onClose, post, onCommentAdded }:
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white text-base leading-tight">{post.author?.displayName || post.author?.username || 'User'}</p>
+                            <p className="font-bold text-slate-900 dark:text-white text-base leading-tight">{post.author?.displayName || post.author?.username || 'User'}</p>
                             {post.content && (
-                                <p className="text-[#cbd5e1] text-sm mt-1.5 leading-relaxed">{post.content}</p>
+                                <p className="text-slate-600 dark:text-slate-300 text-sm mt-1.5 leading-relaxed">{post.content}</p>
                             )}
                         </div>
                     </div>
@@ -143,21 +143,21 @@ export default function CommentsModal({ isOpen, onClose, post, onCommentAdded }:
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="bg-[#1e293b]/60 backdrop-blur-sm rounded-2xl px-4 py-3 border border-[#334155]/30 group-hover:border-[#475569]/50 group-hover:bg-[#1e293b]/80 transition-all duration-200">
+                                                <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl px-4 py-3 border border-slate-100 dark:border-white/5 group-hover:border-slate-200 dark:group-hover:border-white/10 transition-all duration-200">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <p className="font-bold text-white text-sm">{comment.user?.displayName || comment.user?.username || 'Unknown'}</p>
-                                                        <span className="text-xs text-[#64748b]">•</span>
-                                                        <p className="text-xs text-[#64748b]">{formatTime(comment.createdAt)}</p>
+                                                        <p className="font-bold text-slate-900 dark:text-white text-sm">{comment.user?.displayName || comment.user?.username || 'Unknown'}</p>
+                                                        <span className="text-xs text-slate-400">•</span>
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{formatTime(comment.createdAt)}</p>
                                                     </div>
-                                                    <p className="text-[#e2e8f0] text-sm leading-relaxed">{comment.content}</p>
+                                                    <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">{comment.content}</p>
                                                 </div>
                                                 {/* Comment Actions */}
                                                 <div className="flex items-center gap-4 mt-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                    <button className="flex items-center gap-1 text-xs text-[#64748b] hover:text-blue-500 transition-colors">
+                                                    <button className="flex items-center gap-1 text-xs text-slate-500 hover:text-blue-500 font-medium transition-colors">
                                                         <Heart className="w-3.5 h-3.5" />
                                                         <span>Like</span>
                                                     </button>
-                                                    <button className="flex items-center gap-1 text-xs text-[#64748b] hover:text-blue-500 transition-colors">
+                                                    <button className="flex items-center gap-1 text-xs text-slate-500 hover:text-blue-500 font-medium transition-colors">
                                                         <Reply className="w-3.5 h-3.5" />
                                                         <span>Reply</span>
                                                     </button>
@@ -170,30 +170,30 @@ export default function CommentsModal({ isOpen, onClose, post, onCommentAdded }:
                         </div>
                     ) : (
                         <div className="text-center py-16">
-                            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#1e293b]/50 flex items-center justify-center">
-                                <Send className="w-10 h-10 text-[#475569]" />
+                            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                <Send className="w-10 h-10 text-slate-400" />
                             </div>
-                            <p className="text-[#94a3b8] font-semibold text-lg">No comments yet</p>
-                            <p className="text-sm text-[#64748b] mt-2">Be the first to share your thoughts!</p>
+                            <p className="text-slate-700 dark:text-slate-300 font-bold text-lg">No comments yet</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">Be the first to share your thoughts!</p>
                         </div>
                     )}
                 </div>
 
                 {/* Comment Input */}
-                <form onSubmit={handleSubmit} className="px-6 py-5 border-t border-[#334155]/50 bg-[#1e293b]/50 backdrop-blur-xl flex-shrink-0">
+                <form onSubmit={handleSubmit} className="px-6 py-5 border-t border-slate-100 dark:border-white/5 flex-shrink-0">
                     <div className="flex gap-3">
                         <input
                             type="text"
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
                             placeholder="Write a comment..."
-                            className="flex-1 bg-[#0f172a] border border-[#334155] rounded-full px-5 py-3.5 text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+                            className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-full px-5 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-200"
                             disabled={submitting}
                         />
                         <button
                             type="submit"
                             disabled={submitting || !commentText.trim()}
-                            className="px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed rounded-full font-bold transition-all duration-200 flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+                            className="px-7 py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full font-bold transition-all duration-200 flex items-center gap-2 shadow-sm"
                         >
                             {submitting ? (
                                 <Loader2 className="w-5 h-5 animate-spin text-white" />

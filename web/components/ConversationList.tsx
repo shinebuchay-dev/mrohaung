@@ -40,24 +40,24 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
     };
 
     return (
-        <div className="flex flex-col h-full bg-[#0f172a]/40 backdrop-blur-xl border-r border-[#1e293b]">
-            <div className="p-4 border-b border-[#1e293b]">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0f172a]/40 backdrop-blur-xl border-r border-slate-200 dark:border-[#1e293b]">
+            <div className="p-4 border-b border-slate-200 dark:border-[#1e293b]">
                 <h1 className="text-xl font-bold text-white mb-4">Messages</h1>
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b]" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-[#64748b]" />
                     <input
                         type="text"
                         placeholder="Search chats..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-[#1e293b]/50 border border-[#334155] rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full bg-white dark:bg-[#1e293b]/50 border border-slate-200 dark:border-[#334155] rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                     />
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {filteredConversations.length === 0 ? (
-                    <div className="p-8 text-center text-[#64748b]">
+                    <div className="p-8 text-center text-slate-500 dark:text-[#64748b]">
                         {searchQuery ? 'No results found' : 'No conversations yet'}
                     </div>
                 ) : (
@@ -73,13 +73,13 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
                                 onClick={() => onSelect(conv)}
                                 className={`mx-2 my-1 p-3 rounded-2xl cursor-pointer transition-all relative group ${isActive
                                     ? 'bg-blue-600/20 shadow-lg shadow-blue-500/10'
-                                    : 'hover:bg-[#1e293b]/30'
+                                    : 'hover:bg-white dark:bg-[#1e293b]/30'
                                     }`}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="relative">
                                         <div
-                                            className={`w-12 h-12 rounded-full bg-[#1e293b] bg-cover bg-center border-2 transition-all ${isActive ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-[#334155]/50 group-hover:border-[#475569]'}`}
+                                            className={`w-12 h-12 rounded-full bg-white dark:bg-[#1e293b] bg-cover bg-center border-2 transition-all ${isActive ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-slate-200 dark:border-[#334155]/50 group-hover:border-[#475569]'}`}
                                             style={{ backgroundImage: otherUser.avatarUrl ? `url(${fixUrl(otherUser.avatarUrl)})` : undefined }}
                                         />
                                         <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#0f172a]" />
@@ -90,13 +90,13 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
                                                 {otherUser.displayName || otherUser.username}
                                             </h3>
                                             {conv.lastMessageAt && (
-                                                <span className={`text-[10px] ${isActive ? 'text-blue-300' : 'text-[#64748b]'}`}>
+                                                <span className={`text-[10px] ${isActive ? 'text-blue-300' : 'text-slate-500 dark:text-[#64748b]'}`}>
                                                     {formatTime(conv.lastMessageAt)}
                                                 </span>
                                             )}
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
-                                            <p className={`text-xs truncate flex-1 ${conv.unreadCount > 0 ? 'text-blue-100 font-bold' : 'text-[#94a3b8]'}`}>
+                                            <p className={`text-xs truncate flex-1 ${conv.unreadCount > 0 ? 'text-blue-100 font-bold' : 'text-slate-500 dark:text-[#94a3b8]'}`}>
                                                 {conv.id === '' ? 'Start a new conversation' : (conv.lastMessage?.content || 'Started a conversation')}
                                             </p>
                                             {conv.unreadCount > 0 && (

@@ -204,7 +204,7 @@ function MessagesContent() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     <p className="text-blue-400 font-medium animate-pulse">Loading messages...</p>
@@ -214,7 +214,7 @@ function MessagesContent() {
     }
 
     return (
-        <div className="h-screen bg-[#0f172a] flex overflow-hidden">
+        <div className="h-screen bg-slate-50 dark:bg-[#0f172a] flex overflow-hidden">
             {/* Left Sidebar - Conversation List */}
             <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-[350px] lg:w-[400px] h-full`}>
                 <ConversationList
@@ -251,7 +251,7 @@ function MessagesContent() {
                             />
                         </motion.div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#0f172a]/40 backdrop-blur-xl">
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-[#0f172a]/40 backdrop-blur-xl">
                             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center mb-6">
                                 <motion.div
                                     animate={{
@@ -266,7 +266,7 @@ function MessagesContent() {
                                 </motion.div>
                             </div>
                             <h2 className="text-2xl font-bold text-white mb-2">Your Messages</h2>
-                            <p className="text-[#64748b] max-w-sm">
+                            <p className="text-slate-500 dark:text-[#64748b] max-w-sm">
                                 Send a message to start a conversation with your friends.
                             </p>
                         </div>
@@ -280,7 +280,7 @@ function MessagesContent() {
 export default function MessagesPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
+            <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                     <p className="text-blue-400 font-medium animate-pulse">Initializing messages...</p>

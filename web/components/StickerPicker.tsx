@@ -30,11 +30,11 @@ export default function StickerPicker({ onSelect, onClose }: StickerPickerProps)
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                className="absolute bottom-14 right-0 bg-[#1e293b] border border-[#334155] rounded-2xl shadow-xl w-64 p-3 z-50 overflow-hidden"
+                className="absolute bottom-14 right-0 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-2xl shadow-xl w-64 p-3 z-50 overflow-hidden"
             >
-                <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#334155]">
-                    <span className="text-xs font-bold text-[#94a3b8]">Stickers</span>
-                    <button onClick={onClose} className="text-[#64748b] hover:text-white">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200 dark:border-[#334155]">
+                    <span className="text-xs font-bold text-slate-500 dark:text-[#94a3b8]">Stickers</span>
+                    <button onClick={onClose} className="text-slate-500 dark:text-[#64748b] hover:text-white">
                         <span className="sr-only">Close</span>
                         &times;
                     </button>

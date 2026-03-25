@@ -120,25 +120,25 @@ export default function AdminDashboardPage() {
 
     return (
         <>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8 mt-2">
                 <div>
-                    <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
-                    <p className="text-sm text-[#94a3b8]">Manage users and content</p>
+                    <h1 className="text-3xl font-black text-slate-900 dark:text-white">Admin Dashboard</h1>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Manage users and content</p>
                 </div>
             </div>
 
-            <div className="bg-[#1e293b]/40 backdrop-blur-xl border border-[#334155] rounded-2xl overflow-hidden">
-                <div className="border-b border-[#334155] px-4">
-                    <div className="flex flex-wrap gap-2 py-3">
+            <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                <div className="border-b border-slate-100 dark:border-white/5 px-5">
+                    <div className="flex flex-wrap gap-2 py-4">
                         <TabButton tab={tab} value="overview" onClick={setTab}>Overview</TabButton>
                         <TabButton tab={tab} value="users" onClick={setTab}>Users</TabButton>
                         <TabButton tab={tab} value="notifications" onClick={setTab}>Notifications</TabButton>
                     </div>
                 </div>
 
-                <div className="p-4">
+                <div className="p-5">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                        <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-sm font-medium">
                             {error}
                         </div>
                     )}
@@ -148,12 +148,12 @@ export default function AdminDashboardPage() {
                     ) : (
                         <>
                             {tab === 'users' && (
-                                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+                                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
                                     <input
                                         value={q}
                                         onChange={(e) => setQ(e.target.value)}
                                         placeholder="Search username or email"
-                                        className="flex-1 bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-2 text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all font-medium text-sm"
                                     />
                                     <button
                                         onClick={() => {
@@ -165,43 +165,43 @@ export default function AdminDashboardPage() {
                                                 setError(msg);
                                             }).finally(() => setLoading(false));
                                         }}
-                                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 transition-colors font-semibold"
+                                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors font-bold text-sm shadow-sm"
                                     >
                                         Search
                                     </button>
                                 </div>
                             )}
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="text-left text-[#94a3b8]">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/5">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-white/5">
+                                        <tr>
                                             {getColumns(tab).map((c) => (
-                                                <th key={c} className="py-2 px-2 font-semibold">{c}</th>
+                                                <th key={c} className="py-3 px-4 font-bold">{c}</th>
                                             ))}
-                                            <th className="py-2 px-2 font-semibold">Actions</th>
+                                            <th className="py-3 px-4 font-bold">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-[#334155]">
+                                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                                         {loading ? (
                                             <tr>
-                                                <td className="py-6 px-2 text-[#94a3b8]" colSpan={getColumns(tab).length + 1}>Loading...</td>
+                                                <td className="py-8 px-4 text-center text-slate-500 dark:text-slate-400 font-medium" colSpan={getColumns(tab).length + 1}>Loading...</td>
                                             </tr>
                                         ) : rows.length === 0 ? (
                                             <tr>
-                                                <td className="py-6 px-2 text-[#94a3b8]" colSpan={getColumns(tab).length + 1}>No data</td>
+                                                <td className="py-8 px-4 text-center text-slate-500 dark:text-slate-400 font-medium" colSpan={getColumns(tab).length + 1}>No data</td>
                                             </tr>
                                         ) : (
                                             rows.map((r) => (
-                                                <tr key={r.id} className="text-white">
+                                                <tr key={r.id} className="text-slate-700 dark:text-slate-200 bg-white dark:bg-[#1e293b] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                     {renderCells(tab, r).map((cell, idx) => (
-                                                        <td key={idx} className="py-2 px-2 align-top whitespace-nowrap max-w-[340px] truncate">{cell}</td>
+                                                        <td key={idx} className="py-3 px-4 align-top whitespace-nowrap max-w-[340px] truncate">{cell}</td>
                                                     ))}
-                                                    <td className="py-2 px-2 whitespace-nowrap">
+                                                    <td className="py-3 px-4 whitespace-nowrap">
                                                         <button
                                                             onClick={() => deleteRow(r.id)}
                                                             disabled={deletingId === r.id}
-                                                            className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-60 transition-colors"
+                                                            className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors font-bold text-xs"
                                                         >
                                                             {deletingId === r.id ? 'Deleting…' : 'Delete'}
                                                         </button>
@@ -213,25 +213,25 @@ export default function AdminDashboardPage() {
                                 </table>
                             </div>
 
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mt-4">
-                                <div className="text-xs text-[#94a3b8]">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6">
+                                <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
                                     Total: {total}
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                                         disabled={page <= 1}
-                                        className="px-3 py-2 rounded-xl bg-[#334155] hover:bg-[#475569] disabled:opacity-50 transition-colors"
+                                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors font-semibold text-sm"
                                     >
                                         Prev
                                     </button>
-                                    <div className="text-xs text-[#94a3b8] px-2">
-                                        Page {page} / {totalPages}
+                                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400 px-3">
+                                        Page {page} of {totalPages}
                                     </div>
                                     <button
                                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                         disabled={page >= totalPages}
-                                        className="px-3 py-2 rounded-xl bg-[#334155] hover:bg-[#475569] disabled:opacity-50 transition-colors"
+                                        className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors font-semibold text-sm"
                                     >
                                         Next
                                     </button>
@@ -239,7 +239,7 @@ export default function AdminDashboardPage() {
                                     <select
                                         value={limit}
                                         onChange={(e) => setLimit(parseInt(e.target.value, 10))}
-                                        className="ml-2 bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-xs text-white"
+                                        className="ml-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 cursor-pointer outline-none focus:ring-2 focus:ring-blue-500/40"
                                     >
                                         {[10, 20, 50, 100].map((n) => (
                                             <option key={n} value={n}>{n} / page</option>
@@ -260,9 +260,9 @@ function TabButton({ tab, value, onClick, children }: { tab: Tab; value: Tab; on
     return (
         <button
             onClick={() => onClick(value)}
-            className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${active
-                ? 'bg-blue-600/10 text-blue-400'
-                : 'bg-transparent text-[#94a3b8] hover:bg-[#334155]/40 hover:text-white'
+            className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${active
+                ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                : 'bg-transparent text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                 }`}
         >
             {children}
@@ -272,11 +272,11 @@ function TabButton({ tab, value, onClick, children }: { tab: Tab; value: Tab; on
 
 function OverviewPanel({ loading, overview }: { loading: boolean; overview: Overview | null }) {
     if (loading) {
-        return <div className="text-[#94a3b8]">Loading...</div>;
+        return <div className="text-slate-500 dark:text-[#94a3b8]">Loading...</div>;
     }
 
     if (!overview) {
-        return <div className="text-[#94a3b8]">No data</div>;
+        return <div className="text-slate-500 dark:text-[#94a3b8]">No data</div>;
     }
 
     const items = [
@@ -291,9 +291,9 @@ function OverviewPanel({ loading, overview }: { loading: boolean; overview: Over
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map((it) => (
-                <div key={it.label} className="bg-[#0f172a]/60 border border-[#334155] rounded-2xl p-4">
-                    <div className="text-sm text-[#94a3b8]">{it.label}</div>
-                    <div className="text-3xl font-black text-white mt-2">{it.value}</div>
+                <div key={it.label} className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+                    <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{it.label}</div>
+                    <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">{it.value}</div>
                 </div>
             ))}
         </div>

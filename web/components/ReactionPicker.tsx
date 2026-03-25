@@ -24,7 +24,7 @@ export default function ReactionPicker({ onSelect, onClose }: ReactionPickerProp
                 initial={{ opacity: 0, scale: 0.8, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.8, y: 10 }}
-                className="bg-[#1e293b] border border-[#334155] rounded-full p-1.5 shadow-xl flex items-center gap-0.5 backdrop-blur-xl"
+                className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-full p-1.5 shadow-xl flex items-center gap-0.5 backdrop-blur-xl"
                 onMouseLeave={onClose}
             >
                 {reactions.map((reaction, index) => (

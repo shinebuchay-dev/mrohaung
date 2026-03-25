@@ -87,26 +87,26 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
 
     return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-[#1e293b] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-[#334155] shadow-2xl">
+            <div className="bg-white dark:bg-[#1e293b] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-[#334155] shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[#334155]">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-[#334155]">
                     <h2 className="text-xl font-bold text-white">Create Story</h2>
                     <button onClick={onClose} className="p-2 hover:bg-[#334155] rounded-full transition-colors">
-                        <X className="w-5 h-5 text-[#94a3b8]" />
+                        <X className="w-5 h-5 text-slate-500 dark:text-[#94a3b8]" />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-[#334155]">
+                <div className="flex border-b border-slate-200 dark:border-[#334155]">
                     <button
                         onClick={() => setActiveTab('media')}
-                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'media' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-[#64748b] hover:text-[#94a3b8]'}`}
+                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'media' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:text-slate-500 dark:text-[#94a3b8]'}`}
                     >
                         Photo / Video
                     </button>
                     <button
                         onClick={() => setActiveTab('text')}
-                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'text' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-[#64748b] hover:text-[#94a3b8]'}`}
+                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'text' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:text-slate-500 dark:text-[#94a3b8]'}`}
                     >
                         Text Story
                     </button>
@@ -117,9 +117,9 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                     {activeTab === 'media' ? (
                         <div className="space-y-4">
                             {!imagePreview ? (
-                                <label className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-[#334155] rounded-xl cursor-pointer hover:border-blue-500 transition-colors bg-[#0f172a]/50">
-                                    <Upload className="w-12 h-12 text-[#64748b] mb-4" />
-                                    <p className="text-[#94a3b8] font-medium">Upload Image</p>
+                                <label className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-slate-200 dark:border-[#334155] rounded-xl cursor-pointer hover:border-blue-500 transition-colors bg-slate-50 dark:bg-[#0f172a]/50">
+                                    <Upload className="w-12 h-12 text-slate-500 dark:text-[#64748b] mb-4" />
+                                    <p className="text-slate-500 dark:text-[#94a3b8] font-medium">Upload Image</p>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                                 </label>
                             ) : (
@@ -138,7 +138,7 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                                         value={caption}
                                         onChange={(e) => setCaption(e.target.value)}
                                         placeholder="Add a caption..."
-                                        className="w-full bg-[#0f172a] border border-[#334155] rounded-xl text-white placeholder-[#64748b] px-4 py-3 focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-[#334155] rounded-xl text-white placeholder-[#64748b] px-4 py-3 focus:outline-none focus:border-blue-500"
                                     />
                                 </div>
                             )}
@@ -158,7 +158,7 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                             {/* Controls */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-2 block">Background</label>
+                                    <label className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-2 block">Background</label>
                                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
                                         {gradients.map((grad, i) => (
                                             <button
@@ -170,13 +170,13 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-2 block">Font Style</label>
+                                    <label className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-2 block">Font Style</label>
                                     <div className="flex gap-2">
                                         {fonts.map((font) => (
                                             <button
                                                 key={font.name}
                                                 onClick={() => setSelectedFont(font.class)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors border ${selectedFont === font.class ? 'bg-[#334155] text-white border-blue-500' : 'bg-[#0f172a] text-[#94a3b8] border-[#334155] hover:bg-[#1e293b]'}`}
+                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors border ${selectedFont === font.class ? 'bg-[#334155] text-white border-blue-500' : 'bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-[#94a3b8] border-slate-200 dark:border-[#334155] hover:bg-white dark:bg-[#1e293b]'}`}
                                             >
                                                 {font.name}
                                             </button>
@@ -189,7 +189,7 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-[#334155] flex gap-3 bg-[#0f172a]/50">
+                <div className="p-4 border-t border-slate-200 dark:border-[#334155] flex gap-3 bg-slate-50 dark:bg-[#0f172a]/50">
                     <button onClick={onClose} className="flex-1 px-4 py-2 bg-[#334155] hover:bg-[#475569] text-white rounded-xl font-medium transition-colors">
                         Cancel
                     </button>

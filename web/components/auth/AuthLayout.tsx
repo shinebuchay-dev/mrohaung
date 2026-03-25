@@ -72,7 +72,7 @@ export default function AuthLayout({ children, title, subtitle, sideContent }: A
                     initial={{ opacity: 0, scale: 0.95, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "backOut" }}
-                    className="w-full max-w-[480px] p-8 md:p-10 rounded-[2.5rem] bg-[#0f172a]/60 backdrop-blur-3xl border border-white/10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
+                    className="w-full max-w-[480px] p-8 md:p-10 rounded-[2.5rem] bg-slate-50 dark:bg-[#0f172a]/60 backdrop-blur-3xl border border-white/10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] ring-1 ring-white/5"
                 >
                     <div className="text-center mb-10">
                         <div className="md:hidden flex justify-center mb-6">

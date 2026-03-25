@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
 
@@ -9,93 +9,93 @@ datasource db {
 }
 
 model User {
-  id                    String                     @id @default(uuid())
-  username              String                     @unique
-  displayName           String?
-  email                 String                     @unique
-  password              String
-  bio                   String?
-  avatarUrl             String?                    // equivalent to profilePic
-  profilePic            String?                    // added to match request strictly
-  coverUrl              String?
-  coverOffset           Int                        @default(50)
-  isPrivate             Boolean                    @default(false)
-  dob                   DateTime?
-  gender                String?
-  phoneNumber           String?
-  posts                 Post[]
-  friends               Friendship[]               @relation("user")
-  friendOf              Friendship[]               @relation("friend")
-  likes                 Like[]
-  comments              Comment[]
-  commentLikes          CommentLike[]
-  notifications         Notification[]             @relation("notificationUser")
-  sentNotifications     Notification[]             @relation("notificationFrom")
-  conversations         ConversationParticipant[]
-  sentMessages          Message[]
-  stories               Story[]
-  storyViews            StoryView[]
-  
-  // Relations for Blocking and Reporting
-  blockedUsers          BlockedUser[]              @relation("userBlocker")
-  blockedBy             BlockedUser[]              @relation("userBlocked")
-  reportsMade           Report[]                   @relation("reporter")
-  reportsReceived       Report[]                   @relation("reportedUser")
-  
-  interests             UserInterest[]
-  badges                Badge[]
-  reputation            Int                        @default(0)
-  role                  String                     @default("user") // 'user', 'admin', 'moderator'
-  isVerified            Boolean                    @default(false)
-  verificationToken     String?
-  
-  createdAt             DateTime                   @default(now())
+  id                String                    @id @default(uuid())
+  username          String                    @unique
+  displayName       String?
+  email             String                    @unique
+  password          String
+  bio               String?
+  avatarUrl         String?
+  profilePic        String?
+  coverUrl          String?
+  coverOffset       Int                       @default(50)
+  isPrivate         Boolean                   @default(false)
+  dob               DateTime?
+  gender            String?
+  phoneNumber       String?
+  reputation        Int                       @default(0)
+  role              String                    @default("user")
+  isVerified        Boolean                   @default(false)
+  verificationToken String?
+  createdAt         DateTime                  @default(now())
+  badges            Badge[]
+  blockedBy         BlockedUser[]             @relation("userBlocked")
+  blockedUsers      BlockedUser[]             @relation("userBlocker")
+  comments          Comment[]
+  commentLikes      CommentLike[]
+  conversations     ConversationParticipant[]
+  friendOf          Friendship[]              @relation("friend")
+  friends           Friendship[]              @relation("user")
+  likes             Like[]
+  sentMessages      Message[]
+  sentNotifications Notification[]            @relation("notificationFrom")
+  notifications     Notification[]            @relation("notificationUser")
+  posts             Post[]
+  reportsMade       Report[]                  @relation("reporter")
+  reportsReceived   Report[]                  @relation("reportedUser")
+  stories           Story[]
+  storyViews        StoryView[]
+  interests         UserInterest[]
 }
 
 model Post {
   id            String         @id @default(uuid())
   content       String         @db.LongText
-  imageUrl      String?        // image field
-  image         String?        // added to match request strictly
-  privacy       String         @default("public") // 'public', 'friends', 'private'
+  imageUrl      String?
+  image         String?
+  privacy       String         @default("public")
   authorId      String
-  author        User           @relation(fields: [authorId], references: [id])
-  likes         Like[]
-  comments      Comment[]
-  notifications Notification[]
-  reports       Report[]
   tags          String?
   createdAt     DateTime       @default(now())
+  comments      Comment[]
+  likes         Like[]
+  notifications Notification[]
+  author        User           @relation(fields: [authorId], references: [id])
+  reports       Report[]
+
+  @@index([authorId], map: "Post_authorId_fkey")
 }
 
 model Friendship {
-  id        String   @id @default(uuid())
-  userId    String
-  friendId  String
-  status    String
-  user      User     @relation("user", fields: [userId], references: [id])
-  friend    User     @relation("friend", fields: [friendId], references: [id])
+  id       String @id @default(uuid())
+  userId   String
+  friendId String
+  status   String
+  friend   User   @relation("friend", fields: [friendId], references: [id])
+  user     User   @relation("user", fields: [userId], references: [id])
 
   @@unique([userId, friendId])
+  @@index([friendId], map: "Friendship_friendId_fkey")
 }
 
 model Like {
   id     String @id @default(uuid())
   postId String
   userId String
-  type   String @default("like") // like, love, haha, wow, sad, angry
+  type   String @default("like")
   post   Post   @relation(fields: [postId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
 
   @@unique([postId, userId])
+  @@index([userId], map: "Like_userId_fkey")
 }
 
 model UserInterest {
-  id        String   @id @default(uuid())
-  userId    String
-  topic     String
-  score     Int      @default(0)
-  user      User     @relation(fields: [userId], references: [id])
+  id     String @id @default(uuid())
+  userId String
+  topic  String
+  score  Int    @default(0)
+  user   User   @relation(fields: [userId], references: [id])
 
   @@unique([userId, topic])
 }
@@ -103,47 +103,57 @@ model UserInterest {
 model Badge {
   id        String   @id @default(uuid())
   userId    String
-  type      String   // top_contributor, one_year_club, verified
+  type      String
   awardedAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Badge_userId_fkey")
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  content   String?  @db.Text // Content can be optional if audio is present
-  audioUrl  String?
+  id         String        @id @default(uuid())
+  content    String?       @db.Text
+  audioUrl   String?
   stickerUrl String?
-  postId    String
-  userId    String
-  parentId  String?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("CommentReplies")
-  post      Post     @relation(fields: [postId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-  likes     CommentLike[]
-  createdAt DateTime @default(now())
+  postId     String
+  userId     String
+  parentId   String?
+  createdAt  DateTime      @default(now())
+  parent     Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    Comment[]     @relation("CommentReplies")
+  post       Post          @relation(fields: [postId], references: [id])
+  user       User          @relation(fields: [userId], references: [id])
+  likes      CommentLike[]
+
+  @@index([parentId], map: "Comment_parentId_fkey")
+  @@index([postId], map: "Comment_postId_fkey")
+  @@index([userId], map: "Comment_userId_fkey")
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  type      String   // 'like', 'comment', 'friend_request', 'friend_accept'
-  message   String
-  userId    String
+  id         String   @id @default(uuid())
+  type       String
+  message    String
+  userId     String
   fromUserId String
-  postId    String?
-  read      Boolean  @default(false)
-  user      User     @relation("notificationUser", fields: [userId], references: [id])
-  fromUser  User     @relation("notificationFrom", fields: [fromUserId], references: [id])
-  post      Post?    @relation(fields: [postId], references: [id])
-  createdAt DateTime @default(now())
+  postId     String?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  fromUser   User     @relation("notificationFrom", fields: [fromUserId], references: [id])
+  post       Post?    @relation(fields: [postId], references: [id])
+  user       User     @relation("notificationUser", fields: [userId], references: [id])
+
+  @@index([fromUserId], map: "Notification_fromUserId_fkey")
+  @@index([postId], map: "Notification_postId_fkey")
+  @@index([userId], map: "Notification_userId_fkey")
 }
 
 model Conversation {
-  id            String                     @id @default(uuid())
+  id            String                    @id @default(uuid())
+  lastMessageAt DateTime?
+  createdAt     DateTime                  @default(now())
   participants  ConversationParticipant[]
   messages      Message[]
-  lastMessageAt DateTime?
-  createdAt     DateTime                   @default(now())
 }
 
 model CommentLike {
@@ -151,22 +161,24 @@ model CommentLike {
   commentId String
   userId    String
   type      String   @default("like")
+  createdAt DateTime @default(now())
   comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
 
   @@unique([commentId, userId])
+  @@index([userId], map: "CommentLike_userId_fkey")
 }
 
 model ConversationParticipant {
   id             String       @id @default(uuid())
   conversationId String
   userId         String
+  joinedAt       DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id])
-  joinedAt       DateTime     @default(now())
 
   @@unique([conversationId, userId])
+  @@index([userId], map: "ConversationParticipant_userId_fkey")
 }
 
 model Message {
@@ -175,37 +187,41 @@ model Message {
   senderId       String
   content        String       @db.Text
   read           Boolean      @default(false)
+  createdAt      DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id])
-  createdAt      DateTime     @default(now())
+
+  @@index([conversationId], map: "Message_conversationId_fkey")
+  @@index([senderId], map: "Message_senderId_fkey")
 }
 
 model Story {
-  id        String      @id @default(uuid())
-  userId    String
-  type      String      @default("image") // image, video, text
-  mediaUrl  String?
-  content   String?     @map("caption") // Reuse caption as content/text
-  fontStyle String?     // For text stories
-  background String?    // For text stories (gradient/color)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  views     StoryView[]
-  expiresAt DateTime    // 24 hours from creation
-  createdAt DateTime    @default(now())
+  id         String      @id @default(uuid())
+  userId     String
+  type       String      @default("image")
+  mediaUrl   String?
+  content    String?     @map("caption")
+  fontStyle  String?
+  background String?
+  expiresAt  DateTime
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views      StoryView[]
 
   @@index([userId])
   @@index([expiresAt])
 }
 
 model StoryView {
-  id        String   @id @default(uuid())
-  storyId   String
-  userId    String
-  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
-  viewedAt  DateTime @default(now())
+  id       String   @id @default(uuid())
+  storyId  String
+  userId   String
+  viewedAt DateTime @default(now())
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
 
   @@unique([storyId, userId])
+  @@index([userId], map: "StoryView_userId_fkey")
 }
 
 model BlockedUser {
@@ -213,11 +229,11 @@ model BlockedUser {
   blockerId String
   blockedId String
   createdAt DateTime @default(now())
-
-  blocker   User     @relation("userBlocker", fields: [blockerId], references: [id])
   blocked   User     @relation("userBlocked", fields: [blockedId], references: [id])
+  blocker   User     @relation("userBlocker", fields: [blockerId], references: [id])
 
   @@unique([blockerId, blockedId])
+  @@index([blockedId], map: "BlockedUser_blockedId_fkey")
 }
 
 model Report {
@@ -225,13 +241,15 @@ model Report {
   reporterId   String
   reason       String
   details      String?  @db.Text
-  status       String   @default("pending") // pending, resolved, dismissed
+  status       String   @default("pending")
   postId       String?
   targetUserId String?
-  
-  reporter     User     @relation("reporter", fields: [reporterId], references: [id])
+  createdAt    DateTime @default(now())
   post         Post?    @relation(fields: [postId], references: [id])
+  reporter     User     @relation("reporter", fields: [reporterId], references: [id])
   targetUser   User?    @relation("reportedUser", fields: [targetUserId], references: [id])
 
-  createdAt    DateTime @default(now())
+  @@index([postId], map: "Report_postId_fkey")
+  @@index([reporterId], map: "Report_reporterId_fkey")
+  @@index([targetUserId], map: "Report_targetUserId_fkey")
 }

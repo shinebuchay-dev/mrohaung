@@ -36,7 +36,7 @@ function VerifyContent() {
     }, [token, router]);
 
     return (
-        <div className="min-h-screen bg-[#0f172a] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-slate-900 border border-white/10 rounded-[2.5rem] p-10 shadow-2xl text-center relative overflow-hidden">
                 {/* Background Decorations */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] rounded-full -mr-16 -mt-16" />

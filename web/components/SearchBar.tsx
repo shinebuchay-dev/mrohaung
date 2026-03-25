@@ -65,14 +65,14 @@ export default function SearchBar() {
     return (
         <div className="relative flex-1 max-w-sm">
             <div className="relative group">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748b] group-focus-within:text-blue-500 transition-colors" />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-[#64748b] group-focus-within:text-blue-500 transition-colors" />
                 <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setShowResults(true)}
                     placeholder="Search people, posts..."
-                    className="w-full bg-[#1e293b] border-none rounded-full pl-10 pr-10 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500/50 transition-all"
+                    className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-full pl-10 pr-10 py-2 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-400"
                 />
                 {query && (
                     <button
@@ -80,18 +80,18 @@ export default function SearchBar() {
                             setQuery('');
                             setResults([]);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-[#334155] rounded-full transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
                     >
-                        <X className="w-3 h-3 text-[#64748b]" />
+                        <X className="w-3 h-3 text-slate-500 dark:text-[#64748b]" />
                     </button>
                 )}
             </div>
 
             {/* Search Results Dropdown */}
             {showResults && query.trim().length >= 2 && (
-                <div className="absolute top-full mt-2 w-full bg-[#1e293b] border border-[#334155] rounded-2xl shadow-xl overflow-hidden z-50">
+                <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
                     {loading ? (
-                        <div className="p-4 text-center text-[#64748b]">
+                        <div className="p-4 text-center text-slate-500 dark:text-[#64748b]">
                             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
                         </div>
                     ) : results.length > 0 ? (
@@ -100,11 +100,11 @@ export default function SearchBar() {
                                 <button
                                     key={result.id}
                                     onClick={() => handleResultClick(result)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#334155] transition-colors text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
                                 >
                                     {result.type === 'user' ? (
                                         <>
-                                            <div className="w-10 h-10 rounded-full bg-[#334155] overflow-hidden flex-shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
                                                 {result.avatarUrl ? (
                                                     <img src={fixUrl(result.avatarUrl)} alt={result.title} className="w-full h-full object-cover" />
                                                 ) : (
@@ -114,18 +114,18 @@ export default function SearchBar() {
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-white font-semibold truncate">{result.title}</p>
+                                                <p className="text-slate-900 dark:text-white font-semibold truncate">{result.title}</p>
                                                 {result.subtitle && (
-                                                    <p className="text-xs text-[#64748b] truncate">{result.subtitle}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-[#64748b] truncate">{result.subtitle}</p>
                                                 )}
                                             </div>
-                                            <User className="w-4 h-4 text-[#64748b] flex-shrink-0" />
+                                            <User className="w-4 h-4 text-slate-500 dark:text-[#64748b] flex-shrink-0" />
                                         </>
                                     ) : (
                                         <>
                                             <Hash className="w-5 h-5 text-blue-500 flex-shrink-0" />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-white truncate">{result.title}</p>
+                                                <p className="text-slate-900 dark:text-white truncate">{result.title}</p>
                                             </div>
                                         </>
                                     )}
@@ -133,7 +133,7 @@ export default function SearchBar() {
                             ))}
                         </div>
                     ) : (
-                        <div className="p-4 text-center text-[#64748b]">
+                        <div className="p-4 text-center text-slate-500 dark:text-[#64748b]">
                             No results found
                         </div>
                     )}

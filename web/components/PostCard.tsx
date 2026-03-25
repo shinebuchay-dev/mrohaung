@@ -112,7 +112,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             case 'sad': return <Frown className="w-5 h-5 text-blue-400" />;
             case 'angry': return <Angry className="w-5 h-5 text-orange-500" />;
             case 'like': return <ThumbsUp className="w-5 h-5 text-blue-500 fill-blue-500" />;
-            default: return <Heart className="w-5 h-5 text-[#64748b]" />;
+            default: return <Heart className="w-5 h-5 text-slate-500 dark:text-[#64748b]" />;
         }
     };
 
@@ -169,43 +169,43 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`bg-gradient-to-br from-[#1e293b]/60 to-[#0f172a]/40 backdrop-blur-xl border border-[#334155]/50 rounded-2xl mb-4 hover:border-[#475569]/70 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 group relative ${showMenu ? 'z-[100]' : 'z-auto'}`}
+            transition={{ duration: 0.2 }}
+            className={`bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-[1.5rem] mb-4 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden ${showMenu ? 'z-[50]' : 'z-0'}`}
             onClick={onClick}
         >
             {/* Header */}
-            <div className="p-2 flex items-center justify-between">
-                <Link href={`/profile/${post.author.username}`} prefetch={false} className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+            <div className="p-3 sm:p-4 flex items-center justify-between">
+                <Link href={`/profile/${post.author.username}`} prefetch={false} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <div className="relative">
                         <div
-                            className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300"
+                            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center ring-1 ring-slate-200 dark:ring-white/10"
                             style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }}
                         >
                             {!post.author.avatarUrl && (
-                                <div className="w-full h-full flex items-center justify-center text-white font-bold text-sm">
+                                <div className="w-full h-full flex items-center justify-center text-slate-500 dark:text-white font-bold text-sm">
                                     {(post.author.displayName || post.author.username)?.[0]?.toUpperCase()}
                                 </div>
                             )}
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e293b]" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-200 dark:border-[#1e293b]" />
                     </div>
                     <div>
-                        <h3 className="text-white font-bold text-[15px]">{post.author.displayName || post.author.username}</h3>
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#64748b] mt-0.5 font-medium">
+                        <h3 className="text-slate-900 dark:text-white font-bold text-[15px]">{post.author.displayName || post.author.username}</h3>
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
                             <Clock className="w-3 h-3" />
                             <p>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-                            <span className="w-1 h-1 rounded-full bg-[#334155]" />
-                            <span className="text-blue-500/80">Public</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+                            <span>Public</span>
                         </div>
                     </div>
                 </Link>
 
                 <div className="relative" ref={menuRef}>
                     <button
-                        onClick={() => setShowMenu(!showMenu)}
-                        className={`p-2 rounded-xl transition-all ${showMenu ? 'bg-[#334155] text-white' : 'text-[#64748b] hover:text-white hover:bg-[#334155]/50'}`}
+                        onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+                        className={`p-2 rounded-xl transition-all ${showMenu ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
                         <MoreHorizontal className="w-5 h-5" />
                     </button>
@@ -215,39 +215,33 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                className="absolute right-0 mt-1 w-40 bg-[#1e293b]/98 backdrop-blur-2xl border border-[#334155]/70 rounded-xl shadow-2xl overflow-hidden z-[110]"
+                                className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-[110]"
                             >
-                                <div className="py-0.5">
+                                <div className="py-1">
                                     {isOwnPost ? (
                                         <>
                                             <button
-                                                onClick={() => { setShowMenu(false); onEdit && onEdit(post); }}
-                                                className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-[#334155]/50 text-white transition-colors text-xs font-semibold group"
+                                                onClick={(e) => { e.stopPropagation(); setShowMenu(false); onEdit && onEdit(post); }}
+                                                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 transition-colors text-sm font-semibold"
                                             >
-                                                <div className="p-1.5 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
-                                                    <Edit2 className="w-3.5 h-3.5 text-blue-400" />
-                                                </div>
+                                                <Edit2 className="w-4 h-4" />
                                                 Edit Post
                                             </button>
                                             <button
-                                                onClick={() => { setShowMenu(false); handleDelete(); }}
+                                                onClick={(e) => { e.stopPropagation(); setShowMenu(false); handleDelete(); }}
                                                 disabled={isDeleting}
-                                                className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-red-500/10 text-red-500 transition-colors text-xs font-semibold group disabled:opacity-50"
+                                                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-colors text-sm font-semibold disabled:opacity-50"
                                             >
-                                                <div className="p-1.5 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
-                                                    {isDeleting ? <div className="w-3.5 h-3.5 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                                                </div>
+                                                {isDeleting ? <div className="w-4 h-4 border-2 border-red-500/30 border-t-red-500 rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                                 Delete Post
                                             </button>
                                         </>
                                     ) : (
                                         <button
-                                            onClick={() => { setShowMenu(false); setShowReportModal(true); }}
-                                            className="w-full flex items-center gap-2 px-3 py-1.5 hover:bg-yellow-500/10 text-yellow-500 transition-colors text-xs font-semibold group"
+                                            onClick={(e) => { e.stopPropagation(); setShowMenu(false); setShowReportModal(true); }}
+                                            className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 transition-colors text-sm font-semibold"
                                         >
-                                            <div className="p-1.5 bg-yellow-500/10 rounded-lg group-hover:bg-yellow-500/20 transition-colors">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
-                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
                                             Report Post
                                         </button>
                                     )}
@@ -266,12 +260,12 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
             {/* Content */}
             {post.content && (
-                <div className="px-3 pb-2">
-                    <p className={`text-[#e2e8f0] text-[15px] leading-relaxed whitespace-pre-wrap ${!isExpanded && 'line-clamp-6'}`}>
+                <div className="px-4 pb-3">
+                    <p className={`text-slate-900 dark:text-white text-[15px] leading-relaxed whitespace-pre-wrap ${!isExpanded && 'line-clamp-6'}`}>
                         {post.content.split(/(\#[a-zA-Z0-9_]+\b)/).map((part: string, i: number) => {
                             if (part.startsWith('#')) {
                                 return (
-                                    <span key={i} className="text-blue-400 font-semibold hover:underline cursor-pointer transition-all">
+                                    <span key={i} className="text-blue-500 hover:underline cursor-pointer transition-all">
                                         {part}
                                     </span>
                                 );
@@ -281,8 +275,8 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                     </p>
                     {post.content.split('\n').length > 3 || post.content.length > 150 ? (
                         <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="text-blue-500 hover:text-blue-400 text-xs font-semibold mt-1 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+                            className="text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 text-sm font-semibold mt-1 transition-colors"
                         >
                             {isExpanded ? 'See less' : 'See more'}
                         </button>
@@ -292,19 +286,18 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
             {/* Image */}
             {post.imageUrl && (
-                <div className="relative aspect-video w-full bg-[#0f172a] overflow-hidden border-y border-[#334155]/20">
+                <div className="relative w-full bg-slate-50 dark:bg-slate-900 overflow-hidden border-y border-slate-100 dark:border-white/5">
                     <img
                         src={fixUrl(post.imageUrl)}
                         alt="Post"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-auto max-h-[600px] object-contain"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
             )}
 
             {/* Actions */}
-            <div className="px-3 py-2 flex items-center justify-between border-t border-[#334155]/30">
-                <div className="flex items-center gap-3">
+            <div className="px-2 py-1.5 flex items-center justify-between border-t border-slate-100 dark:border-white/5">
+                <div className="flex items-center gap-1">
                     <div
                         className="relative"
                         onMouseEnter={() => setShowReactions(true)}
@@ -326,34 +319,35 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             )}
                         </AnimatePresence>
                         <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleReaction(reactionType || 'like')}
-                            className="flex items-center gap-1.5 group/like relative z-10"
+                            whileTap={{ scale: 0.95 }}
+                            onClick={(e) => { e.stopPropagation(); handleReaction(reactionType || 'like'); }}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors z-10 hover:bg-slate-100 dark:hover:bg-white/5 ${reactionType ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
-                            <div className="p-1.5 rounded-full group-hover/like:bg-white/5 transition-colors">
+                            <div className="flex items-center justify-center">
                                 {getReactionIcon(reactionType)}
                             </div>
-                            <span className={`text-xs font-bold transition-colors ${reactionType ? 'text-blue-500' : 'text-[#64748b] group-hover/like:text-blue-500'}`}>
-                                {likeCount}
+                            <span className="text-sm font-bold">
+                                {likeCount > 0 ? likeCount : 'React'}
                             </span>
                         </motion.button>
                     </div>
 
                     <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!')}
-                        className="flex items-center gap-1.5 group/comment"
+                        whileTap={{ scale: 0.95 }}
+                        onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     >
-                        <div className="p-1.5 rounded-full group-hover/comment:bg-blue-500/10 transition-colors">
-                            <MessageCircle className="w-4 h-4 text-[#64748b] group-hover/comment:text-blue-500 transition-colors" />
-                        </div>
-                        <span className="text-xs font-bold text-[#64748b] group-hover/comment:text-blue-500 transition-colors">{commentCount}</span>
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-sm font-bold">
+                            {commentCount > 0 ? commentCount : 'Comment'}
+                        </span>
                     </motion.button>
                 </div>
 
                 <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
+                    whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                        e.stopPropagation();
                         const url = `${window.location.origin}/profile/${post.author.username}/${post.id}`;
                         if (navigator.share) {
                             navigator.share({
@@ -366,46 +360,38 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             alert('Link copied to clipboard!');
                         }
                     }}
-                    className="p-1.5 rounded-full hover:bg-white/5 transition-colors text-[#64748b] hover:text-white group/share"
+                    className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                 >
-                    <Share2 className="w-4 h-4" />
+                    <Share2 className="w-5 h-5" />
                 </motion.button>
             </div>
 
             {/* First Comment Preview */}
             {firstComment && (
-                <div className="border-t border-[#334155]/30 px-3 py-2.5 bg-[#0f172a]/20">
-                    <div className="flex items-start gap-2">
-                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 overflow-hidden ring-2 ring-blue-500/10">
+                <div onClick={(e) => e.stopPropagation()} className="border-t border-slate-100 dark:border-white/5 px-4 py-3 bg-slate-50 dark:bg-black/10">
+                    <div className="flex items-start gap-2.5">
+                        <Link href={`/profile/${firstComment.user?.username}`} className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex-shrink-0 overflow-hidden border border-slate-200 dark:border-white/10 mt-1">
                             {firstComment.user?.avatarUrl ? (
                                 <img src={fixUrl(firstComment.user.avatarUrl)} alt={firstComment.user?.displayName || firstComment.user?.username || ''} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                    <span className="text-white text-[10px] font-bold">
+                                    <span className="text-slate-500 dark:text-white text-xs font-bold">
                                         {(firstComment.user?.displayName || firstComment.user?.username)?.[0]?.toUpperCase() || 'U'}
                                     </span>
                                 </div>
                             )}
-                        </div>
-                        <div className="flex-1 flex flex-col items-start gap-1">
-                            <div className="bg-[#1e293b]/40 backdrop-blur-sm rounded-2xl px-3 py-1.5 border border-[#334155]/20 hover:border-[#475569]/30 transition-colors w-fit max-w-full">
-                                <div className="flex items-center gap-1.5 mb-0.5">
-                                    <p className="text-xs font-bold text-white">{firstComment.user?.displayName || firstComment.user?.username || 'User'}</p>
-                                    <span className="text-[10px] text-[#64748b]">·</span>
-                                    <span className="text-[10px] text-[#64748b]">{new Date(firstComment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                </div>
+                        </Link>
+                        <div className="flex-1 flex flex-col items-start gap-1 min-w-0">
+                            <div className="bg-white dark:bg-[#1e293b] rounded-2xl px-3 py-2 border border-slate-200 dark:border-white/5 shadow-sm w-fit max-w-full">
+                                <Link href={`/profile/${firstComment.user?.username}`} className="flex items-center gap-1.5 mb-1 hover:opacity-80">
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{firstComment.user?.displayName || firstComment.user?.username || 'User'}</p>
+                                    <span className="text-[10px] text-slate-400">·</span>
+                                    <span className="text-[10px] text-slate-400 font-medium">{new Date(firstComment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </Link>
                                 <div className="relative">
-                                    <p className={`text-xs text-[#cbd5e1] leading-relaxed break-words ${!isCommentExpanded && 'line-clamp-3'}`}>
+                                    <p className={`text-sm text-slate-700 dark:text-slate-300 leading-relaxed break-words ${!isCommentExpanded && 'line-clamp-3'}`}>
                                         {firstComment.content}
                                     </p>
-                                    {firstComment.content && firstComment.content.length > 150 && !isCommentExpanded && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); setIsCommentExpanded(true); }}
-                                            className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors mt-0.5"
-                                        >
-                                            See More
-                                        </button>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -413,11 +399,10 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
                     {commentCount > 1 && (
                         <button
-                            onClick={() => requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!')}
-                            className="mt-2 text-xs text-[#64748b] hover:text-blue-500 transition-colors font-semibold flex items-center gap-1 group/viewall"
+                            onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
+                            className="mt-2 ml-10 text-sm font-semibold text-slate-500 hover:text-blue-500 transition-colors"
                         >
-                            <span>View all {commentCount} comments</span>
-                            <MessageCircle className="w-3 h-3 group-hover/viewall:translate-x-0.5 transition-transform" />
+                            View all {commentCount} comments
                         </button>
                     )}
                 </div>

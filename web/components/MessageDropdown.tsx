@@ -191,7 +191,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                     if (!showDropdown) setActiveUser(null);
                 }}
                 className={isSidebar
-                    ? `w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${showDropdown ? 'bg-blue-600 shadow-lg text-white' : 'text-[#94a3b8] hover:bg-white/5 hover:text-white'}`
+                    ? `w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${showDropdown ? 'bg-blue-600 shadow-lg text-white' : 'text-slate-500 dark:text-[#94a3b8] hover:bg-white/5 hover:text-white'}`
                     : "p-2 rounded-full hover:bg-white/5 transition-colors relative"
                 }
             >
@@ -201,7 +201,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                     </div>
                     {isSidebar && <span className="text-[13px] font-bold">Messages</span>}
                     {unreadTotal > 0 && (
-                        <span className="absolute -top-1 -left-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-[#1e293b]">
+                        <span className="absolute -top-1 -left-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-slate-200 dark:border-[#1e293b]">
                             {unreadTotal > 9 ? '9+' : unreadTotal}
                         </span>
                     )}
@@ -223,7 +223,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                             <div className="flex items-center gap-2.5 overflow-hidden">
                                 {activeUser && (
                                     <button onClick={() => setActiveUser(null)} className="p-1.5 hover:bg-white/5 rounded-lg">
-                                        <ArrowLeft className="w-4 h-4 text-[#94a3b8]" />
+                                        <ArrowLeft className="w-4 h-4 text-slate-500 dark:text-[#94a3b8]" />
                                     </button>
                                 )}
                                 <div className="flex flex-col truncate">
@@ -234,7 +234,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                                 </div>
                             </div>
                             <button onClick={() => setShowDropdown(false)} className="p-1.5 hover:bg-white/5 rounded-lg">
-                                <X className="w-4 h-4 text-[#64748b]" />
+                                <X className="w-4 h-4 text-slate-500 dark:text-[#64748b]" />
                             </button>
                         </div>
 
@@ -242,8 +242,8 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                             <div className="flex-1 flex flex-col overflow-hidden">
                                 {/* Density Tabs */}
                                 <div className="flex gap-1 p-1 bg-black/20 mx-3 mt-3 rounded-lg border border-white/5">
-                                    <button onClick={() => setActiveTab('recent')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'recent' ? 'bg-[#334155] text-white' : 'text-[#64748b]'}`}>Recent</button>
-                                    <button onClick={() => setActiveTab('friends')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'friends' ? 'bg-[#334155] text-white' : 'text-[#64748b]'}`}>Friends</button>
+                                    <button onClick={() => setActiveTab('recent')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'recent' ? 'bg-[#334155] text-white' : 'text-slate-500 dark:text-[#64748b]'}`}>Recent</button>
+                                    <button onClick={() => setActiveTab('friends')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'friends' ? 'bg-[#334155] text-white' : 'text-slate-500 dark:text-[#64748b]'}`}>Friends</button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto mt-2 custom-scrollbar px-1.5 pb-3">
                                     {(activeTab === 'recent' ? conversations : friends).map((item: any) => {
@@ -257,9 +257,9 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-0.5">
                                                         <span className="font-bold text-[12px] text-white/90 truncate">{otherUser.displayName || otherUser.username}</span>
-                                                        {isConv && item.lastMessage && <span className="text-[9px] text-[#64748b]">{formatTime(item.lastMessage.createdAt)}</span>}
+                                                        {isConv && item.lastMessage && <span className="text-[9px] text-slate-500 dark:text-[#64748b]">{formatTime(item.lastMessage.createdAt)}</span>}
                                                     </div>
-                                                    <p className={`text-[11px] truncate ${isConv && item.unreadCount > 0 ? 'text-blue-400 font-bold' : 'text-[#64748b]'}`}>
+                                                    <p className={`text-[11px] truncate ${isConv && item.unreadCount > 0 ? 'text-blue-400 font-bold' : 'text-slate-500 dark:text-[#64748b]'}`}>
                                                         {isConv ? item.lastMessage?.content || 'New message' : item.lastMessage?.content || ''}
                                                     </p>
                                                 </div>
@@ -290,7 +290,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
 
                                 {/* Compact Sticky Input */}
                                 <div className="p-2.5 mt-auto bg-white/5 border-t border-white/5">
-                                    <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-[#0f172a] p-1 pr-1 pl-3 rounded-xl border border-white/5 focus-within:border-blue-500/30 transition-all">
+                                    <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-slate-50 dark:bg-[#0f172a] p-1 pr-1 pl-3 rounded-xl border border-white/5 focus-within:border-blue-500/30 transition-all">
                                         <input
                                             type="text"
                                             value={inputText}

@@ -79,7 +79,7 @@ export default function FriendSuggestions() {
 
     if (loading) {
         return (
-            <div className="bg-[#1e293b]/50 backdrop-blur-xl border border-[#334155] rounded-2xl p-4">
+            <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-200 dark:border-[#334155] rounded-2xl p-4">
                 <h3 className="text-lg font-bold text-white mb-4">Suggested for you</h3>
                 <div className="space-y-3">
                     {[1, 2, 3].map(i => (
@@ -101,7 +101,7 @@ export default function FriendSuggestions() {
     }
 
     return (
-        <div className="bg-[#0f172a]/20 backdrop-blur-3xl border border-white/5 rounded-2xl p-3 shadow-xl">
+        <div className="bg-slate-50 dark:bg-[#0f172a]/20 backdrop-blur-3xl border border-white/5 rounded-2xl p-3 shadow-xl">
             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 px-1">
                 Discover
             </h3>

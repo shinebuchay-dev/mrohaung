@@ -49,7 +49,7 @@ export default function RecentChatsCard() {
 
     if (loading) {
         return (
-            <div className="bg-[#1e293b]/50 backdrop-blur-xl rounded-3xl border border-[#334155] p-6 animate-pulse">
+            <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-[#334155] p-6 animate-pulse">
                 <div className="h-6 w-32 bg-[#334155] rounded-lg mb-4" />
                 <div className="space-y-4">
                     {[1, 2, 3].map(i => (
@@ -67,8 +67,8 @@ export default function RecentChatsCard() {
     }
 
     return (
-        <div className="bg-[#1e293b]/50 backdrop-blur-xl rounded-3xl border border-[#334155] overflow-hidden flex flex-col shadow-xl">
-            <div className="p-5 border-b border-[#334155]/50 flex items-center justify-between">
+        <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-[#334155] overflow-hidden flex flex-col shadow-xl">
+            <div className="p-5 border-b border-slate-200 dark:border-[#334155]/50 flex items-center justify-between">
                 <h3 className="font-bold text-white flex items-center gap-2">
                     <MessageCircle className="w-5 h-5 text-blue-500" />
                     Recent Chats
@@ -86,7 +86,7 @@ export default function RecentChatsCard() {
                                 className="flex items-center gap-3 p-4 hover:bg-[#334155]/50 transition-colors group"
                             >
                                 <div className="relative">
-                                    <div className="w-10 h-10 rounded-full bg-[#334155] overflow-hidden border border-[#334155]">
+                                    <div className="w-10 h-10 rounded-full bg-[#334155] overflow-hidden border border-slate-200 dark:border-[#334155]">
                                         {otherUser.avatarUrl ? (
                                             <img src={fixUrl(otherUser.avatarUrl)} alt={otherUser.username || ''} className="w-full h-full object-cover" />
                                         ) : (
@@ -96,7 +96,7 @@ export default function RecentChatsCard() {
                                         )}
                                     </div>
                                     {conv.unreadCount > 0 && (
-                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-[#1e293b]">
+                                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center text-[10px] font-black border-2 border-slate-200 dark:border-[#1e293b]">
                                             {conv.unreadCount}
                                         </div>
                                     )}
@@ -105,7 +105,7 @@ export default function RecentChatsCard() {
                                     <p className="text-sm font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
                                         {otherUser.username}
                                     </p>
-                                    <p className="text-xs text-[#64748b] truncate">
+                                    <p className="text-xs text-slate-500 dark:text-[#64748b] truncate">
                                         {conv.lastMessage?.content || 'Started a chat'}
                                     </p>
                                 </div>
@@ -114,7 +114,7 @@ export default function RecentChatsCard() {
                     })
                 ) : (
                     <div className="p-8 text-center">
-                        <p className="text-sm text-[#64748b]">No active chats yet</p>
+                        <p className="text-sm text-slate-500 dark:text-[#64748b]">No active chats yet</p>
                     </div>
                 )}
             </div>

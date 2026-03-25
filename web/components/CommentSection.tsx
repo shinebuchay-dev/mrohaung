@@ -11,7 +11,7 @@ const AudioCommentPlayer = ({ src }: { src: string }) => {
     const [playing, setPlaying] = useState(false);
 
     return (
-        <div className="flex items-center gap-2 mt-2 bg-[#334155]/40 p-2 pr-4 rounded-xl w-fit border border-[#334155]/30">
+        <div className="flex items-center gap-2 mt-2 bg-[#334155]/40 p-2 pr-4 rounded-xl w-fit border border-slate-200 dark:border-[#334155]/30">
             <button
                 type="button"
                 onClick={() => {
@@ -153,7 +153,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
             <div className="flex items-start gap-2 relative group">
                 <Link href={`/profile/${comment.user?.username}`} className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[1px]">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-[#1e293b]">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-[#1e293b]">
                             {comment.user?.avatarUrl ? (
                                 <img
                                     src={fixUrl(comment.user.avatarUrl)}
@@ -171,7 +171,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1">
-                        <div className="bg-[#1e293b]/60 rounded-2xl px-3 py-2 border border-[#334155]/30 inline-block max-w-full relative group/bubble">
+                        <div className="bg-white dark:bg-[#1e293b]/60 rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#334155]/30 inline-block max-w-full relative group/bubble">
                             <div className="flex justify-between items-start gap-4">
                                 <Link href={`/profile/${comment.user?.username}`} className="text-xs font-bold text-white hover:underline mb-0.5 block">
                                     {comment.user?.displayName || comment.user?.username}
@@ -181,7 +181,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                                     <div className="relative">
                                         <button
                                             onClick={() => setShowMenu(!showMenu)}
-                                            className="opacity-0 group-hover/bubble:opacity-100 p-1 hover:bg-white/10 rounded-full transition-all text-[#64748b] hover:text-white"
+                                            className="opacity-0 group-hover/bubble:opacity-100 p-1 hover:bg-white/10 rounded-full transition-all text-slate-500 dark:text-[#64748b] hover:text-white"
                                         >
                                             <MoreHorizontal className="w-3 h-3" />
                                         </button>
@@ -192,7 +192,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                                                         initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                                         exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                        className="absolute right-0 mt-1 w-24 bg-[#1e293b]/95 backdrop-blur-xl rounded-lg shadow-xl overflow-hidden z-[50] border border-[#334155]/50"
+                                                        className="absolute right-0 mt-1 w-24 bg-white dark:bg-[#1e293b]/95 backdrop-blur-xl rounded-lg shadow-xl overflow-hidden z-[50] border border-slate-200 dark:border-[#334155]/50"
                                                     >
                                                         <button onClick={() => { setShowMenu(false); setIsEditing(true); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] text-white hover:bg-[#334155]">
                                                             <Edit2 className="w-3 h-3" /> Edit
@@ -274,7 +274,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     placeholder={`Reply to ${comment.user?.displayName || comment.user?.username}...`}
-                                    className="flex-1 bg-[#1e293b] border border-[#334155] rounded-full px-4 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
+                                    className="flex-1 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-full px-4 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
                                     autoFocus
                                 />
                                 <button
@@ -292,7 +292,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
 
             {/* Recursively Render Replies */}
             {replies.length > 0 && (
-                <div className="pl-3 ml-3 border-l-2 border-[#334155]/30 space-y-3">
+                <div className="pl-3 ml-3 border-l-2 border-slate-200 dark:border-[#334155]/30 space-y-3">
                     {replies.map(reply => (
                         <CommentItem
                             key={reply.id}

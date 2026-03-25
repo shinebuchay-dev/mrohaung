@@ -182,20 +182,35 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const isProfilePage = pathname?.startsWith('/profile');
+    const isAuthPage = pathname === '/login' || pathname === '/register' ||
+        pathname?.startsWith('/login') || pathname?.startsWith('/register');
+
+    // On auth pages, render without shell
+    if (isAuthPage) {
+        return (
+            <>
+                {children}
+                <AuthModal
+                    isOpen={isAuthModalOpen}
+                    onClose={closeAuthModal}
+                    initialMode={authModalMode}
+                />
+            </>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-[#f8fafc]">
-            <nav className="fixed top-0 w-full z-[100] bg-[#0f172a]/80 backdrop-blur-md border-b border-[#1e293b]">
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50 transition-colors duration-300">
+            <nav className="fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <Link
                         href="/"
-                        className="text-xl font-bold text-[#4a76a8] tracking-tight"
+                        className="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight"
                     >
                         MROHAUNG
                     </Link>
 
-                    <div className="hidden md:flex flex-1 max-w-sm mx-8 text-slate-800">
+                    <div className="hidden md:flex flex-1 max-w-sm mx-8 text-slate-800 dark:text-slate-200">
                         <SearchBar />
                     </div>
 
@@ -209,51 +224,55 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     <button
                                         onClick={() => setShowUserMenu(v => !v)}
                                         aria-label="Open user menu"
-                                        className="w-10 h-10 rounded-full border-2 border-[#1e293b] cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                                        className="w-10 h-10 rounded-full border-2 border-slate-200 dark:border-white/10 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden outline-none bg-slate-100 dark:bg-slate-800"
                                     >
                                         {currentUser.avatarUrl ? (
                                             <img src={fixUrl(currentUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
-                                                {(currentUser.displayName || currentUser.username)?.[0]?.toUpperCase()}
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-white font-bold text-sm">
+                                                {(currentUser.displayName || currentUser.username)?.[0]?.toUpperCase() || 'U'}
                                             </div>
                                         )}
                                     </button>
 
                                     {showUserMenu && (
-                                        <div className="absolute right-0 mt-2 w-56 bg-[#1e293b] border border-[#334155] rounded-2xl shadow-xl overflow-hidden z-[60]">
-                                            <Link
-                                                href={`/profile/${currentUser.username}`}
-                                                className="flex items-center gap-3 px-4 py-3 hover:bg-[#334155] transition-colors"
-                                                onClick={() => setShowUserMenu(false)}
-                                            >
-                                                <User className="w-5 h-5 text-[#94a3b8]" />
-                                                <span className="text-white font-medium">Profile</span>
-                                            </Link>
-                                            <Link
-                                                href="/settings"
-                                                className="flex items-center gap-3 px-4 py-3 hover:bg-[#334155] transition-colors"
-                                                onClick={() => setShowUserMenu(false)}
-                                            >
-                                                <Settings className="w-5 h-5 text-[#94a3b8]" />
-                                                <span className="text-white font-medium">Settings</span>
-                                            </Link>
-                                            <div className="border-t border-[#334155]" />
-                                            <button
-                                                onClick={handleLogout}
-                                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors text-left"
-                                            >
-                                                <LogOut className="w-5 h-5 text-red-500" />
-                                                <span className="text-red-500 font-medium">Logout</span>
-                                            </button>
-                                        </div>
+                                        <>
+                                            <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-[60]">
+                                                <Link
+                                                    href={`/profile/${currentUser.username}`}
+                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                                    onClick={() => setShowUserMenu(false)}
+                                                >
+                                                    <User className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                                    <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">Profile</span>
+                                                </Link>
+                                                <Link
+                                                    href="/settings"
+                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                                    onClick={() => setShowUserMenu(false)}
+                                                >
+                                                    <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                                    <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">Settings</span>
+                                                </Link>
+                                                <div className="border-t border-slate-100 dark:border-white/5" />
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"
+                                                >
+                                                    <LogOut className="w-5 h-5 text-red-500" />
+                                                    <span className="text-red-500 font-medium text-sm">Logout</span>
+                                                </button>
+                                            </div>
+                                            {/* Invisible overlay for clicks outside */}
+                                            <div className="fixed inset-0 z-[50]" onClick={() => setShowUserMenu(false)} />
+                                        </>
                                     )}
                                 </div>
                             </>
                         ) : (
                             <button
                                 onClick={() => openAuthModal('login')}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-colors"
+                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                             >
                                 Login
                             </button>
@@ -263,8 +282,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="max-w-5xl mx-auto px-4 pt-24 flex gap-6">
-                <aside className="hidden lg:block w-48 h-fit sticky top-24">
-                    <ul className="space-y-0.5">
+                <aside className="hidden md:block w-48 lg:w-56 h-fit sticky top-24">
+                    <ul className="space-y-1">
                         {navItems.map((item: any) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -281,20 +300,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     <Link
                                         href={item.href}
                                         onClick={handleClick}
-                                        className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all ${active
-                                            ? 'bg-[#1e293b] text-white font-medium'
-                                            : 'text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f1f5f9]'
+                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${active
+                                            ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 font-medium'
                                             }`}
                                     >
-                                        <Icon className="w-4 h-4 text-[#4a76a8]" />
-                                        <span className="text-[14px]">{item.label}</span>
+                                        <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 shrink-0'}`} />
+                                        <span className="text-sm">{item.label}</span>
                                     </Link>
                                 </li>
                             );
                         })}
                     </ul>
                 </aside>
-
 
                 <main className="flex-1 min-w-0">{children}</main>
             </div>
@@ -306,16 +324,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 initialMode={authModalMode}
             />
 
-            {
-                deepLinkPost && (
-                    <PostModal
-                        isOpen={showDeepLinkModal}
-                        onClose={() => setShowDeepLinkModal(false)}
-                        post={deepLinkPost}
-                        currentUserId={currentUser?.id}
-                    />
-                )
-            }
-        </div >
+            {deepLinkPost && (
+                <PostModal
+                    isOpen={showDeepLinkModal}
+                    onClose={() => setShowDeepLinkModal(false)}
+                    post={deepLinkPost}
+                    currentUserId={currentUser?.id}
+                />
+            )}
+        </div>
     );
 }

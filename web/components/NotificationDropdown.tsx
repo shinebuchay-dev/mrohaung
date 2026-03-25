@@ -100,7 +100,7 @@ export default function NotificationDropdown() {
             case 'comment':
                 return <MessageCircle className="w-5 h-5 text-green-500" />;
             default:
-                return <Bell className="w-5 h-5 text-[#64748b]" />;
+                return <Bell className="w-5 h-5 text-slate-500 dark:text-[#64748b]" />;
         }
     };
 
@@ -108,7 +108,7 @@ export default function NotificationDropdown() {
         <div className="relative">
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="p-2.5 rounded-full hover:bg-[#1e293b] transition-colors relative"
+                className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors relative"
             >
                 <Bell className="w-6 h-6" />
                 {unreadCount > 0 && (
@@ -120,23 +120,23 @@ export default function NotificationDropdown() {
 
             {showDropdown && (
                 <>
-                    <div className="absolute right-0 mt-2 w-80 bg-[#1e293b] border border-[#334155] rounded-2xl shadow-xl overflow-hidden z-50">
-                        <div className="p-4 border-b border-[#334155] flex items-center justify-between">
-                            <h3 className="font-bold text-white">Notifications</h3>
+                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
+                        <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-900 dark:text-white">Notifications</h3>
                             <div className="flex items-center gap-2">
                                 {unreadCount > 0 && (
                                     <button
                                         onClick={markAllAsRead}
-                                        className="text-xs text-blue-500 hover:text-blue-400 font-medium"
+                                        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold"
                                     >
                                         Mark all read
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setShowDropdown(false)}
-                                    className="p-1 hover:bg-[#334155] rounded-full transition-colors"
+                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors"
                                 >
-                                    <X className="w-4 h-4 text-[#64748b]" />
+                                    <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 </button>
                             </div>
                         </div>
@@ -147,10 +147,9 @@ export default function NotificationDropdown() {
                                     <button
                                         key={notification.id}
                                         onClick={() => handleNotificationClick(notification)}
-                                        className={`w-full flex items-start gap-3 p-4 hover:bg-[#334155] transition-colors text-left ${!notification.read ? 'bg-blue-500/5' : ''
-                                            }`}
+                                        className={`w-full flex items-start gap-3 p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left ${!notification.read ? 'bg-blue-50 dark:bg-blue-500/5' : ''}`}
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-[#334155] overflow-hidden flex-shrink-0">
+                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex-shrink-0">
                                             {notification.from.avatarUrl ? (
                                                 <img
                                                     src={fixUrl(notification.from.avatarUrl)}
@@ -166,11 +165,11 @@ export default function NotificationDropdown() {
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm text-white">
-                                                <span className="font-semibold">{notification.from.displayName || notification.from.username}</span>{' '}
+                                            <p className="text-sm text-slate-800 dark:text-white font-medium">
+                                                <span className="font-bold">{notification.from.displayName || notification.from.username}</span>{' '}
                                                 {notification.message}
                                             </p>
-                                            <p className="text-xs text-[#64748b] mt-1">
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
                                                 {new Date(notification.createdAt).toLocaleString()}
                                             </p>
                                         </div>
@@ -180,9 +179,9 @@ export default function NotificationDropdown() {
                                     </button>
                                 ))
                             ) : (
-                                <div className="p-8 text-center text-[#64748b]">
-                                    <Bell className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                    <p>No notifications yet</p>
+                                <div className="p-8 text-center">
+                                    <Bell className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+                                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">No notifications yet</p>
                                 </div>
                             )}
                         </div>
