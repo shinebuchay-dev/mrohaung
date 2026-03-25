@@ -142,7 +142,7 @@ const sendMessage = async (req, res) => {
         let imageUrl = null;
         if (req.file) {
             try {
-                const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+                const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'messages');
                 imageUrl = uploadResult.url;
             } catch (uploadError) {
                 console.error('Image upload failed:', uploadError);

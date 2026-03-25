@@ -1,41 +1,50 @@
-const imageStore = require('../services/imageStore');
-const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const initBucket = async () => {
-    console.log('SQLite Image Storage Service Initialized');
+    console.log('Local File Storage Service Initialized');
 };
 
-const uploadFile = async (fileBuffer, originalName, mimeType) => {
+const uploadFile = async (fileBuffer, originalName, mimeType, userId = 'guest', usageArea = 'misc') => {
     try {
         const id = uuidv4();
         const safeOriginalName = path.basename(originalName || 'file').replace(/[^a-zA-Z0-9.-]/g, '_');
         const filename = `${id}-${safeOriginalName}`;
 
-        await imageStore.saveImage(filename, fileBuffer, mimeType);
+        // Create folder structure: uploads/users/{userId}/{usageArea}
+        const relativePath = path.join('uploads', 'users', String(userId), usageArea);
+        const uploadDir = path.join(__dirname, '..', relativePath);
+
+        // Ensure directory exists
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const filePath = path.join(uploadDir, filename);
+        fs.writeFileSync(filePath, fileBuffer);
 
         let baseUrl = process.env.BASE_URL;
         if (!baseUrl) {
-            // Force production URL if we detect we're not on localhost
             if (process.env.NODE_ENV === 'production' || process.env.PORT) {
                 baseUrl = 'https://mrohaung.com';
             } else {
-                baseUrl = `http://localhost:5000`;
+                baseUrl = `http://localhost:${process.env.PORT || 5001}`;
             }
         }
-        console.log(`[Upload] Using Base URL: ${baseUrl}`);
-        // Ensure https for production
+        
         if (baseUrl.includes('mrohaung.com') && baseUrl.startsWith('http://')) {
             baseUrl = baseUrl.replace('http://', 'https://');
         }
 
-        const url = `${baseUrl}/api/image/${filename}`;
+        // Return the static path to the file
+        const url = `${baseUrl}/${relativePath.replace(/\\/g, '/')}/${filename}`;
 
         return { fileName: filename, url };
     } catch (err) {
-        console.error('Error saving image to SQLite via service:', err);
+        console.error('Error saving image to disk:', err);
         throw new Error('Image upload failed');
     }
 };
 
-module.exports = { initBucket, uploadFile, minioClient: null, bucketName: 'sqlite-images' };
+module.exports = { initBucket, uploadFile, minioClient: null, bucketName: 'local-storage' };

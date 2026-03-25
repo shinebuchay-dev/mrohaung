@@ -4,7 +4,8 @@
     "private": true,
     "scripts": {
         "start": "node index.js",
-        "install:all": "npm install && cd backend && npm install"
+        "install:all": "npm install && cd backend && npm install && cd ../web && npm install",
+        "dev": "concurrently \"cd backend && npm run dev\" \"cd web && npm run dev\""
     },
     "dependencies": {
         "@prisma/client": "^5.22.0",
@@ -26,5 +27,8 @@
     },
     "engines": {
         "node": ">=18.0.0"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1"
     }
 }

@@ -10,7 +10,7 @@ exports.createPost = async (req, res) => {
         let imageUrl = null;
 
         if (req.file) {
-            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'posts');
             imageUrl = uploadResult.url;
         }
 
@@ -368,7 +368,7 @@ exports.addComment = async (req, res) => {
         let audioUrl = null;
 
         if (req.file) {
-            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'posts');
             audioUrl = uploadResult.url;
         }
 

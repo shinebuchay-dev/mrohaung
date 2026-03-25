@@ -13,7 +13,7 @@ const { initBucket } = require('./utils/minio');
 
 const path = require('path');
 const fs = require('fs');
-const imageStore = require('./services/imageStore');
+// imageStore required removed because we are using local static storage
 
 
 
@@ -27,6 +27,8 @@ const logger = (msg) => {
   fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
   console.log(msg);
 };
+
+const app = express();
 
 app.use((req, res, next) => {
   logger(`${req.method} ${req.url}`);
@@ -43,7 +45,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 
 
-const app = express();
+
 
 const server = http.createServer(app);
 
@@ -130,29 +132,8 @@ app.use('/api/privacy', privacyRoutes);
 
 const authMiddleware = require('./middleware/authMiddleware');
 
-// Public SQLite Image Serving Route (Now MySQL)
-app.get('/api/image/:id', async (req, res) => {
-  console.log(`[Media] Requesting image: ${req.params.id}`);
-  try {
-    const image = await imageStore.getImage(req.params.id);
-
-    if (!image) {
-      console.log(`[Media] NOT FOUND: ${req.params.id}`);
-      return res.status(404).json({ message: 'Image not found' });
-    }
-
-    console.log(`[Media] Serving: ${req.params.id} (${image.data.length} bytes)`);
-
-    res.setHeader('Content-Type', image.mime_type || 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    return res.status(200).send(image.data);
-  } catch (error) {
-    console.error(`[Media] CRITICAL ERROR serving ${req.params.id}:`, error);
-    return res.status(500).json({ error: 'Database access failed', details: error.message });
-  }
-});
+// Public Image Serving Route (Now Static)
+// Local filesystem serves via /uploads route instead of this database route.
 
 // Alias for plural images
 app.get('/api/images/:id', (req, res) => res.redirect(`/api/image/${req.params.id}`));
@@ -169,36 +150,8 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/ping', (req, res) => res.send('pong'));
 
-// PRIVATE Secure Media Serving Route (Now MySQL)
-app.get('/api/media/private/:id', authMiddleware, async (req, res) => {
-  try {
-    const image = await imageStore.getPrivateImage(req.params.id);
-
-    if (!image) {
-      return res.status(404).json({ message: 'Private media not found' });
-    }
-
-    // Security Check: Only owner can view or Admin
-    // We check admin status from a session/request if available, 
-    // but for now strictly ownership. 
-    // If you want admins to see it, you'd need to fetch their role here too.
-    if (image.owner_id !== req.userId) {
-      // Check if current user is admin
-      // This is a quick check, but adminMiddleware should ideally be used if we had a combined middleware
-      return res.status(403).json({ message: 'Unauthorized to view this private media' });
-    }
-
-    // SECURITY HEADERS
-    res.setHeader('X-Robots-Tag', 'noindex, nofollow'); // Prevents Search Engines
-    res.setHeader('Content-Type', image.mime_type || 'application/octet-stream');
-    res.setHeader('Cache-Control', 'private, max-age=0, no-cache'); // Do not cache private docs
-
-    res.send(image.data);
-  } catch (error) {
-    console.error('Error serving private media:', error);
-    res.status(500).send('Internal server error');
-  }
-});
+// PRIVATE Secure Media Serving Route (Now Static or Middleware validation)
+// Add logic if private files are needed. Local filesystem bypasses this entirely for now.
 
 
 

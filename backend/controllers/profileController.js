@@ -56,11 +56,11 @@ exports.updateProfile = async (req, res) => {
 
         if (req.files) {
             if (req.files.avatar) {
-                const uploadResult = await uploadFile(req.files.avatar[0].buffer, req.files.avatar[0].originalname, req.files.avatar[0].mimetype);
+                const uploadResult = await uploadFile(req.files.avatar[0].buffer, req.files.avatar[0].originalname, req.files.avatar[0].mimetype, req.userId, 'avatars');
                 avatarUrl = uploadResult.url;
             }
             if (req.files.cover) {
-                const uploadResult = await uploadFile(req.files.cover[0].buffer, req.files.cover[0].originalname, req.files.cover[0].mimetype);
+                const uploadResult = await uploadFile(req.files.cover[0].buffer, req.files.cover[0].originalname, req.files.cover[0].mimetype, req.userId, 'covers');
                 coverUrl = uploadResult.url;
             }
         }

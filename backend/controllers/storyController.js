@@ -18,7 +18,7 @@ exports.createStory = async (req, res) => {
             if (!req.file) {
                 return res.status(400).json({ error: 'Media file is required for image/video stories' });
             }
-            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+            const uploadResult = await uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype, req.userId, 'stories');
             mediaUrl = uploadResult.url;
         }
 
