@@ -18,3 +18,5 @@ uploads/
 !backend/init.sql
 docker-compose.override.yml
 
+# AI Assistant
+.gemini/
