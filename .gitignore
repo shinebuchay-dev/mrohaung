@@ -25,4 +25,3 @@ node_errors.log
 
 # Deployment Scripts with Secrets
 vps_setup.sh
-vps_repair.sh
