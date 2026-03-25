@@ -35,8 +35,8 @@ const logger = (msg) => {
     }
     const time = new Date().toISOString();
     fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+    console.log(msg); // Moved inside try-catch block
   } catch (_) { /* never crash on log failure */ }
-  console.log(msg);
 };
 
 const app = express();
@@ -120,9 +120,10 @@ const reportRoutes = require('./routes/reportRoutes');
 const privacyRoutes = require('./routes/privacyRoutes');
 
 
-app.use('/api/auth', authRoutes);
-
+// Profile routes
 app.use('/api/profile', profileRoutes);
+
+app.use('/api/auth', authRoutes);
 
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
@@ -142,6 +143,12 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/privacy', privacyRoutes);
 
 const authMiddleware = require('./middleware/authMiddleware');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const profileController = require('./controllers/profileController');
+
+// Direct Profile Update Route (to avoid 404 issues in routers)
+app.put('/api/profile', authMiddleware, upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), profileController.updateProfile);
 
 // Public Image Serving Route (Now Static)
 // Local filesystem serves via /uploads route instead of this database route.

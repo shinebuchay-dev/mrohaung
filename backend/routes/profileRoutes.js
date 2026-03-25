@@ -20,7 +20,7 @@ router.get('/search', authMiddleware, profileController.searchUsers);
 
 router.get('/:id', optionalAuthMiddleware, profileController.getProfile);
 
-router.put('/', authMiddleware, upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), profileController.updateProfile);
+// Note: PUT /profile is handled directly in index.js to ensure reliable matching
 
 
 

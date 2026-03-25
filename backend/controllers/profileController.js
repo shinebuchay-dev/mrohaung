@@ -50,55 +50,77 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
     try {
+        const userId = req.userId;
         const { bio, coverOffset, displayName } = req.body;
         let avatarUrl = undefined;
         let coverUrl = undefined;
 
+        console.log('Update Profile Body:', req.body);
+        console.log('Update Profile Files:', req.files ? Object.keys(req.files) : 'None');
+
         if (req.files) {
             if (req.files.avatar) {
-                const uploadResult = await uploadFile(req.files.avatar[0].buffer, req.files.avatar[0].originalname, req.files.avatar[0].mimetype, req.userId, 'avatars');
+                const uploadResult = await uploadFile(req.files.avatar[0].buffer, req.files.avatar[0].originalname, req.files.avatar[0].mimetype, userId, 'avatars');
                 avatarUrl = uploadResult.url;
             }
             if (req.files.cover) {
-                const uploadResult = await uploadFile(req.files.cover[0].buffer, req.files.cover[0].originalname, req.files.cover[0].mimetype, req.userId, 'covers');
+                const uploadResult = await uploadFile(req.files.cover[0].buffer, req.files.cover[0].originalname, req.files.cover[0].mimetype, userId, 'covers');
                 coverUrl = uploadResult.url;
             }
         }
 
-        let query = 'UPDATE User SET bio = ?';
-        const params = [bio];
+        let updateFields = [];
+        let params = [];
+
+        if (bio !== undefined) {
+            updateFields.push('bio = ?');
+            params.push(bio);
+        }
 
         if (displayName) {
-            query += ', displayName = ?';
+            updateFields.push('displayName = ?');
             params.push(displayName);
         }
 
         if (avatarUrl) {
-            query += ', avatarUrl = ?';
+            updateFields.push('avatarUrl = ?');
             params.push(avatarUrl);
         }
 
         if (coverUrl) {
-            query += ', coverUrl = ?';
+            updateFields.push('coverUrl = ?');
             params.push(coverUrl);
         }
 
-        if (coverOffset !== undefined) {
-            query += ', coverOffset = ?';
-            params.push(parseInt(coverOffset));
+        if (coverOffset !== undefined && coverOffset !== '') {
+            updateFields.push('coverOffset = ?');
+            const numericOffset = parseInt(coverOffset);
+            params.push(isNaN(numericOffset) ? 50 : numericOffset);
         }
 
-        query += ' WHERE id = ?';
-        params.push(req.userId);
+        if (updateFields.length === 0) {
+            return res.status(400).json({ message: 'No fields provided' });
+        }
 
-        await pool.execute(query, params);
+        // Build query
+        const sql = `UPDATE User SET ${updateFields.join(', ')} WHERE id = ?`;
+        params.push(userId);
 
-        // Fetch updated user to return
-        const [updatedUsers] = await pool.execute('SELECT * FROM User WHERE id = ?', [req.userId]);
-        res.json(updatedUsers[0]);
+        console.log('Update SQL:', sql);
+        console.log('Update Params:', params);
+
+        const [result] = await pool.query(sql, params);
+        console.log('Database Result:', result);
+
+        // Fetch and return the updated user
+        const [updatedList] = await pool.query('SELECT * FROM User WHERE id = ?', [userId]);
+        if (updatedList.length === 0) {
+            return res.status(404).json({ message: 'User not found after update' });
+        }
+        res.json(updatedList[0]);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Update Profile Controller Error:', error);
+        res.status(500).json({ message: 'Internal server error', details: error.message, stack: error.stack });
     }
 };
 
