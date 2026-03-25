@@ -10,7 +10,6 @@ import PostModal from '@/components/PostModal';
 import StoriesBar from '@/components/StoriesBar';
 import FriendSuggestions from '@/components/FriendSuggestions';
 import SearchBar from '@/components/SearchBar';
-import AppShell from '@/components/AppShell';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
@@ -113,7 +112,7 @@ export default function FeedPage() {
   };
 
   return (
-    <AppShell>
+    <div>
       {/* Verification Banner */}
       {currentUser && !currentUser.isVerified && (
         <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -258,6 +257,6 @@ export default function FeedPage() {
           currentUserId={currentUser?.id}
         />
       )}
-    </AppShell>
+    </div>
   );
 }

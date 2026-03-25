@@ -11,22 +11,20 @@ export const fixUrl = (url?: string | null): string | undefined => {
     const OLD_PRODUCTION_URL = 'https://mrohaung.com';
 
     let fixedUrl = url;
+    const PRODUCTION_URL = 'https://mrohaung.com';
 
-    // 1. Replace localhost or 127.0.0.1
-    if (fixedUrl.includes('localhost:') || fixedUrl.includes('127.0.0.1:')) {
-        fixedUrl = fixedUrl.replace(/http:\/\/localhost:\d+/, BASE_URL)
-            .replace(/http:\/\/127.0.0.1:\d+/, BASE_URL);
+    // 1. Replace localhost or 127.0.0.1 with production URL
+    if (fixedUrl.includes('localhost') || fixedUrl.includes('127.0.0.1')) {
+        fixedUrl = fixedUrl.replace(/http:\/\/localhost:\d+/, PRODUCTION_URL)
+            .replace(/http:\/\/127.0.0.1:\d+/, PRODUCTION_URL);
     }
 
-    // 2. Replace old production URL with new Render backend if it's pointing to old Hostinger
-    // This helps recover old images without re-uploading
-    if (fixedUrl.includes(OLD_PRODUCTION_URL) && !API_URL.includes(OLD_PRODUCTION_URL)) {
-        fixedUrl = fixedUrl.replace(OLD_PRODUCTION_URL, BASE_URL);
-    }
+    // 2. Replace old production URL with current if specific legacy one is found
+    // (Only if needed, but the main fix is the localhost one)
 
-    // 3. Handle relative paths (e.g., /api/images/...)
+    // 3. Handle relative paths (e.g., /uploads/...)
     if (fixedUrl.startsWith('/')) {
-        fixedUrl = `${BASE_URL}${fixedUrl}`;
+        fixedUrl = `${PRODUCTION_URL}${fixedUrl}`;
     }
 
     return fixedUrl;

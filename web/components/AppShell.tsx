@@ -25,7 +25,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         isAuthModalOpen,
         closeAuthModal,
         authModalMode,
-        requireAuth
+        requireAuth,
+        openAuthModal
     } = useAuth();
 
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -101,14 +102,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             if (!isInitialized) return [];
 
             const items = [
-                { href: '/', label: 'Home', icon: Home },
+                { href: '/', label: 'News', icon: Home },
                 { href: '/friends', label: 'Friends', icon: Users, protected: true },
-                { href: currentUser ? `/profile/${currentUser.username || 'user'}` : '/profile', label: 'Profile', icon: User, protected: true },
             ];
 
             if (isAdmin) {
                 items.push({ href: '/admin', label: 'Admin', icon: Shield, protected: true });
             }
+
+            // My Profile at the bottom
+            items.push({ href: currentUser ? `/profile/${currentUser.username || 'user'}` : '/profile', label: 'My profile', icon: User, protected: true });
 
             return items;
         },
@@ -179,18 +182,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    const isProfilePage = pathname?.startsWith('/profile');
+
     return (
         <div className="min-h-screen bg-[#0f172a] text-[#f8fafc]">
             <nav className="fixed top-0 w-full z-[100] bg-[#0f172a]/80 backdrop-blur-md border-b border-[#1e293b]">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <Link
                         href="/"
-                        className="text-2xl font-black bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent italic tracking-tighter"
+                        className="text-xl font-bold text-[#4a76a8] tracking-tight"
                     >
-                        MROHAUNG <span className="text-[10px] ml-1 px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-md font-mono align-middle">v2.0</span>
+                        MROHAUNG
                     </Link>
 
-                    <div className="hidden md:flex flex-1 mx-8 text-slate-800">
+                    <div className="hidden md:flex flex-1 max-w-sm mx-8 text-slate-800">
                         <SearchBar />
                     </div>
 
@@ -246,17 +251,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                 </div>
                             </>
                         ) : (
-                            <Link href="/login" className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-colors">
+                            <button
+                                onClick={() => openAuthModal('login')}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold transition-colors"
+                            >
                                 Login
-                            </Link>
+                            </button>
                         )}
                     </div>
                 </div>
             </nav>
 
             <div className="max-w-5xl mx-auto px-4 pt-24 flex gap-6">
-                <aside className="hidden lg:block w-64 h-fit sticky top-24">
-                    <ul className="space-y-2">
+                <aside className="hidden lg:block w-48 h-fit sticky top-24">
+                    <ul className="space-y-0.5">
                         {navItems.map((item: any) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -273,21 +281,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                     <Link
                                         href={item.href}
                                         onClick={handleClick}
-                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${active
-                                            ? 'bg-blue-600/10 text-blue-500 font-bold'
-                                            : 'text-[#94a3b8] hover:bg-[#1e293b] hover:text-white'
+                                        className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all ${active
+                                            ? 'bg-[#1e293b] text-white font-medium'
+                                            : 'text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#f1f5f9]'
                                             }`}
                                     >
-                                        <Icon className="w-5 h-5" />
-                                        <span className="text-base">{item.label}</span>
+                                        <Icon className="w-4 h-4 text-[#4a76a8]" />
+                                        <span className="text-[14px]">{item.label}</span>
                                     </Link>
                                 </li>
                             );
                         })}
                     </ul>
-
-                    {/* Sidebar Messages Removed */}
                 </aside>
+
 
                 <main className="flex-1 min-w-0">{children}</main>
             </div>
@@ -299,14 +306,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 initialMode={authModalMode}
             />
 
-            {deepLinkPost && (
-                <PostModal
-                    isOpen={showDeepLinkModal}
-                    onClose={() => setShowDeepLinkModal(false)}
-                    post={deepLinkPost}
-                    currentUserId={currentUser?.id}
-                />
-            )}
-        </div>
+            {
+                deepLinkPost && (
+                    <PostModal
+                        isOpen={showDeepLinkModal}
+                        onClose={() => setShowDeepLinkModal(false)}
+                        post={deepLinkPost}
+                        currentUserId={currentUser?.id}
+                    />
+                )
+            }
+        </div >
     );
 }

@@ -1,20 +1,20 @@
 const imageDb = require('../utils/imageDb');
 
 module.exports = {
-    // Save image to SQLite
-    saveImage: (filename, buffer, mimeType) => {
+    // Save image to MySQL (now async)
+    saveImage: async (filename, buffer, mimeType) => {
         try {
-            imageDb.saveImage(filename, buffer, mimeType);
+            await imageDb.saveImage(filename, buffer, mimeType);
             return { changes: 1 };
         } catch (error) {
-            console.error('Failed to save image to SQLite:', error);
+            console.error('Failed to save image to MySQL:', error);
             throw error;
         }
     },
 
-    // Get image from SQLite
-    getImage: (filename) => {
-        const row = imageDb.getImage(filename);
+    // Get image from MySQL (now async)
+    getImage: async (filename) => {
+        const row = await imageDb.getImage(filename);
         if (!row) return null;
         return {
             data: row.data,
@@ -22,45 +22,34 @@ module.exports = {
         };
     },
 
-    // Delete image from SQLite
-    deleteImage: (filename) => {
+    // Delete image from MySQL (now async)
+    deleteImage: async (filename) => {
         try {
-            imageDb.deleteImage(filename);
+            await imageDb.deleteImage(filename);
             return { changes: 1 };
         } catch (error) {
-            console.error('Failed to delete image from SQLite:', error);
+            console.error('Failed to delete image from MySQL:', error);
             return { changes: 0 };
         }
     },
 
-    // Private Image Methods
-    savePrivateImage: (filename, buffer, mimeType, ownerId) => {
+    savePrivateImage: async (filename, buffer, mimeType, ownerId) => {
         try {
-            imageDb.savePrivateImage(filename, buffer, mimeType, ownerId);
+            await imageDb.savePrivateImage(filename, buffer, mimeType, ownerId);
             return { changes: 1 };
         } catch (error) {
-            console.error('Failed to save private image to SQLite:', error);
+            console.error('Failed to save private image to MySQL:', error);
             throw error;
         }
     },
 
-    getPrivateImage: (filename) => {
-        const row = imageDb.getPrivateImage(filename);
+    getPrivateImage: async (filename) => {
+        const row = await imageDb.getPrivateImage(filename);
         if (!row) return null;
         return {
             data: row.data,
             mime_type: row.mimeType,
             owner_id: row.ownerId
         };
-    },
-
-    deletePrivateImage: (filename) => {
-        try {
-            imageDb.deletePrivateImage(filename);
-            return { changes: 1 };
-        } catch (error) {
-            console.error('Failed to delete private image from SQLite:', error);
-            return { changes: 0 };
-        }
     }
 };

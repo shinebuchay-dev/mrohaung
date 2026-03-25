@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
     };
 
     return (
-        <AppShell>
+        <>
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="text-2xl font-black text-white">Admin Dashboard</h1>
@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
                     )}
                 </div>
             </div>
-        </AppShell>
+        </>
     );
 }
 

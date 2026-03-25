@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const dotenv = require('dotenv');
+dotenv.config(); // Ensure env vars are loaded
 
 const { initBucket } = require('./utils/minio');
 
@@ -16,13 +17,29 @@ const imageStore = require('./services/imageStore');
 
 
 
-dotenv.config();
-
-
-
 // Initialize MinIO
-
 initBucket();
+
+// Global Logger for Hostinger Debugging
+const logFile = path.join(__dirname, '../node_errors.log');
+const logger = (msg) => {
+  const time = new Date().toISOString();
+  fs.appendFileSync(logFile, `[${time}] ${msg}\n`);
+  console.log(msg);
+};
+
+app.use((req, res, next) => {
+  logger(`${req.method} ${req.url}`);
+  next();
+});
+
+process.on('uncaughtException', (err) => {
+  logger(`UNCAUGHT EXCEPTION: ${err.message}\n${err.stack}`);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger(`UNHANDLED REJECTION: ${reason}`);
+});
 
 
 
@@ -113,29 +130,49 @@ app.use('/api/privacy', privacyRoutes);
 
 const authMiddleware = require('./middleware/authMiddleware');
 
-// Public SQLite Image Serving Route
-app.get(['/api/images/:id', '/api/image/:id'], (req, res) => {
+// Public SQLite Image Serving Route (Now MySQL)
+app.get('/api/image/:id', async (req, res) => {
+  console.log(`[Media] Requesting image: ${req.params.id}`);
   try {
-    const image = imageStore.getImage(req.params.id);
+    const image = await imageStore.getImage(req.params.id);
+
     if (!image) {
+      console.log(`[Media] NOT FOUND: ${req.params.id}`);
       return res.status(404).json({ message: 'Image not found' });
     }
 
-    // Dynamic MIME Type handling
-    const mimeType = image.mime_type || 'image/jpeg';
-    res.setHeader('Content-Type', mimeType);
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year cache
-    res.send(image.data);
+    console.log(`[Media] Serving: ${req.params.id} (${image.data.length} bytes)`);
+
+    res.setHeader('Content-Type', image.mime_type || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    return res.status(200).send(image.data);
   } catch (error) {
-    console.error('Error serving public image:', error);
-    res.status(500).send('Internal server error');
+    console.error(`[Media] CRITICAL ERROR serving ${req.params.id}:`, error);
+    return res.status(500).json({ error: 'Database access failed', details: error.message });
   }
 });
 
-// PRIVATE Secure Media Serving Route (Sensitive Docs)
-app.get('/api/media/private/:id', authMiddleware, (req, res) => {
+// Alias for plural images
+app.get('/api/images/:id', (req, res) => res.redirect(`/api/image/${req.params.id}`));
+
+// Health Check & Debug Routes
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'online',
+    timestamp: new Date().toISOString(),
+    env: process.env.NODE_ENV,
+    port: process.env.PORT || 5000
+  });
+});
+
+app.get('/api/ping', (req, res) => res.send('pong'));
+
+// PRIVATE Secure Media Serving Route (Now MySQL)
+app.get('/api/media/private/:id', authMiddleware, async (req, res) => {
   try {
-    const image = imageStore.getPrivateImage(req.params.id);
+    const image = await imageStore.getPrivateImage(req.params.id);
 
     if (!image) {
       return res.status(404).json({ message: 'Private media not found' });

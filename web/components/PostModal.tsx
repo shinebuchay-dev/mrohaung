@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Send, Loader2, Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, Check, Play, Square, Smile, ThumbsUp, Laugh, Frown, Angry, Star, Flag } from 'lucide-react';
+import { X, Send, Loader2, Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, Check, Smile, ThumbsUp, Laugh, Frown, Angry, Star, Flag } from 'lucide-react';
 import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -37,43 +37,7 @@ const formatTimeRelative = (date: string) => {
     return commentDate.toLocaleDateString();
 };
 
-const AudioCommentPlayer = ({ src }: { src: string }) => {
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [playing, setPlaying] = useState(false);
 
-    return (
-        <div className="flex items-center gap-2 mt-2 bg-[#334155]/40 p-2 pr-4 rounded-xl w-fit border border-[#334155]/30">
-            <button
-                type="button"
-                onClick={() => {
-                    if (!audioRef.current) return;
-                    if (playing) {
-                        audioRef.current.pause();
-                    } else {
-                        audioRef.current.play();
-                    }
-                }}
-                className="w-8 h-8 flex-shrink-0 flex items-center justify-center bg-blue-500 rounded-full text-white hover:bg-blue-600 transition-colors shadow-blue-500/20 shadow-lg"
-            >
-                {playing ? <Square className="w-3 h-3 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current ml-0.5" />}
-            </button>
-            <div className="flex flex-col min-w-[100px]">
-                <span className="text-[9px] text-blue-300 font-bold uppercase tracking-wider mb-1">Voice Message</span>
-                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className={`h-full bg-blue-400 rounded-full transition-all duration-200 ${playing ? 'w-full animate-pulse' : 'w-1/3'}`} />
-                </div>
-            </div>
-            <audio
-                ref={audioRef}
-                src={src}
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
-                onEnded={() => setPlaying(false)}
-                className="hidden"
-            />
-        </div>
-    );
-};
 
 // CommentItem removed - using CommentSection component
 import CommentSection from './CommentSection';
@@ -97,7 +61,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
     const [showStickers, setShowStickers] = useState(false);
     const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<any>(null);
-    const [replyingTo, setReplyingTo] = useState<{ id: string, username: string } | null>(null);
+
 
     const { socket } = useSocket();
 
@@ -165,14 +129,15 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         if (isOpen) {
             fetchComments();
             setEditContent(post.content || '');
-            checkLikeStatus();
+            fetchComments();
+            setEditContent(post.content || '');
             fetchCurrentUser();
             // Reset Comment State
             setCommentText('');
             setAudioBlob(null);
             setSelectedSticker(null);
             setShowStickers(false);
-            setReplyingTo(null);
+            setShowStickers(false);
 
             if (socket) {
                 socket.emit('join_post', post.id);
@@ -213,9 +178,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         }
     };
 
-    const checkLikeStatus = async () => {
-        // Placeholder
-    };
+
 
     const fetchComments = async () => {
         setLoading(true);
@@ -266,10 +229,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         }
     };
 
-    const handleReply = (username: string, commentId: string) => {
-        setReplyingTo({ id: commentId, username });
-        commentTextareaRef.current?.focus();
-    };
+
 
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -281,7 +241,6 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
             if (commentText.trim()) formData.append('content', commentText);
             if (audioBlob) formData.append('audio', audioBlob, 'voice-comment.webm');
             if (selectedSticker) formData.append('stickerUrl', selectedSticker);
-            if (replyingTo) formData.append('parentId', replyingTo.id);
 
             const response = await api.post(`/posts/${post.id}/comment`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -297,7 +256,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
             setAudioBlob(null);
             setSelectedSticker(null);
             setShowStickers(false);
-            setReplyingTo(null);
+            setShowStickers(false);
 
             // Reset textarea height to original
             if (commentTextareaRef.current) {
@@ -310,22 +269,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         }
     };
 
-    const handleLike = async () => {
-        if (!currentUserId) {
-            alert('Please login to like posts!');
-            return;
-        }
-        const newLiked = !liked;
-        setLiked(newLiked);
-        setLikeCount((prev: number) => newLiked ? prev + 1 : prev - 1);
-        try {
-            await api.post(`/posts/${post.id}/like`);
-        } catch (error) {
-            console.error('Failed to like post:', error);
-            setLiked(!newLiked);
-            setLikeCount((prev: number) => !newLiked ? prev + 1 : prev - 1);
-        }
-    };
+
 
     const handleSaveEdit = async () => {
         if (!editContent.trim()) return;
@@ -569,14 +513,6 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                         <img src={fixUrl(selectedSticker)} alt="Selected" className="w-8 h-8 object-contain" />
                                         <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-white/10 rounded-full text-[#94a3b8]"><X className="w-3 h-3" /></button>
                                     </div>
-                                ) : replyingTo ? (
-                                    <div className="flex items-center gap-2 bg-[#1e293b] px-3 py-1 rounded-xl border border-[#334155] w-fit mb-1">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] text-[#94a3b8] uppercase tracking-wider font-bold">Replying to</span>
-                                            <span className="text-xs text-blue-400 font-bold">@{replyingTo.username}</span>
-                                        </div>
-                                        <button type="button" onClick={() => setReplyingTo(null)} className="p-1 hover:bg-white/10 rounded-full text-[#94a3b8] ml-2"><X className="w-3 h-3" /></button>
-                                    </div>
                                 ) : audioBlob ? (
                                     <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 w-fit">
                                         <span className="text-xs text-blue-300 font-medium whitespace-nowrap">Voice recording ready</span>
@@ -613,7 +549,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
 
                             {/* Right: Actions */}
                             <div className="flex items-center gap-1 shrink-0 pb-1">
-                                {!audioBlob && !selectedSticker && !replyingTo && (
+                                {!audioBlob && !selectedSticker && (
                                     <>
                                         <div className="relative">
                                             <button
@@ -653,7 +589,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

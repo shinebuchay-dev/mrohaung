@@ -205,3 +205,48 @@ exports.rejectFriendRequest = async (req, res) => {
         res.status(500).json({ message: "Error removing request" });
     }
 };
+
+// ပို့ထားသော Request များ ရယူခြင်း (Sent Requests)
+exports.getSentRequests = async (req, res) => {
+    try {
+        const [requests] = await pool.execute(
+            `SELECT f.id, f.friendId, u.id as userId, u.username, u.displayName, u.avatarUrl 
+       FROM Friendship f
+       JOIN User u ON f.friendId = u.id
+       WHERE f.userId = ? AND f.status = 'PENDING'`,
+            [req.userId]
+        );
+
+        res.json(requests);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching sent requests' });
+    }
+};
+
+// ပို့ထားသော Request ပယ်ဖျက်ခြင်း (Cancel Sent Request)
+exports.cancelFriendRequest = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+
+        const [friendships] = await pool.execute('SELECT * FROM Friendship WHERE id = ?', [requestId]);
+        const friendship = friendships[0];
+
+        // Only the sender can cancel their own request
+        if (!friendship || friendship.userId !== req.userId) {
+            return res.status(404).json({ message: 'Request not found or unauthorized' });
+        }
+
+        if (friendship.status !== 'PENDING') {
+            return res.status(400).json({ message: 'Cannot cancel accepted request' });
+        }
+
+        await pool.execute('DELETE FROM Friendship WHERE id = ?', [requestId]);
+
+        res.status(200).json({ message: "Friend request cancelled" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error cancelling request" });
+    }
+};
+

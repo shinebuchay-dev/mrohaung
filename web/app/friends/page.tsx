@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Users, UserPlus, UserCheck, X, Check, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
-import AppShell from '@/components/AppShell';
 
 interface Friend {
     id: string;
@@ -26,14 +25,16 @@ export default function FriendsPage() {
     const [friends, setFriends] = useState<Friend[]>([]);
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [pendingRequests, setPendingRequests] = useState<FriendRequest[]>([]);
+    const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'suggestions' | 'requests'>('suggestions');
+    const [activeTab, setActiveTab] = useState<'suggestions' | 'requests' | 'sent'>('suggestions');
     const [processingId, setProcessingId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchFriends();
         fetchSuggestions();
         fetchPendingRequests();
+        fetchSentRequests();
     }, []);
 
     const fetchFriends = async () => {
@@ -99,14 +100,37 @@ export default function FriendsPage() {
             await api.post(`/friends/request/${userId}`);
             // Update suggestions to show request sent or remove
             setSuggestions(prev => prev.filter(s => s.id !== userId));
+            // Refresh sent requests
+            fetchSentRequests();
         } catch (error) {
             console.error('Failed to send friend request:', error);
         } finally {
             setProcessingId(null);
         }
     };
+
+    const fetchSentRequests = async () => {
+        try {
+            const response = await api.get('/friends/sent');
+            setSentRequests(response.data);
+        } catch (error) {
+            console.error('Failed to fetch sent requests:', error);
+        }
+    };
+
+    const handleCancelRequest = async (requestId: string) => {
+        setProcessingId(requestId);
+        try {
+            await api.delete(`/friends/cancel/${requestId}`);
+            setSentRequests(prev => prev.filter(req => req.id !== requestId));
+        } catch (error) {
+            console.error('Failed to cancel request:', error);
+        } finally {
+            setProcessingId(null);
+        }
+    };
     return (
-        <AppShell>
+        <div>
             <div>
                 {/* Page Title */}
                 <div className="mb-6">
@@ -139,6 +163,16 @@ export default function FriendsPage() {
                             <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
                                 {pendingRequests.length}
                             </span>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('sent')}
+                        className={`pb-4 font-semibold transition-colors relative ${activeTab === 'sent' ? 'text-blue-500' : 'text-[#64748b] hover:text-white'
+                            }`}
+                    >
+                        Sent Requests ({sentRequests.length})
+                        {activeTab === 'sent' && (
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-full" />
                         )}
                     </button>
                 </div>
@@ -209,7 +243,7 @@ export default function FriendsPage() {
                             </div>
                         )}
                     </div>
-                ) : (
+                ) : activeTab === 'requests' ? (
                     <div className="space-y-4">
                         {pendingRequests.length > 0 ? (
                             pendingRequests.map((request) => (
@@ -270,8 +304,62 @@ export default function FriendsPage() {
                             </div>
                         )}
                     </div>
+                ) : (
+                    <div className="space-y-4">
+                        {sentRequests.length > 0 ? (
+                            sentRequests.map((request) => (
+                                <div
+                                    key={request.id}
+                                    className="bg-[#1e293b]/50 border border-[#334155] rounded-2xl p-4 hover:border-[#475569] transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            onClick={() => router.push(`/profile/${request.username}`)}
+                                            className="w-14 h-14 rounded-full bg-[#334155] overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                        >
+                                            {request.avatarUrl ? (
+                                                <img
+                                                    src={request.avatarUrl}
+                                                    alt={request.displayName || request.username || ''}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                                                    <span className="text-xl font-bold">
+                                                        {(request.displayName || request.username)?.[0]?.toUpperCase()}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-white truncate">{request.displayName || request.username}</h3>
+                                            <p className="text-sm text-[#64748b]">Request sent</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleCancelRequest(request.id)}
+                                                disabled={processingId === request.id}
+                                                className="px-4 py-2 bg-[#334155] hover:bg-red-500/20 disabled:opacity-50 rounded-xl transition-colors text-white font-medium text-sm"
+                                            >
+                                                {processingId === request.id ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin inline" />
+                                                ) : (
+                                                    'Cancel'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-20 bg-[#1e293b]/20 rounded-3xl border border-dashed border-[#334155]">
+                                <UserPlus className="w-16 h-16 mx-auto mb-4 text-[#64748b] opacity-50" />
+                                <p className="text-[#64748b]">No sent requests</p>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
-        </AppShell>
+        </div>
     );
 }

@@ -12,11 +12,23 @@ const uploadFile = async (fileBuffer, originalName, mimeType) => {
         const safeOriginalName = path.basename(originalName || 'file').replace(/[^a-zA-Z0-9.-]/g, '_');
         const filename = `${id}-${safeOriginalName}`;
 
-        imageStore.saveImage(filename, fileBuffer, mimeType);
+        await imageStore.saveImage(filename, fileBuffer, mimeType);
 
-        const port = process.env.PORT || 5000;
-        // In production, BASE_URL should be set to 'https://mrohaung.com'
-        const baseUrl = process.env.BASE_URL || `http://localhost:${port}`;
+        let baseUrl = process.env.BASE_URL;
+        if (!baseUrl) {
+            // Force production URL if we detect we're not on localhost
+            if (process.env.NODE_ENV === 'production' || process.env.PORT) {
+                baseUrl = 'https://mrohaung.com';
+            } else {
+                baseUrl = `http://localhost:5000`;
+            }
+        }
+        console.log(`[Upload] Using Base URL: ${baseUrl}`);
+        // Ensure https for production
+        if (baseUrl.includes('mrohaung.com') && baseUrl.startsWith('http://')) {
+            baseUrl = baseUrl.replace('http://', 'https://');
+        }
+
         const url = `${baseUrl}/api/image/${filename}`;
 
         return { fileName: filename, url };

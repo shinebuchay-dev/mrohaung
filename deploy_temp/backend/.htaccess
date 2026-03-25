@@ -1,8 +1,0 @@
-RewriteEngine On
-
-# Allow deployment scripts directly
-RewriteRule ^unzip_backend\.php$ - [L]
-RewriteRule ^deploy\.php$ - [L]
-
-# Proxy all other requests to Node.js on port 5000
-RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
