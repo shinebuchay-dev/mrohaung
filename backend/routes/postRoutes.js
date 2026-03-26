@@ -15,7 +15,7 @@ router.get('/user/:id', optionalAuthMiddleware, postController.getPostsByUser);
 router.get('/:postId', optionalAuthMiddleware, postController.getPostById);
 router.post('/:postId/like', authMiddleware, verificationMiddleware, postController.likePost);
 router.post('/:postId/comment', authMiddleware, verificationMiddleware, upload.single('audio'), postController.addComment);
-router.get('/:postId/comments', authMiddleware, postController.getComments);
+router.get('/:postId/comments', optionalAuthMiddleware, postController.getComments);
 router.put('/:postId', authMiddleware, verificationMiddleware, postController.updatePost);
 router.delete('/:postId', authMiddleware, postController.deletePost);
 
