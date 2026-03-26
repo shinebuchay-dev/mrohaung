@@ -170,22 +170,29 @@ export default function FeedPage() {
 
 
           {loading ? (
-            <div className="space-y-6">
+            <div className="divide-y divide-slate-100 dark:divide-white/5">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-slate-100 dark:bg-slate-800 rounded-3xl h-64 animate-pulse border border-slate-200 dark:border-white/5" />
+                <div key={i} className="py-4 flex gap-3 animate-pulse">
+                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-800 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-full w-1/3" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-full w-full" />
+                    <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded-full w-5/6" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="divide-y divide-slate-100 dark:divide-white/5">
               <AnimatePresence mode="popLayout">
                 {posts.map(post => (
                   <motion.div
                     key={post.id}
                     layout
-                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                   >
                     <PostCard
                       post={post}
