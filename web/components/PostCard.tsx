@@ -19,9 +19,10 @@ interface PostCardProps {
     onEdit?: (post: any) => void;
     onViewComments?: (post: any, commentId?: string) => void;
     onClick?: () => void;
+    hideComments?: boolean;
 }
 
-export default function PostCard({ post, isGuest = false, onDelete, onUpdate, onEdit, onViewComments, onClick }: PostCardProps) {
+export default function PostCard({ post, isGuest = false, onDelete, onUpdate, onEdit, onViewComments, onClick, hideComments = false }: PostCardProps) {
     const [reactionType, setReactionType] = useState<string | null>(null);
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [commentCount, setCommentCount] = useState(post._count?.comments || 0);
@@ -363,18 +364,20 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                         </div>
 
                         {/* Comment */}
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors group"
-                        >
-                            <div className="p-0.5 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 transition-colors">
-                                <MessageCircle className="w-[18px] h-[18px]" />
-                            </div>
-                            {commentCount > 0 && (
-                                <span className="text-[13px] font-medium">{commentCount}</span>
-                            )}
-                        </motion.button>
+                        {!hideComments && (
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors group"
+                            >
+                                <div className="p-0.5 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 transition-colors">
+                                    <MessageCircle className="w-[18px] h-[18px]" />
+                                </div>
+                                {commentCount > 0 && (
+                                    <span className="text-[13px] font-medium">{commentCount}</span>
+                                )}
+                            </motion.button>
+                        )}
 
                         {/* Spacer to push Share to the right */}
                         <div className="flex-1" />
@@ -405,16 +408,16 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                     </div>
 
                     {/* Comment Previews */}
-                    {recentComments.length > 0 && (
+                    {!hideComments && recentComments.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 space-y-3">
                             {recentComments.filter(c => !c.parentId || !recentComments.find(p => p.id === c.parentId)).map((rootComment) => (
                                 <div key={rootComment.id} className="space-y-3">
                                     {/* Root Comment */}
-                                    <div 
+                                    <div
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             requireAuth(() => onViewComments && onViewComments(post, rootComment.id), 'Log in to join the conversation!');
-                                        }} 
+                                        }}
                                         className="flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-300 cursor-pointer"
                                     >
                                         <Link href={`/profile/${rootComment.user?.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
@@ -440,7 +443,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
                                     {/* Direct Replies (if any in the 2-comment slice) */}
                                     {recentComments.filter(reply => reply.parentId === rootComment.id).map(reply => (
-                                        <div 
+                                        <div
                                             key={reply.id}
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -472,7 +475,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                 </div>
                             ))}
 
-                            {commentCount > 1 && (
+                            {!hideComments && commentCount > 1 && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
                                     className="text-[13px] font-bold text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors ml-9"

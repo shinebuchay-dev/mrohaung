@@ -180,6 +180,7 @@ function SearchResults() {
                                     <PostCard 
                                         key={post.id} 
                                         post={post}
+                                        hideComments={true}
                                         onViewComments={(p) => router.push(`/?post=${p.id}`)}
                                     />
                                 ))}
