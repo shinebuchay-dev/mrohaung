@@ -1,13 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
     ArrowLeft, Calendar, UserPlus,
     Image as ImageIcon, MoreVertical, MessageCircle,
     Star, Check, X, ShieldAlert, Shield,
-    Share2, Mail, Edit2, Clock, Camera
+    Share2, Mail, Edit2, Clock, Camera,
+    Phone, Video
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -59,6 +60,8 @@ export default function ProfilePageContent() {
     const [sendingRequest, setSendingRequest] = useState(false);
     const [isBlocked, setIsBlocked] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [showMessageMenu, setShowMessageMenu] = useState(false);
+    const messageMenuRef = useRef<HTMLDivElement>(null);
     const [errorCode, setErrorCode] = useState<number | null>(null);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [showPostModal, setShowPostModal] = useState(false);
@@ -130,10 +133,15 @@ export default function ProfilePageContent() {
         try {
             setErrorCode(null);
             let slug = searchParams.get('username');
+            let urlPostId = null;
+
             if (!slug) {
                 const parts = window.location.pathname.split('/').filter(Boolean);
                 const idx = parts.indexOf('profile');
-                if (idx !== -1 && parts[idx + 1]) slug = parts[idx + 1];
+                if (idx !== -1 && parts[idx + 1]) {
+                    slug = parts[idx + 1];
+                    if (parts[idx + 2]) urlPostId = parts[idx + 2];
+                }
             }
             if (!slug) slug = currentUser?.username;
             if (!slug) { setLoading(false); return; }
@@ -144,6 +152,15 @@ export default function ProfilePageContent() {
             ]);
             setUser(profileRes.data);
             setPosts(postsRes.data);
+
+            if (urlPostId) {
+                try {
+                    const postRes = await api.get(`/posts/${urlPostId}`);
+                    setSelectedPost(postRes.data);
+                    setShowPostModal(true);
+                } catch(err) { console.error('Failed to load linked post', err); }
+            }
+
             const friendsRes = await api.get(`/friends/user/${profileRes.data.id}`);
             setFriends(friendsRes.data);
             if (slug !== currentUser?.username && currentUser) checkRelations(profileRes.data);
@@ -172,28 +189,39 @@ export default function ProfilePageContent() {
                 else setFriendStatus('none');
             }
             setIsBlocked(blockRes.data.isBlocked || blockRes.data.blockedByMe);
-        } catch {}
+        } catch { }
     };
 
     useEffect(() => { fetchProfile(); }, [searchParams, currentUser?.username]);
 
+    // Close message menu on outside click
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (messageMenuRef.current && !messageMenuRef.current.contains(e.target as Node)) {
+                setShowMessageMenu(false);
+            }
+        };
+        if (showMessageMenu) document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showMessageMenu]);
+
     const handleAcceptRequest = async () => {
         if (!friendRequestId) return;
-        try { await api.post(`/friends/accept/${friendRequestId}`); setFriendStatus('friends'); setFriendRequestId(''); fetchProfile(); } catch {}
+        try { await api.post(`/friends/accept/${friendRequestId}`); setFriendStatus('friends'); setFriendRequestId(''); fetchProfile(); } catch { }
     };
     const handleFriendRequest = () => {
         requireAuth(async () => {
             if (!user) return;
             setSendingRequest(true);
             try { await api.post('/friends/request', { friendId: user.id }); setFriendStatus('pending'); }
-            catch {} finally { setSendingRequest(false); }
+            catch { } finally { setSendingRequest(false); }
         }, 'Log in to add friends');
     };
     const handleBlock = async () => {
         if (!user) return;
         requireAuth(async () => {
             if (!confirm(`Block @${user.username}?`)) return;
-            try { await api.post(`/privacy/block/${user.id}`); setIsBlocked(true); setFriendStatus('none'); setShowMenu(false); } catch {}
+            try { await api.post(`/privacy/block/${user.id}`); setIsBlocked(true); setFriendStatus('none'); setShowMenu(false); } catch { }
         });
     };
 
@@ -228,258 +256,216 @@ export default function ProfilePageContent() {
 
     return (
         <div>
-            {/* ── HERO BLOCK: Cover + Gradient + Avatar + Info ── */}
-            <div
-                className="relative w-full rounded-2xl overflow-hidden mb-0 group/cover"
-                style={{ minHeight: '260px' }}
-            >
-                {/* Background image or fallback */}
-                {user.coverUrl ? (
-                    <img
-                        src={fixUrl(user.coverUrl)}
-                        className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-                        style={{ objectPosition: `center ${user.coverOffset ?? 50}%` }}
-                        alt="Cover"
-                    />
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-slate-900 to-slate-950" />
-                )}
+            {/* ── CLEAN & MINIMAL HERO: Cover extending behind Bio/Stats ── */}
+            <div className="relative w-full rounded-2xl overflow-hidden bg-white dark:bg-[#0f172a] mb-0 group">
+                {/* 1. The Cover Background (Clean & Natural Extension) */}
+                <div className="absolute inset-x-0 top-0 h-[350px] sm:h-[415px]">
+                    {user.coverUrl ? (
+                        <div className="relative w-full h-full">
+                            <img
+                                src={fixUrl(user.coverUrl)}
+                                className="absolute inset-0 w-full h-full object-cover"
+                                style={{ objectPosition: `center ${user.coverOffset ?? 50}%` }}
+                                alt="Cover"
+                            />
+                            {/* Seamless Transition to Background (Transparent Fade) */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white dark:to-[#0f172a] transition-colors duration-500" />
+                        </div>
+                    ) : (
+                        <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800" />
+                    )}
+                </div>
 
-                {/* Gradient Map overlay — transparent top → dark bottom */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/30 to-black/80 pointer-events-none" />
-
-                {/* ── Drag Zone (Only active in reposition mode) ── */}
-                {isOwnProfile && (
-                    <div 
+                {/* 2. Drag Zone Overlay (Only in Reposition Mode) */}
+                {isOwnProfile && repositionMode && (
+                    <div
                         ref={coverContainerRef}
                         onMouseDown={handleCoverMouseDown}
-                        className={`absolute inset-0 z-0 transition-all ${repositionMode ? 'cursor-ns-resize active:cursor-grabbing bg-black/20' : 'pointer-events-none'}`}
-                        title={repositionMode ? 'Drag to reposition cover' : ''}
+                        className="absolute inset-x-0 top-0 h-[260px] z-20 cursor-ns-resize active:cursor-grabbing bg-black/40 backdrop-blur-md"
                     >
-                        {repositionMode && (
-                            <div className="absolute inset-0 border-2 border-dashed border-white/30 flex items-center justify-center pointer-events-none">
-                                <p className="bg-black/40 backdrop-blur-md text-white text-[10px] sm:text-xs font-medium px-4 py-2 rounded-full border border-white/10 uppercase tracking-wider">
-                                    Drag photo to reposition
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Reposition Controls (Save / Cancel) */}
-                {repositionMode && (
-                    <div className="absolute top-4 right-4 z-40 flex items-center gap-2">
-                        <button
-                            onClick={handleCancelReposition}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white text-xs font-bold rounded-xl transition-all border border-white/10"
-                        >
-                            <X className="w-3.5 h-3.5" /> Cancel
-                        </button>
-                        <button
-                            onClick={handleSaveReposition}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-                        >
-                            <Check className="w-3.5 h-3.5" /> Save Position
-                        </button>
-                    </div>
-                )}
-
-                {/* Back button (Hidden in reposition mode to focus) */}
-                {!repositionMode && (
-                    <button
-                        onClick={() => router.back()}
-                        className="absolute top-4 left-4 w-8 h-8 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-all z-20"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                    </button>
-                )}
-
-                {/* Action buttons — top right (visible on desktop) */}
-                {!repositionMode && (
-                    <div className="absolute top-4 right-4 z-30 hidden sm:flex items-center gap-2">
-                        {isOwnProfile ? (
-                            <button
-                                onClick={() => setShowEditModal(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-xl transition-all border border-white/10"
-                            >
-                                <Edit2 className="w-3 h-3" /> Edit Profile
-                            </button>
-                        ) : (
-                            <>
-                                {friendStatus === 'incoming' ? (
-                                    <button onClick={handleAcceptRequest} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-white text-xs font-semibold rounded-xl transition-all active:scale-95">
-                                        <Check className="w-3 h-3" /> Accept
-                                    </button>
-                                ) : (
-                                    <button
-                                        onClick={handleFriendRequest}
-                                        disabled={friendStatus === 'friends' || friendStatus === 'pending' || sendingRequest}
-                                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all active:scale-95 border ${
-                                            friendStatus === 'friends' ? 'bg-white/10 border-white/10 text-white/60 cursor-default'
-                                            : friendStatus === 'pending' ? 'bg-white/10 border-white/10 text-white/50 cursor-default'
-                                            : 'bg-blue-500 hover:bg-blue-400 border-transparent text-white'
-                                        }`}
-                                    >
-                                        {friendStatus === 'friends' ? <><Check className="w-3.5 h-3.5" /> Friends</>
-                                        : friendStatus === 'pending' ? <><Clock className="w-3.5 h-3.5" /> Pending</>
-                                        : <><UserPlus className="w-3.5 h-3.5" /> Add Friend</>}
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => router.push(`/messages?userId=${user.id}`)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-xs font-semibold rounded-xl transition-all border border-white/10"
-                                >
-                                    <MessageCircle className="w-3 h-3" /> Message
-                                </button>
-                            </>
-                        )}
-
-                        {/* More menu */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setShowMenu(!showMenu)}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl text-white/70 hover:text-white hover:bg-white/10 backdrop-blur-sm transition-all"
-                            >
-                                <MoreVertical className="w-4 h-4" />
-                            </button>
-                            <AnimatePresence>
-                                {showMenu && (
-                                    <>
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                            className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-lg overflow-hidden z-50"
-                                        >
-                                            {isOwnProfile && (
-                                                <button
-                                                    onClick={() => { 
-                                                        setOriginalOffset(user?.coverOffset || 50); 
-                                                        setRepositionMode(true); 
-                                                        setShowMenu(false); 
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-300 font-medium border-b border-slate-100 dark:border-white/5"
-                                                >
-                                                    <Camera className="w-4 h-4 text-blue-400" /> Reposition Cover
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/profile/${user.username}`); setShowMenu(false); }}
-                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-300 font-medium"
-                                            >
-                                                <Share2 className="w-4 h-4 text-slate-400" /> Copy Link
-                                            </button>
-                                            {!isOwnProfile && (
-                                                <button onClick={handleBlock} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-500/10 text-sm text-red-500 font-medium">
-                                                    <ShieldAlert className="w-4 h-4" /> Block User
-                                                </button>
-                                            )}
-                                        </motion.div>
-                                        <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                                    </>
-                                )}
-                            </AnimatePresence>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <p className="bg-white/10 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-xl border border-white/20 uppercase tracking-widest">
+                                Drag photo to reposition
+                            </p>
                         </div>
                     </div>
                 )}
 
-                {/* ── Bottom info row (avatar + name + stats) ── */}
-                <div className="absolute bottom-0 left-0 right-0 z-20 px-5 pb-5 pt-16 pointer-events-none">
-                    <div className="flex items-end gap-4">
-                        {/* Avatar */}
-                        <div className="relative flex-shrink-0 pointer-events-auto">
-                            <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-[3px] border-white/80 overflow-hidden bg-slate-800 shadow-lg">
+                {/* 3. Header Controls (Minimal Glass) */}
+                {!repositionMode && (
+                    <div className="absolute top-4 left-4 right-4 z-40 flex items-center justify-between">
+                        <button onClick={() => router.back()} className="w-8 h-8 bg-black/20 hover:bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 transition-all">
+                            <ArrowLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex items-center gap-2">
+                            {isOwnProfile && (
+                                <button onClick={() => setShowEditModal(true)} className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-black/20 hover:bg-black/30 backdrop-blur-md text-white text-xs font-semibold rounded-xl border border-white/10 transition-all">
+                                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                                </button>
+                            )}
+                            <div className="relative">
+                                <button onClick={() => setShowMenu(!showMenu)} className="w-8 h-8 bg-black/20 hover:bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white border border-white/10 transition-all">
+                                    <MoreVertical className="w-4 h-4" />
+                                </button>
+                                <AnimatePresence>
+                                    {showMenu && (
+                                        <>
+                                            <motion.div initial={{ opacity: 0, scale: 0.95, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -5 }} className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-50 p-1">
+                                                {isOwnProfile && (
+                                                    <button onClick={() => { setRepositionMode(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-all">
+                                                        <Camera className="w-4 h-4 text-slate-400" /> Reposition Cover
+                                                    </button>
+                                                )}
+                                                <button onClick={() => { navigator.clipboard.writeText(window.location.href); setShowMenu(false); }} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-200 font-medium rounded-lg transition-all">
+                                                    <Share2 className="w-4 h-4 text-slate-400" /> Copy Link
+                                                </button>
+                                            </motion.div>
+                                            <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* 4. Minimal Reposition UI */}
+                {repositionMode && (
+                    <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+                        <button onClick={handleCancelReposition} className="px-4 py-2 bg-black/40 backdrop-blur-lg text-white text-xs font-bold rounded-xl border border-white/10">Cancel</button>
+                        <button onClick={handleSaveReposition} className="px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-sm transition-all active:scale-95">Save</button>
+                    </div>
+                )}
+
+                {/* 5. Minimal Identity Section (Floating on extension) */}
+                <div className="relative pt-[160px] sm:pt-[220px] px-4 pb-6 z-10 w-full">
+                    <div className="flex items-end gap-3 sm:gap-4 mb-4">
+                        {/* Avatar (Clean White Border) */}
+                        <div className="relative flex-shrink-0">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[4px] border-white dark:border-[#0f172a] overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm relative group">
                                 {user.avatarUrl ? (
                                     <img src={fixUrl(user.avatarUrl)} className="w-full h-full object-cover" alt="Avatar" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
+                                    <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-slate-400">
                                         {(user.displayName || user.username)[0].toUpperCase()}
                                     </div>
                                 )}
+                                {isOwnProfile && (
+                                    <button onClick={() => setShowEditModal(true)} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="w-6 h-6 text-white" />
+                                    </button>
+                                )}
                             </div>
-                            {isOwnProfile && (
-                                <button
-                                    onClick={() => setShowEditModal(true)}
-                                    className="absolute bottom-0.5 right-0.5 w-6 h-6 bg-blue-500 hover:bg-blue-400 text-white rounded-full flex items-center justify-center transition-all shadow-md"
-                                >
-                                    <Camera className="w-3 h-3" />
-                                </button>
-                            )}
                         </div>
 
-                        {/* Name + username + stats */}
-                        <div className="flex-1 pb-0.5 pointer-events-auto">
-                            <div className="flex items-center gap-1.5 mb-0.5">
-                                <h1 className="text-lg sm:text-xl font-bold text-white leading-tight drop-shadow-sm select-text">
+                        {/* Identity */}
+                        <div className="pb-1 sm:pb-2">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     {user.displayName || user.username}
                                 </h1>
-                                {user.isVerified && <Shield className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                                {user.isVerified && <Shield className="w-5 h-5 text-blue-500 fill-blue-500/10" />}
                             </div>
-                            <p className="text-white/60 text-sm mb-2 select-text">@{user.username}</p>
+                            <p className="text-slate-400 text-sm font-medium">@{user.username}</p>
+                        </div>
+                    </div>
 
-                            {/* Stats */}
-                            <div className="flex items-center gap-4">
-                                <div>
-                                    <span className="text-sm font-bold text-white">{user._count?.posts || 0}</span>
-                                    <span className="text-white/50 text-xs ml-1">Posts</span>
-                                </div>
-                                <div>
-                                    <span className="text-sm font-bold text-white">{user._count?.friends || 0}</span>
-                                    <span className="text-white/50 text-xs ml-1">Friends</span>
-                                </div>
-                                <div>
-                                    <span className="text-sm font-bold text-amber-400">{user.reputation || 0}</span>
-                                    <span className="text-white/50 text-xs ml-1">Points</span>
-                                </div>
+                    {/* Bio & Stats (Clean Flow) */}
+                    <div className="px-1 max-w-xl">
+                        {user.bio ? (
+                            <p className="text-[15px] sm:text-[16px] text-slate-600 dark:text-slate-300 leading-relaxed mb-4 font-medium">
+                                {user.bio}
+                            </p>
+                        ) : (
+                            isOwnProfile && <button onClick={() => setShowEditModal(true)} className="text-sm text-blue-500 hover:underline mb-4">Add a bio...</button>
+                        )}
+
+                        <div className="flex items-center gap-6 mb-5">
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{user._count?.posts || 0}</span>
+                                <span className="text-xs text-slate-400 font-medium">Posts</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{user._count?.friends || 0}</span>
+                                <span className="text-xs text-slate-400 font-medium">Friends</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Star className="w-3.5 h-3.5 text-amber-500" />
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">{user.reputation || 0}</span>
+                                <span className="text-xs text-slate-400 font-medium">Points</span>
                             </div>
                         </div>
+
+                        {/* Mobile Actions Overlayed */}
+                        {!repositionMode && (
+                            <div className="sm:hidden flex items-center gap-2 py-4 border-t border-slate-100 dark:border-white/5">
+                                {isOwnProfile ? (
+                                    <button onClick={() => setShowEditModal(true)} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl active:scale-95 transition-all">
+                                        <Edit2 className="w-4 h-4" /> Edit
+                                    </button>
+                                ) : (
+                                    <button onClick={handleFriendRequest} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl shadow-lg active:scale-95 transition-all">
+                                        <UserPlus className="w-4 h-4" /> Add Friend
+                                    </button>
+                                )}
+
+                                {/* Message Button with Dropdown */}
+                                <div className="relative flex-1" ref={messageMenuRef}>
+                                    <button
+                                        onClick={() => setShowMessageMenu(prev => !prev)}
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-sm font-bold rounded-xl active:scale-95 transition-all"
+                                    >
+                                        <MessageCircle className="w-4 h-4" /> Message
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {showMessageMenu && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95, y: -6 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute top-full mt-2 right-0 w-52 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 p-1.5"
+                                            >
+                                                <button
+                                                    onClick={() => { router.push(`/messages?userId=${user.id}`); setShowMessageMenu(false); }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-all"
+                                                >
+                                                    <div className="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                                        <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
+                                                    </div>
+                                                    Send Message
+                                                </button>
+                                                <button
+                                                    onClick={() => { router.push(`/call?userId=${user.id}&type=voice`); setShowMessageMenu(false); }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-all"
+                                                >
+                                                    <div className="w-7 h-7 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                                                        <Phone className="w-3.5 h-3.5 text-green-500" />
+                                                    </div>
+                                                    Voice Call
+                                                </button>
+                                                <button
+                                                    onClick={() => { router.push(`/call?userId=${user.id}&type=video`); setShowMessageMenu(false); }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-50 dark:hover:bg-white/5 text-sm text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-all"
+                                                >
+                                                    <div className="w-7 h-7 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                                                        <Video className="w-3.5 h-3.5 text-purple-500" />
+                                                    </div>
+                                                    Video Call
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Mobile action buttons (below hero) */}
-            {!repositionMode && (
-                <div className="sm:hidden flex items-center gap-2 mt-3 px-1">
-                    {isOwnProfile ? (
-                        <button onClick={() => setShowEditModal(true)} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-xl transition-all">
-                            <Edit2 className="w-3.5 h-3.5" /> Edit Profile
-                        </button>
-                    ) : (
-                        <>
-                            {friendStatus === 'incoming' ? (
-                                <button onClick={handleAcceptRequest} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all active:scale-95">
-                                    <Check className="w-3.5 h-3.5" /> Accept
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={handleFriendRequest}
-                                    disabled={friendStatus === 'friends' || friendStatus === 'pending' || sendingRequest}
-                                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-semibold rounded-xl transition-all active:scale-95 ${
-                                        friendStatus === 'friends' ? 'bg-slate-100 dark:bg-white/5 text-slate-400'
-                                        : friendStatus === 'pending' ? 'bg-slate-100 dark:bg-white/5 text-slate-400'
-                                        : 'bg-blue-600 hover:bg-blue-500 text-white'
-                                    }`}
-                                >
-                                    {friendStatus === 'friends' ? <><Check className="w-3.5 h-3.5" /> Friends</>
-                                    : friendStatus === 'pending' ? <><Clock className="w-3.5 h-3.5" /> Pending</>
-                                    : <><UserPlus className="w-3.5 h-3.5" /> Add Friend</>}
-                                </button>
-                            )}
-                            <button onClick={() => router.push(`/messages?userId=${user.id}`)} className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-xl transition-all">
-                                <MessageCircle className="w-3.5 h-3.5" /> Message
-                            </button>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* Bio */}
-            {user.bio && (
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mt-3 px-1">{user.bio}</p>
-            )}
-
             {/* Tabs */}
-            <div className="flex items-center gap-1 border-b border-slate-100 dark:border-white/5 mt-4 px-1">
+            <div className="flex items-center gap-1 border-b border-slate-100 dark:border-white/5 mt-0 px-4">
                 {[
                     { id: 'posts', label: 'Timeline' },
                     { id: 'friends', label: 'Friends' },
@@ -491,7 +477,7 @@ export default function ProfilePageContent() {
                         className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all ${activeTab === tab.id
                             ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                             : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                        }`}
+                            }`}
                     >
                         {tab.label}
                     </button>

@@ -13,81 +13,63 @@ export default function MessageBubble({ message, currentUserId, formatTime }: Me
     const isOwnMessage = message.senderId === currentUserId;
 
     return (
-        <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} mb-1.5 px-2 relative w-full`}>
-            {/* 100% Static Timestamp - Always visible, Very subtle, No Hover animations */}
-            <div className={`h-3 flex items-end ${isOwnMessage ? 'justify-end pr-8' : 'justify-start pl-8'} w-full mb-0.5`}>
-                <span className="text-[7.5px] font-bold uppercase tracking-tight text-white/20 select-none">
+        <div className={`flex w-full mb-4 px-2 ${isOwnMessage ? 'justify-end' : 'justify-start'} group hover:-translate-y-0.5 transition-transform duration-300`}>
+            <div className={`flex flex-col gap-1.5 max-w-[75%] ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                
+                {/* ── META: TOP TIME ── */}
+                <div className={`flex items-center px-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] font-bold tracking-wide ${isOwnMessage ? 'text-blue-500/60 flex-row-reverse' : 'text-slate-400'}`}>
                     {formatTime(message.createdAt)}
-                </span>
-            </div>
+                    {isOwnMessage && message.read && <span className="ml-1.5 opacity-70">• Read</span>}
+                </div>
 
-            <div className={`flex items-end gap-1.5 ${isOwnMessage ? 'flex-row' : 'flex-row'} max-w-full`}>
-                {/* Profile Icon for others */}
-                {!isOwnMessage && (
-                    <div className="relative flex-shrink-0 mb-0.5">
-                        <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 ring-2 ring-white/5 shadow-md bg-white dark:bg-[#1e293b]">
+                {/* ── BUBBLE FORMAT ── */}
+                <div className={`flex items-end gap-2.5 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+                    
+                    {/* AVATAR SQUIRCLE */}
+                    <div className="flex-shrink-0 mb-0.5">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden flex items-center justify-center shadow-sm">
                             {message.sender?.avatarUrl ? (
                                 <img src={fixUrl(message.sender.avatarUrl)} alt="" className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-white/40">
-                                    {(message.sender?.displayName || message.sender?.username)?.[0]?.toUpperCase() || '?'}
-                                </div>
+                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                    {(message.sender?.displayName || message.sender?.username)?.[0]?.toUpperCase()}
+                                </span>
                             )}
                         </div>
                     </div>
-                )}
 
-                {/* Premium Bubble - Static Design */}
-                <div
-                    className={`relative px-3.5 py-1.5 shadow-lg border ${isOwnMessage
-                        ? 'bg-[#007aff] text-white border-blue-400/20 rounded-[18px] rounded-tr-[4px]'
-                        : 'bg-[#2a354a] text-[#e4e6eb] border-white/5 rounded-[18px] rounded-tl-[4px]'
-                        } max-w-[200px] sm:max-w-[240px]`}
-                >
-                    {/* Reply Preview */}
-                    {message.replyToContent && (
-                        <div className="px-2 py-0.5 mb-1 bg-black/10 text-[9px] italic opacity-40 rounded border-l-2 border-white/20 truncate">
-                            {message.replyToContent}
-                        </div>
-                    )}
+                    {/* PILL BUBBLE */}
+                    <div className={`px-3.5 py-2 shadow-sm transition-shadow ${isOwnMessage 
+                        ? 'bg-blue-500 text-white rounded-[18px] rounded-br-sm' 
+                        : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-[18px] rounded-bl-sm border border-slate-100 dark:border-slate-700/50'
+                    }`}>
+                        
+                        {/* REPLY THUMB */}
+                        {message.replyToContent && (
+                            <div className={`mb-1.5 px-2 py-1.5 rounded-lg text-[11px] line-clamp-1 ${isOwnMessage ? 'bg-black/10 text-white/90' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                                <span className="opacity-70 mr-1">Reply:</span> {message.replyToContent}
+                            </div>
+                        )}
 
-                    <p className="text-[13px] leading-[1.4] break-words whitespace-pre-wrap font-medium tracking-tight">
-                        {message.content}
-                    </p>
+                        <p className="text-[14px] leading-snug whitespace-pre-wrap break-words">
+                            {message.content}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Own Avatar & Seen Badge - Static */}
-                {isOwnMessage && (
-                    <div className="relative flex-shrink-0 mb-0.5 flex flex-col items-center gap-0.5">
-                        <div className="h-1.5 flex items-center opacity-30">
-                            <span className="text-[7.5px] font-black tracking-tighter text-blue-400">
-                                {message.read ? '✓✓' : '✓'}
-                            </span>
-                        </div>
-                        <div className="w-7 h-7 rounded-full overflow-hidden border border-blue-500/30 ring-2 ring-blue-500/10 shadow-md bg-blue-600/10">
-                            {message.sender?.avatarUrl ? (
-                                <img src={fixUrl(message.sender.avatarUrl)} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] font-black text-blue-400">
-                                    {(message.sender?.displayName || message.sender?.username)?.[0]?.toUpperCase() || 'Y'}
-                                </div>
-                            )}
+                {/* ── REACTIONS REAR ── */}
+                {message.reactions && Object.keys(message.reactions).length > 0 && (
+                    <div className={`flex items-center gap-1 ${isOwnMessage ? 'pr-11 flex-row-reverse' : 'pl-11 flex-row'}`}>
+                        <div className="flex gap-1">
+                            {Object.entries(message.reactions).map(([emoji, userIds]) => (
+                                <span key={emoji} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm rounded-full px-2 py-0.5 text-[11px] flex items-center gap-1">
+                                    {emoji} <span className="font-bold text-blue-500">{userIds.length > 1 && userIds.length}</span>
+                                </span>
+                            ))}
                         </div>
                     </div>
                 )}
             </div>
-
-            {/* Reactions Display - Static */}
-            {message.reactions && Object.keys(message.reactions).length > 0 && (
-                <div className={`flex flex-wrap gap-1 mt-1 ${isOwnMessage ? 'mr-8' : 'ml-8'}`}>
-                    {Object.entries(message.reactions).map(([emoji, userIds]) => (
-                        <div key={emoji} className="bg-white/5 border border-white/10 rounded-full px-1.5 py-0.5 text-[8px] flex items-center gap-1">
-                            <span>{emoji}</span>
-                            <span className="font-bold text-blue-400">{userIds.length}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
         </div>
     );
 }

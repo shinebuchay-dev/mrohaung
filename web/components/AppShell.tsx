@@ -185,6 +185,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const isAuthPage = pathname === '/login' || pathname === '/register' ||
         pathname?.startsWith('/login') || pathname?.startsWith('/register');
 
+    const isMessagesPage = pathname === '/messages' || pathname?.startsWith('/messages/');
+
     // On auth pages, render without shell
     if (isAuthPage) {
         return (
@@ -202,7 +204,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50 transition-colors duration-300">
             <nav className="fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between transition-all duration-300">
                     <Link
                         href="/"
                         className="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight"
@@ -217,7 +219,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="flex items-center gap-2">
                         {currentUser ? (
                             <>
-                                <MessageDropdown variant="header" />
                                 <NotificationDropdown />
 
                                 <div className="relative">
@@ -268,7 +269,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                         </>
                                     )}
                                 </div>
+
+
                             </>
+
                         ) : (
                             <button
                                 onClick={() => openAuthModal('login')}
@@ -281,41 +285,50 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
             </nav>
 
-            <div className="max-w-5xl mx-auto px-4 pt-24 flex gap-6">
-                <aside className="hidden md:block w-48 lg:w-56 h-fit sticky top-24">
-                    <ul className="space-y-1">
-                        {navItems.map((item: any) => {
-                            const Icon = item.icon;
-                            const active = isActive(item.href);
+            <div className="max-w-5xl mx-auto px-4 pt-24 flex gap-4 lg:gap-6 transition-all duration-300">
+                <aside className="hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-24 transition-all duration-300 shrink-0">
+                    <div className="h-full flex flex-col justify-between">
+                        <ul className="space-y-1">
+                            {navItems.map((item: any) => {
+                                const Icon = item.icon;
+                                const active = isActive(item.href);
 
-                            const handleClick = (e: React.MouseEvent) => {
-                                if (item.protected) {
-                                    e.preventDefault();
-                                    requireAuth(() => router.push(item.href), `Log in to access ${item.label}`);
-                                }
-                            };
+                                const handleClick = (e: React.MouseEvent) => {
+                                    if (item.protected) {
+                                        e.preventDefault();
+                                        requireAuth(() => router.push(item.href), `Log in to access ${item.label}`);
+                                    }
+                                };
 
-                            return (
-                                <li key={item.href}>
-                                    <Link
-                                        href={item.href}
-                                        onClick={handleClick}
-                                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${active
-                                            ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold'
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 font-medium'
-                                            }`}
-                                    >
-                                        <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 shrink-0'}`} />
-                                        <span className="text-sm">{item.label}</span>
-                                    </Link>
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                return (
+                                    <li key={item.href}>
+                                        <Link
+                                            href={item.href}
+                                            onClick={handleClick}
+                                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all ${active
+                                                ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold'
+                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 font-medium'
+                                                }`}
+                                        >
+                                            <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 shrink-0'}`} />
+                                            <span className="text-sm font-semibold whitespace-nowrap pr-2 lg:pr-4">{item.label}</span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+
+
+                    </div>
                 </aside>
 
                 <main className="flex-1 min-w-0">{children}</main>
             </div>
+
+            {/* Floating Chat Widget */}
+            {currentUser && (
+                <MessageDropdown variant="floating" />
+            )}
 
             {/* Global Modals */}
             <AuthModal

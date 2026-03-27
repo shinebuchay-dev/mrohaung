@@ -86,97 +86,102 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
     };
 
     return (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1e293b] rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-[#334155] shadow-2xl">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#1e293b] rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-slate-100 dark:border-white/5 animate-in fade-in zoom-in duration-200">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-[#334155]">
-                    <h2 className="text-xl font-bold text-white">Create Story</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-[#334155] rounded-full transition-colors">
-                        <X className="w-5 h-5 text-slate-500 dark:text-[#94a3b8]" />
+                <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/5 bg-white dark:bg-[#1e293b]">
+                    <h2 className="text-[17px] font-bold text-slate-900 dark:text-white">Create Story</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-500">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-200 dark:border-[#334155]">
+                <div className="flex bg-slate-50/50 dark:bg-white/5 p-1 mx-4 mt-4 rounded-xl">
                     <button
                         onClick={() => setActiveTab('media')}
-                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'media' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:text-slate-500 dark:text-[#94a3b8]'}`}
+                        className={`flex-1 py-2 text-xs font-bold transition-all rounded-lg ${activeTab === 'media' ? 'bg-white dark:bg-[#334155] text-blue-500 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     >
                         Photo / Video
                     </button>
                     <button
                         onClick={() => setActiveTab('text')}
-                        className={`flex-1 py-3 text-sm font-semibold transition-colors ${activeTab === 'text' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:text-slate-500 dark:text-[#94a3b8]'}`}
+                        className={`flex-1 py-2 text-xs font-bold transition-all rounded-lg ${activeTab === 'text' ? 'bg-white dark:bg-[#334155] text-blue-500 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                     >
                         Text Story
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                     {activeTab === 'media' ? (
                         <div className="space-y-4">
                             {!imagePreview ? (
-                                <label className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-slate-200 dark:border-[#334155] rounded-xl cursor-pointer hover:border-blue-500 transition-colors bg-slate-50 dark:bg-[#0f172a]/50">
-                                    <Upload className="w-12 h-12 text-slate-500 dark:text-[#64748b] mb-4" />
-                                    <p className="text-slate-500 dark:text-[#94a3b8] font-medium">Upload Image</p>
+                                <label className="flex flex-col items-center justify-center h-80 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-2xl cursor-pointer hover:border-blue-500 transition-all bg-slate-50/30 dark:bg-white/5 group">
+                                    <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                        <Upload className="w-6 h-6 text-blue-500" />
+                                    </div>
+                                    <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Tap to upload photo</p>
+                                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-1">High quality images recommended</p>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                                 </label>
                             ) : (
                                 <div className="space-y-4">
-                                    <div className="relative rounded-xl overflow-hidden shadow-lg">
+                                    <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-black border border-slate-100 dark:border-white/5">
                                         <img src={imagePreview} alt="Preview" className="w-full h-80 object-cover" />
                                         <button
                                             onClick={() => { setImage(null); setImagePreview(null); }}
-                                            className="absolute top-2 right-2 p-2 bg-black/60 rounded-full hover:bg-black/80 transition-colors"
+                                            className="absolute top-3 right-3 p-2 bg-black/60 backdrop-blur-md rounded-full hover:bg-black/80 transition-colors"
                                         >
                                             <X className="w-4 h-4 text-white" />
                                         </button>
                                     </div>
-                                    <input
-                                        type="text"
-                                        value={caption}
-                                        onChange={(e) => setCaption(e.target.value)}
-                                        placeholder="Add a caption..."
-                                        className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-[#334155] rounded-xl text-white placeholder-[#64748b] px-4 py-3 focus:outline-none focus:border-blue-500"
-                                    />
+                                    <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                                        <input
+                                            type="text"
+                                            value={caption}
+                                            onChange={(e) => setCaption(e.target.value)}
+                                            placeholder="Write a caption..."
+                                            className="w-full bg-transparent border-none outline-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm font-medium"
+                                        />
+                                    </div>
                                 </div>
                             )}
                         </div>
                     ) : (
                         <div className="space-y-6">
                             {/* Preview Area */}
-                            <div className={`w-full h-80 rounded-xl ${selectedGradient} flex items-center justify-center p-8 text-center shadow-lg transition-all`}>
+                            <div className={`w-full h-80 rounded-2xl ${selectedGradient} flex items-center justify-center p-8 text-center shadow-2xl transition-all border border-white/10`}>
                                 <textarea
                                     value={textStory}
                                     onChange={(e) => setTextStory(e.target.value)}
-                                    placeholder="Type something..."
-                                    className={`w-full h-full bg-transparent border-none outline-none text-white placeholder-white/50 text-2xl font-bold text-center resize-none ${selectedFont}`}
+                                    placeholder="Start typing..."
+                                    className={`w-full h-full bg-transparent border-none outline-none text-white placeholder-white/40 text-2xl font-bold text-center resize-none custom-scrollbar ${selectedFont}`}
                                 />
                             </div>
 
                             {/* Controls */}
-                            <div className="space-y-4">
+                            <div className="space-y-4 px-2">
                                 <div>
-                                    <label className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-2 block">Background</label>
-                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">Choose Atmosphere</label>
+                                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                                         {gradients.map((grad, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() => setSelectedGradient(grad)}
-                                                className={`w-10 h-10 rounded-full ${grad} flex-shrink-0 ring-2 transition-all ${selectedGradient === grad ? 'ring-white scale-110' : 'ring-transparent hover:scale-105'}`}
+                                                className={`w-11 h-11 rounded-xl ${grad} flex-shrink-0 transition-all duration-300 ${selectedGradient === grad ? 'ring-2 ring-blue-500 ring-offset-4 ring-offset-white dark:ring-offset-[#1e293b] scale-105 shadow-lg' : 'hover:scale-105 opacity-80 hover:opacity-100'}`}
                                             />
                                         ))}
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-2 block">Font Style</label>
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.1em] mb-3 block">Text Style</label>
                                     <div className="flex gap-2">
                                         {fonts.map((font) => (
                                             <button
                                                 key={font.name}
                                                 onClick={() => setSelectedFont(font.class)}
-                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors border ${selectedFont === font.class ? 'bg-[#334155] text-white border-blue-500' : 'bg-slate-50 dark:bg-[#0f172a] text-slate-500 dark:text-[#94a3b8] border-slate-200 dark:border-[#334155] hover:bg-white dark:bg-[#1e293b]'}`}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${selectedFont === font.class ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-50 dark:bg-white/5 text-slate-500 border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10'}`}
                                             >
                                                 {font.name}
                                             </button>
@@ -189,14 +194,14 @@ export default function CreateStory({ onClose, onStoryCreated }: CreateStoryProp
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-slate-200 dark:border-[#334155] flex gap-3 bg-slate-50 dark:bg-[#0f172a]/50">
-                    <button onClick={onClose} className="flex-1 px-4 py-2 bg-[#334155] hover:bg-[#475569] text-white rounded-xl font-medium transition-colors">
+                <div className="p-4 bg-white dark:bg-[#1e293b] border-t border-slate-100 dark:border-white/5 flex gap-3">
+                    <button onClick={onClose} className="flex-1 px-4 py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white rounded-xl text-sm font-bold transition-all">
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading || (activeTab === 'media' && !image) || (activeTab === 'text' && !textStory.trim())}
-                        className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-colors shadow-lg shadow-blue-500/20"
+                        className="flex-[2] px-4 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95"
                     >
                         {loading ? 'Posting...' : 'Share to Story'}
                     </button>

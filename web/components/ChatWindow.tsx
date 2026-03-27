@@ -130,64 +130,64 @@ export default function ChatWindow({
     const messageGroups = groupMessagesByDate(messages);
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0f172a]/20 backdrop-blur-xl relative overflow-hidden">
-            {/* Header */}
-            <header className="p-4 border-b border-slate-200 dark:border-[#1e293b] flex items-center justify-between bg-slate-50 dark:bg-[#0f172a]/60 backdrop-blur-md z-10">
-                <div className="flex items-center gap-3">
+        <div className="flex flex-col h-full bg-transparent relative overflow-hidden">
+            {/* ── SOFT HEADER ── */}
+            <header className="pb-4 pt-1 flex items-center justify-between z-10 border-b border-slate-200 dark:border-slate-800/60">
+                <div className="flex items-center gap-4">
                     <div className="relative">
                         <div
-                            className="w-10 h-10 rounded-full bg-[#334155] bg-cover bg-center border border-slate-200 dark:border-[#334155]"
+                            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center border border-white dark:border-slate-700 shadow-sm"
                             style={{ backgroundImage: recipient.avatarUrl ? `url(${fixUrl(recipient.avatarUrl)})` : undefined }}
                         />
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-slate-200 dark:border-[#1e293b]" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-[#0b1120]" />
                     </div>
                     <div>
-                        <h2 className="font-bold text-white leading-tight">{recipient.displayName || recipient.username}</h2>
+                        <h2 className="font-bold text-[15px] text-slate-900 dark:text-white leading-tight">
+                            {recipient.displayName || recipient.username}
+                        </h2>
                         <div className="flex items-center gap-1.5 min-h-[1rem]">
                             {typingUser ? (
-                                <span className="text-[10px] text-blue-400 font-medium animate-pulse italic">typing...</span>
+                                <span className="text-[11px] text-blue-500 font-medium animate-pulse">typing...</span>
                             ) : (
-                                <span className="text-[10px] text-green-500 font-medium tracking-wide uppercase">Online</span>
+                                <span className="text-[11px] text-slate-500 font-medium">Active now</span>
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-1">
-                    <button className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500 dark:text-[#64748b]">
-                        <Search className="w-5 h-5" />
+                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                        <Search className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setShowSidebar(!showSidebar)}
-                        className={`p-2 rounded-full transition-colors ${showSidebar ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:bg-white/5'}`}
+                        className={`p-2 rounded-full transition-all ${showSidebar ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
                     >
-                        <Info className="w-5 h-5" />
+                        <Info className="w-4 h-4" />
                     </button>
-                    <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                        <MoreVertical className="w-5 h-5 text-slate-500 dark:text-[#64748b]" />
+                    <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white">
+                        <MoreVertical className="w-4 h-4" />
                     </button>
                 </div>
             </header>
-
             <div className="flex-1 flex overflow-hidden">
-                {/* Messages Area */}
-                <div className="flex-1 flex flex-col min-w-0">
+                {/* ── MESSAGES OZONE ── */}
+                <div className="flex-1 flex flex-col min-w-0 bg-transparent">
                     <div
                         ref={scrollRef}
-                        className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar pattern-dots"
+                        className="flex-1 overflow-y-auto pt-2 pb-4 space-y-2 custom-scrollbar"
                     >
                         {messages.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center opacity-30 select-none">
-                                <div className="w-20 h-20 rounded-full bg-white dark:bg-[#1e293b] flex items-center justify-center mb-4">
-                                    <MessageCircle className="w-10 h-10 text-white" />
+                            <div className="h-full flex flex-col items-center justify-center opacity-70 select-none">
+                                <div className="w-16 h-16 bg-white dark:bg-slate-800 shadow-sm rounded-full flex items-center justify-center mb-4 hover:-translate-y-1 transition-transform border border-slate-100 dark:border-slate-700/50">
+                                    <MessageCircle className="w-7 h-7 text-slate-300 dark:text-slate-500" />
                                 </div>
-                                <p className="text-slate-500 dark:text-[#64748b] text-sm">No messages yet. Start a conversation!</p>
+                                <p className="text-slate-500 dark:text-slate-400 text-[14px] font-medium">Say Hello!</p>
                             </div>
                         ) : (
                             Object.entries(messageGroups).map(([date, groupMessages]) => (
-                                <div key={date} className="space-y-4">
-                                    <div className="flex justify-center my-6">
-                                        <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-md border border-slate-200 dark:border-[#334155]/30 px-4 py-1 rounded-full text-[11px] font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-widest flex items-center gap-2">
-                                            <Calendar className="w-3 h-3" />
+                                <div key={date} className="space-y-4 pt-6">
+                                    <div className="flex justify-center mb-4 mt-2">
+                                        <div className="bg-transparent text-[11px] font-medium text-slate-400 dark:text-slate-500">
                                             {date === new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) ? 'Today' : date}
                                         </div>
                                     </div>
@@ -204,41 +204,41 @@ export default function ChatWindow({
                         )}
                         {typingUser && (
                             <motion.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="flex justify-start"
+                                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                className="flex justify-start ml-[40px]"
                             >
-                                <div className="bg-white dark:bg-[#1e293b]/40 px-3 py-1.5 rounded-full flex gap-1 items-center">
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
+                                <div className="bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 px-3.5 py-2.5 rounded-2xl rounded-tl-sm flex gap-1 items-center">
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
                                 </div>
                             </motion.div>
                         )}
                     </div>
 
-                    {/* Input Area */}
-                    <footer className="p-4 bg-slate-50 dark:bg-[#0f172a]/80 backdrop-blur-xl border-t border-slate-200 dark:border-[#1e293b] relative">
+                    {/* ── FLOATING INPUT AREA ── */}
+                    <footer className="py-3 relative border-t border-slate-200 dark:border-slate-800/60">
                         {replyTo && (
                             <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                className="mb-2 bg-white dark:bg-[#1e293b]/80 border-l-4 border-blue-500 p-3 rounded-r-xl flex items-center justify-between group"
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                className="absolute bottom-[calc(100%-1rem)] left-6 right-6 mb-2 bg-slate-100 dark:bg-slate-800/90 backdrop-blur-md shadow-xl border border-blue-500/20 p-3 rounded-[16px] flex items-center justify-between z-10"
                             >
-                                <div className="min-w-0">
-                                    <p className="text-xs font-bold text-blue-400">Replying to {replyTo.senderId === currentUserId ? 'yourself' : (replyTo.sender?.displayName || replyTo.sender?.username)}</p>
-                                    <p className="text-xs text-slate-500 dark:text-[#94a3b8] truncate mt-0.5">{replyTo.content}</p>
+                                <div className="min-w-0 border-l-4 border-blue-500 pl-3">
+                                    <p className="text-[12px] font-extrabold text-blue-600 dark:text-blue-400">Replying to {replyTo.senderId === currentUserId ? 'yourself' : (replyTo.sender?.displayName || replyTo.sender?.username)}</p>
+                                    <p className="text-[13px] font-medium text-slate-600 dark:text-slate-300 truncate mt-0.5">{replyTo.content}</p>
                                 </div>
                                 <button
                                     onClick={() => setReplyTo(null)}
-                                    className="p-1 hover:bg-white/10 rounded-full text-slate-500 dark:text-[#64748b] hover:text-white"
+                                    className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white/50"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </motion.div>
                         )}
                         {showEmojiPicker && (
-                            <div ref={emojiPickerRef} className="absolute bottom-full left-4 mb-2 z-20 shadow-2xl">
+                            <div ref={emojiPickerRef} className="absolute bottom-full left-4 mb-2 z-20 shadow-2xl rounded-[16px] overflow-hidden">
                                 <EmojiPicker
                                     onEmojiClick={onEmojiClick}
                                     theme={"dark" as any}
@@ -250,22 +250,24 @@ export default function ChatWindow({
                         <AnimatePresence>
                             {previewUrl && (
                                 <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
-                                    className="mb-4 relative inline-block group"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="absolute bottom-full left-6 mb-2 mt-4 z-10 group"
                                 >
-                                    <img
-                                        src={previewUrl}
-                                        alt="Preview"
-                                        className="h-32 rounded-xl border border-slate-200 dark:border-[#334155] shadow-lg"
-                                    />
-                                    <button
-                                        onClick={removeImage}
-                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
+                                    <div className="relative inline-block rounded-[20px] shadow-xl overflow-hidden border-2 border-white dark:border-slate-800">
+                                        <img
+                                            src={previewUrl}
+                                            alt="Preview"
+                                            className="h-32 object-cover"
+                                        />
+                                        <button
+                                            onClick={removeImage}
+                                            className="absolute top-2 right-2 bg-slate-900/50 hover:bg-red-500 backdrop-blur-md text-white p-1.5 rounded-full shadow-lg transition-all"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -273,20 +275,11 @@ export default function ChatWindow({
                         <form onSubmit={(e) => {
                             e.preventDefault();
                             if (!messageInput.trim() && !selectedFile) return;
-
-                            // Extend handleSendMessage to support replies if needed, 
-                            // but for now we'll just handle it here by passing reply info
-                            if (replyTo) {
-                                // We might need to update the parent component's onSendMessage
-                                // or handle it via content prefix for now, but better to update the signature.
-                                // I'll assume onSendMessage can take more args soon.
-                            }
-
                             onSendMessage(messageInput, selectedFile, replyTo?.id, replyTo?.content);
                             setReplyTo(null);
                             removeImage();
                             setShowEmojiPicker(false);
-                        }} className="flex items-center gap-3">
+                        }} className="flex items-center gap-2 bg-white dark:bg-slate-800 md:rounded-full rounded-2xl p-1.5 pl-3 border border-slate-200 dark:border-slate-700 w-full shadow-sm">
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -294,71 +287,81 @@ export default function ChatWindow({
                                 accept="image/*"
                                 className="hidden"
                             />
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center">
                                 <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="p-2 hover:bg-white/5 rounded-full transition-colors text-slate-500 dark:text-[#64748b] hover:text-white"
+                                    className="p-2 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-full transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                                 >
                                     <ImageIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                    className={`p-2 rounded-full transition-colors ${showEmojiPicker ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 dark:text-[#64748b] hover:bg-white/5 hover:text-white'}`}
+                                    className={`p-2 rounded-full transition-colors ${showEmojiPicker ? 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
                                 >
                                     <Smile className="w-5 h-5" />
                                 </button>
                             </div>
+                            
                             <div className="flex-1 relative">
                                 <input
                                     type="text"
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
-                                    placeholder="Type a message..."
-                                    className="w-full bg-white dark:bg-[#1e293b]/50 text-white px-5 py-3 rounded-2xl border border-slate-200 dark:border-[#334155] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder-[#475569]"
+                                    placeholder="Message..."
+                                    className="w-full bg-transparent text-slate-900 dark:text-white px-2 py-2 border-none focus:outline-none focus:ring-0 transition-all placeholder-slate-500 text-[14px]"
                                 />
                             </div>
+
                             <button
                                 type="submit"
                                 disabled={!messageInput.trim() && !selectedFile}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:from-[#1e293b] disabled:to-[#1e293b] disabled:opacity-50 text-white p-3 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center group"
+                                className="w-[36px] h-[36px] shrink-0 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 dark:bg-slate-100 dark:hover:bg-white dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-600 text-white dark:text-slate-900 rounded-full transition-all flex items-center justify-center mr-0.5"
                             >
-                                <Send className={`w-5 h-5 transition-transform ${messageInput.trim() || selectedFile ? 'group-hover:translate-x-1 group-hover:-translate-y-1' : ''}`} />
+                                <Send className="w-4 h-4 ml-0.5" />
                             </button>
                         </form>
                     </footer>
                 </div>
 
-                {/* Right Sidebar */}
+                {/* ── SOFT SIDEBAR ── */}
                 <AnimatePresence>
                     {showSidebar && (
                         <motion.aside
                             initial={{ width: 0, opacity: 0 }}
-                            animate={{ width: 320, opacity: 1 }}
+                            animate={{ width: 340, opacity: 1 }}
                             exit={{ width: 0, opacity: 0 }}
-                            className="bg-slate-50 dark:bg-[#0f172a]/60 backdrop-blur-2xl border-l border-slate-200 dark:border-[#1e293b] overflow-hidden flex flex-col"
+                            className="bg-transparent border-l border-slate-200 dark:border-slate-800/60 overflow-hidden flex flex-col shrink-0"
                         >
                             <div className="p-6 flex flex-col items-center text-center">
                                 <div
-                                    className="w-24 h-24 rounded-full bg-white dark:bg-[#1e293b] bg-cover bg-center border-4 border-blue-500/20 shadow-2xl mb-4"
-                                    style={{ backgroundImage: recipient.avatarUrl ? `url(${fixUrl(recipient.avatarUrl)})` : undefined }}
-                                />
-                                <h3 className="text-xl font-bold text-white">{recipient.displayName || recipient.username}</h3>
-                                <p className="text-sm text-green-500 mb-6 font-medium">Active Now</p>
+                                    className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center border-[3px] border-white dark:border-[#0b1120] shadow-md mb-4 relative overflow-hidden"
+                                >
+                                    {recipient.avatarUrl ? (
+                                        <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${fixUrl(recipient.avatarUrl)})` }} />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center font-bold text-3xl text-slate-400">
+                                            {(recipient.displayName || recipient.username)?.[0]?.toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+                                <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-6">{recipient.displayName || recipient.username}</h3>
 
                                 <div className="w-full space-y-4">
                                     <div className="text-left">
-                                        <h4 className="text-xs font-bold text-slate-500 dark:text-[#64748b] uppercase tracking-wider mb-4">Shared Media</h4>
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <h4 className="text-[13px] font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                                            <ImageIcon className="w-4 h-4 text-slate-400" /> Shared Media
+                                        </h4>
+                                        <div className="grid grid-cols-3 gap-1.5">
                                             {sharedMedia.length > 0 ? sharedMedia.map(item => (
-                                                <div key={item.id} className="aspect-square rounded-lg bg-white dark:bg-[#1e293b] overflow-hidden group cursor-pointer border border-slate-200 dark:border-[#334155]/50 hover:border-blue-500/50 transition-all">
-                                                    <img src={fixUrl(item.imageUrl)} alt="Shared" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                <div key={item.id} className="aspect-square rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+                                                    <img src={fixUrl(item.imageUrl)} alt="Shared" className="w-full h-full object-cover" />
                                                 </div>
                                             )) : (
-                                                <div className="col-span-3 py-8 flex flex-col items-center opacity-30">
-                                                    <ImageIcon className="w-8 h-8 mb-2" />
-                                                    <p className="text-xs">No media shared</p>
+                                                <div className="col-span-3 py-6 flex flex-col items-center opacity-60 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+                                                    <ImageIcon className="w-6 h-6 mb-2 text-slate-400" />
+                                                    <p className="text-[12px] font-medium text-slate-400">No media yet</p>
                                                 </div>
                                             )}
                                         </div>

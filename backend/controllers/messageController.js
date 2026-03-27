@@ -23,6 +23,7 @@ const getConversations = async (req, res) => {
                             select: {
                                 id: true,
                                 username: true,
+                                displayName: true,
                                 avatarUrl: true
                             }
                         }
@@ -37,7 +38,8 @@ const getConversations = async (req, res) => {
                         sender: {
                             select: {
                                 id: true,
-                                username: true
+                                username: true,
+                                displayName: true
                             }
                         }
                     }
@@ -74,6 +76,7 @@ const getConversations = async (req, res) => {
             };
         }));
 
+        console.log('Formatted Conversations API Response:', JSON.stringify(formattedConversations, null, 2));
         res.json(formattedConversations);
     } catch (error) {
         console.error('Error fetching conversations:', error);
@@ -108,6 +111,7 @@ const getMessages = async (req, res) => {
                     select: {
                         id: true,
                         username: true,
+                        displayName: true,
                         avatarUrl: true
                     }
                 }
@@ -227,6 +231,7 @@ const sendMessage = async (req, res) => {
                     select: {
                         id: true,
                         username: true,
+                        displayName: true,
                         avatarUrl: true
                     }
                 }
@@ -388,7 +393,7 @@ const handleReaction = async (req, res) => {
             data: { reactions },
             include: {
                 sender: {
-                    select: { id: true, username: true, avatarUrl: true }
+                    select: { id: true, username: true, displayName: true, avatarUrl: true }
                 }
             }
         });

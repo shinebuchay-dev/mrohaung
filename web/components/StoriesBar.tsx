@@ -68,34 +68,34 @@ export default function StoriesBar() {
 
     return (
         <>
-            <div className="bg-white dark:bg-[#1e293b]/50 backdrop-blur-xl border border-slate-200 dark:border-[#334155] rounded-2xl p-4 mb-6">
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="mb-8 border-b border-slate-100 dark:border-white/5">
+                <div className="flex gap-5 overflow-x-auto pb-5 scrollbar-hide px-0.5">
                     {/* Create Story Button */}
                     <button
                         onClick={() => setShowCreateStory(true)}
-                        className="flex-shrink-0 flex flex-col items-center gap-2 group"
+                        className="flex-shrink-0 flex flex-col items-center gap-2 group transition-all"
                     >
                         <div className="relative">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center">
+                            <div className="w-[60px] h-[60px] rounded-full p-[2px] bg-slate-100 dark:bg-white/5 ring-1 ring-slate-200 dark:ring-white/10 group-hover:ring-blue-500/50 transition-all duration-300">
                                 {currentUser?.avatarUrl ? (
                                     <img
                                         src={fixUrl(currentUser.avatarUrl)}
                                         alt="Your story"
-                                        className="w-14 h-14 rounded-full object-cover border border-slate-200 dark:border-[#1e293b]"
+                                        className="w-full h-full rounded-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-14 h-14 rounded-full bg-[#334155] flex items-center justify-center border border-slate-200 dark:border-[#1e293b]">
-                                        <span className="text-white font-bold text-lg">
+                                    <div className="w-full h-full rounded-full bg-slate-200 dark:bg-[#334155] flex items-center justify-center">
+                                        <span className="text-slate-500 dark:text-slate-400 font-bold text-lg">
                                             {(currentUser?.displayName || currentUser?.username)?.[0]?.toUpperCase() || '+'}
                                         </span>
                                     </div>
                                 )}
                             </div>
-                            <div className="absolute bottom-0 right-0 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center border-2 border-slate-200 dark:border-[#1e293b]">
-                                <Plus className="w-3 h-3 text-white" />
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center border-2 border-white dark:border-[#0f172a] shadow-lg">
+                                <Plus className="w-3.5 h-3.5 text-white stroke-[3px]" />
                             </div>
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-[#94a3b8] group-hover:text-white transition-colors">
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors tracking-tight">
                             {userHasStory ? 'Add Story' : 'Your Story'}
                         </span>
                     </button>
@@ -105,27 +105,32 @@ export default function StoriesBar() {
                         <button
                             key={group.userId}
                             onClick={() => setSelectedStoryGroup(group)}
-                            className="flex-shrink-0 flex flex-col items-center gap-2 group"
+                            className="flex-shrink-0 flex flex-col items-center gap-2 group transition-all"
                         >
-                            <div className={`w-16 h-16 rounded-full p-0.5 ${group.stories.some(s => !s.hasViewed)
-                                ? 'bg-gradient-to-tr from-pink-500 via-purple-500 to-blue-500'
-                                : 'bg-[#334155]'
+                            <div className={`w-[60px] h-[60px] rounded-full p-[2px] transition-all duration-300 ${group.stories.some(s => !s.hasViewed)
+                                ? 'bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-600 p-[3px] scale-105 shadow-lg shadow-blue-500/10'
+                                : 'bg-slate-200 dark:bg-white/10'
                                 }`}>
-                                {((group.userId === currentUser?.id ? currentUser.avatarUrl : group.avatarUrl)) ? (
-                                    <img
-                                        src={fixUrl(group.userId === currentUser?.id ? currentUser.avatarUrl : group.avatarUrl)}
-                                        alt={group.displayName || group.username || ''}
-                                        className="w-full h-full rounded-full object-cover border-2 border-slate-200 dark:border-[#1e293b]"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 border-2 border-slate-200 dark:border-[#1e293b] flex items-center justify-center">
-                                        <span className="text-white font-bold text-xs">
-                                            {(group.displayName || group.username)?.[0]?.toUpperCase()}
-                                        </span>
-                                    </div>
-                                )}
+                                <div className="w-full h-full rounded-full p-[2px] bg-white dark:bg-[#0f172a]">
+                                    {((group.userId === currentUser?.id ? currentUser.avatarUrl : group.avatarUrl)) ? (
+                                        <img
+                                            src={fixUrl(group.userId === currentUser?.id ? currentUser.avatarUrl : group.avatarUrl)}
+                                            alt={group.displayName || group.username || ''}
+                                            className="w-full h-full rounded-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                                            <span className="text-slate-600 dark:text-slate-400 font-bold text-xs uppercase">
+                                                {(group.displayName || group.username)?.[0]?.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-[#94a3b8] group-hover:text-white transition-colors max-w-[64px] truncate">
+                            <span className={`text-[11px] font-bold transition-colors tracking-tight max-w-[64px] truncate ${group.stories.some(s => !s.hasViewed)
+                                ? 'text-slate-900 dark:text-white'
+                                : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
+                                }`}>
                                 {group.userId === currentUser?.id ? 'You' : (group.displayName || group.username)}
                             </span>
                         </button>

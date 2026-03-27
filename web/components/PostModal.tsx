@@ -10,6 +10,7 @@ import { useSocket } from '@/lib/socket';
 import StickerPicker from './StickerPicker';
 import ReactionPicker from './ReactionPicker';
 import { fixUrl } from '@/lib/utils';
+import { useAuth } from '@/lib/AuthContext';
 
 interface PostModalProps {
     isOpen: boolean;
@@ -60,7 +61,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [showStickers, setShowStickers] = useState(false);
     const [selectedSticker, setSelectedSticker] = useState<string | null>(null);
-    const [currentUser, setCurrentUser] = useState<any>(null);
+    const { user: currentUser } = useAuth();
 
 
     const { socket } = useSocket();
@@ -131,7 +132,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
             setEditContent(post.content || '');
             fetchComments();
             setEditContent(post.content || '');
-            fetchCurrentUser();
+            // currentUser comes from AuthContext, no need to fetch
             // Reset Comment State
             setCommentText('');
             setAudioBlob(null);
@@ -169,14 +170,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         }
     }, [isOpen, post, socket]);
 
-    const fetchCurrentUser = async () => {
-        try {
-            const response = await api.get('/auth/me');
-            setCurrentUser(response.data);
-        } catch (error) {
-            console.error('Failed to fetch current user:', error);
-        }
-    };
+
 
 
 
@@ -233,6 +227,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
 
     const handleSubmitComment = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (submitting) return;
         if (!commentText.trim() && !audioBlob && !selectedSticker) return;
 
         setSubmitting(true);
@@ -312,10 +307,10 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 role="dialog"
                 aria-modal="true"
                 aria-label="Post details"
-                className="bg-white dark:bg-[#1e293b] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
+                className="bg-white dark:bg-[#0b1120] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
             >
                 {/* Mobile Sticky Header */}
-                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#1e293b] px-4 h-[44px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#0b1120] px-4 h-[44px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
                     <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">Post</h2>
                     <button
                         onClick={onClose}
@@ -328,7 +323,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     {/* Post Header (Author Info) - Sticky */}
-                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#1e293b] px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#0b1120] px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
                         <div className="flex items-center gap-3">
                             <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0 group" onClick={onClose}>
                                 <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#334155] bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
@@ -363,7 +358,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                                 initial={{ opacity: 0, scale: 0.95, y: -5 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                className="absolute right-0 mt-1 w-48 bg-white dark:bg-[#1e293b] backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden z-[110]"
+                                                className="absolute right-0 mt-1 w-48 bg-white dark:bg-[#0b1120] backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden z-[110]"
                                             >
                                                 <div className="py-1">
                                                     {isOwnPost ? (
@@ -499,13 +494,13 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="flex-none px-3 py-2 bg-white dark:bg-[#1e293b] border-t border-slate-100 dark:border-white/5 z-10 w-full">
+                <div className="flex-none px-3 py-2 bg-white dark:bg-[#0b1120] border-t border-slate-100 dark:border-white/5 z-10 w-full">
                     {currentUserId ? (
                         <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full">
                             {/* Left: Input Area */}
-                            <div className="flex-1 bg-white dark:bg-[#1e293b]/40 hover:bg-white dark:bg-[#1e293b]/60 transition-colors rounded-2xl px-3 py-2 min-h-[44px] flex items-center">
+                            <div className="flex-1 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors rounded-2xl px-3 py-2 min-h-[44px] flex items-center border border-slate-100 dark:border-white/5 focus-within:border-blue-500/50 transition-all">
                                 {selectedSticker ? (
-                                    <div className="flex items-center gap-2 bg-white dark:bg-[#1e293b] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-[#0b1120] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit">
                                         <img src={fixUrl(selectedSticker)} alt="Selected" className="w-8 h-8 object-contain" />
                                         <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-white/10 rounded-full text-slate-500 dark:text-[#94a3b8]"><X className="w-3 h-3" /></button>
                                     </div>
@@ -579,7 +574,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             </div>
                         </form>
                     ) : (
-                        <div className="flex items-center justify-center py-2 px-4 bg-white dark:bg-[#1e293b]/40 rounded-xl border border-slate-200 dark:border-[#334155]/50">
+                        <div className="flex items-center justify-center py-2 px-4 bg-white dark:bg-[#0b1120]/40 rounded-xl border border-slate-200 dark:border-[#334155]/50">
                             <p className="text-sm text-slate-500 dark:text-[#94a3b8]">Please login to join the conversation</p>
                         </div>
                     )}

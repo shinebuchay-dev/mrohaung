@@ -100,7 +100,10 @@ function MessagesContent() {
 
         socket.on('new_message', ({ conversationId, message }) => {
             if (selectedConversation?.id === conversationId) {
-                setMessages(prev => [...prev, message]);
+                setMessages(prev => {
+                    if (prev.some(m => m.id === message.id)) return prev;
+                    return [...prev, message];
+                });
                 markAsRead(conversationId);
             }
             fetchConversations();
@@ -171,7 +174,10 @@ function MessagesContent() {
                 }
             });
 
-            setMessages(prev => [...prev, response.data]);
+            setMessages(prev => {
+                if (prev.some(m => m.id === response.data.id)) return prev;
+                return [...prev, response.data];
+            });
             if (socket) {
                 socket.emit('stop_typing', { conversationId: selectedConversation.id });
             }
@@ -214,9 +220,9 @@ function MessagesContent() {
     }
 
     return (
-        <div className="h-screen bg-slate-50 dark:bg-[#0f172a] flex overflow-hidden">
+        <div className="h-[calc(100vh-6rem)] -mt-6 flex bg-transparent">
             {/* Left Sidebar - Conversation List */}
-            <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-[350px] lg:w-[400px] h-full`}>
+            <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-[320px] lg:w-[360px] h-[calc(100vh-6rem)] border-r border-slate-200 dark:border-slate-800/60 pr-2 md:pr-4`}>
                 <ConversationList
                     conversations={conversations}
                     selectedId={selectedConversation?.id}
@@ -226,14 +232,15 @@ function MessagesContent() {
             </div>
 
             {/* Right Side - Chat Window */}
-            <main className={`${selectedConversation ? 'block' : 'hidden md:flex'} flex-1 h-full`}>
+            <main className={`${selectedConversation ? 'block' : 'hidden md:flex'} flex-1 h-[calc(100vh-6rem)] pl-2 md:pl-6 bg-transparent`}>
                 <AnimatePresence mode="wait">
                     {selectedConversation ? (
                         <motion.div
                             key={selectedConversation.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
                             className="w-full h-full"
                         >
                             <ChatWindow
@@ -251,23 +258,15 @@ function MessagesContent() {
                             />
                         </motion.div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50 dark:bg-[#0f172a]/40 backdrop-blur-xl">
-                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600/20 to-purple-600/20 flex items-center justify-center mb-6">
-                                <motion.div
-                                    animate={{
-                                        scale: [1, 1.1, 1],
-                                        rotate: [0, 5, -5, 0]
-                                    }}
-                                    transition={{ duration: 4, repeat: Infinity }}
-                                >
-                                    <svg className="w-12 h-12 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.827-1.213L3 21l1.657-4.582A13.854 13.854 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                    </svg>
-                                </motion.div>
+                        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-transparent">
+                            <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-5 text-slate-400 dark:text-slate-500">
+                                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.827-1.213L3 21l1.657-4.582A13.854 13.854 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-white mb-2">Your Messages</h2>
-                            <p className="text-slate-500 dark:text-[#64748b] max-w-sm">
-                                Send a message to start a conversation with your friends.
+                            <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-1.5">Your Messages</h2>
+                            <p className="text-[14px] text-slate-500 font-medium">
+                                Select a conversation or start a new one to begin messaging.
                             </p>
                         </div>
                     )}

@@ -19,8 +19,8 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
 
     const filteredConversations = conversations.filter(conv => {
         const otherUser = conv.participants[0];
-        const name = (otherUser.displayName || otherUser.username || '').toLowerCase();
-        return name.includes(searchQuery.toLowerCase()) || (otherUser.username || '').toLowerCase().includes(searchQuery.toLowerCase());
+        const name = (otherUser.displayName || '').toLowerCase();
+        return name.includes(searchQuery.toLowerCase());
     });
 
     const formatTime = (dateString: string) => {
@@ -40,24 +40,27 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
     };
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0f172a]/40 backdrop-blur-xl border-r border-slate-200 dark:border-[#1e293b]">
-            <div className="p-4 border-b border-slate-200 dark:border-[#1e293b]">
-                <h1 className="text-xl font-bold text-white mb-4">Messages</h1>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-[#64748b]" />
+        <div className="flex flex-col h-full bg-transparent">
+            {/* ── SOFT HEADER ── */}
+            <div className="pb-4 pt-2">
+                <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-5 tracking-tight flex items-center justify-between">
+                    Messages
+                </h1>
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <input
                         type="text"
                         placeholder="Search chats..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-white dark:bg-[#1e293b]/50 border border-slate-200 dark:border-[#334155] rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-[#64748b] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm rounded-[16px] pl-11 pr-4 py-2.5 text-[14px] font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all hover:border-slate-300 dark:hover:border-slate-600"
                     />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-4">
                 {filteredConversations.length === 0 ? (
-                    <div className="p-8 text-center text-slate-500 dark:text-[#64748b]">
+                    <div className="p-8 text-center text-[13px] font-medium text-slate-400">
                         {searchQuery ? 'No results found' : 'No conversations yet'}
                     </div>
                 ) : (
@@ -66,54 +69,47 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
                         const isActive = selectedId === conv.id;
 
                         return (
-                            <motion.div
+                            <button
                                 key={conv.id}
-                                whileHover={{ backgroundColor: 'rgba(30, 41, 59, 0.4)' }}
-                                whileTap={{ scale: 0.98 }}
                                 onClick={() => onSelect(conv)}
-                                className={`mx-2 my-1 p-3 rounded-2xl cursor-pointer transition-all relative group ${isActive
-                                    ? 'bg-blue-600/20 shadow-lg shadow-blue-500/10'
-                                    : 'hover:bg-white dark:bg-[#1e293b]/30'
+                                className={`w-full flex items-center gap-4 py-3 px-3.5 mb-1.5 rounded-[20px] text-left transition-all duration-300 relative group
+                                    ${isActive
+                                        ? 'bg-white dark:bg-slate-800 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] shadow-blue-500/5 border border-slate-200/60 dark:border-slate-700'
+                                        : 'bg-transparent border border-transparent hover:bg-white/60 dark:hover:bg-slate-800/40 hover:border-slate-200/50 dark:hover:border-slate-800'
                                     }`}
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                        <div
-                                            className={`w-12 h-12 rounded-full bg-white dark:bg-[#1e293b] bg-cover bg-center border-2 transition-all ${isActive ? 'border-blue-500 shadow-lg shadow-blue-500/20' : 'border-slate-200 dark:border-[#334155]/50 group-hover:border-[#475569]'}`}
-                                            style={{ backgroundImage: otherUser.avatarUrl ? `url(${fixUrl(otherUser.avatarUrl)})` : undefined }}
-                                        />
-                                        <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-[#0f172a]" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-0.5">
-                                            <h3 className={`font-bold text-sm truncate ${isActive ? 'text-white' : 'text-[#f1f5f9]'}`}>
-                                                {otherUser.displayName || otherUser.username}
-                                            </h3>
-                                            {conv.lastMessageAt && (
-                                                <span className={`text-[10px] ${isActive ? 'text-blue-300' : 'text-slate-500 dark:text-[#64748b]'}`}>
-                                                    {formatTime(conv.lastMessageAt)}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <p className={`text-xs truncate flex-1 ${conv.unreadCount > 0 ? 'text-blue-100 font-bold' : 'text-slate-500 dark:text-[#94a3b8]'}`}>
-                                                {conv.id === '' ? 'Start a new conversation' : (conv.lastMessage?.content || 'Started a conversation')}
-                                            </p>
-                                            {conv.unreadCount > 0 && (
-                                                <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[10px] font-black rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1.5 shadow-lg shadow-blue-500/30">
-                                                    {conv.unreadCount}
+                                <div className="relative flex-shrink-0">
+                                    <div
+                                        className={`w-[52px] h-[52px] rounded-[16px] shadow-sm overflow-hidden flex items-center justify-center transition-all ${isActive ? 'rotate-3 scale-105 border-2 border-white dark:border-slate-800 blur-[0.2px]' : ''} ${conv.unreadCount > 0 ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
+                                    >
+                                        <div className={`w-full h-full rounded-[16px] bg-cover bg-center ${isActive ? '-rotate-3 scale-110' : ''}`} style={otherUser.avatarUrl ? { backgroundImage: `url(${fixUrl(otherUser.avatarUrl)})` } : {}}>
+                                            {!otherUser.avatarUrl && (
+                                                <div className="w-full h-full flex items-center justify-center font-bold text-lg">
+                                                    {(otherUser.displayName || otherUser.username)?.[0]?.toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
+                                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-[3px] z-10 ${isActive ? 'border-white dark:border-slate-800' : 'border-slate-50 dark:border-[#0b1120] group-hover:border-white dark:group-hover:border-slate-800/40'}`} />
+                                    {conv.unreadCount > 0 && <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-500 text-white rounded-full border-[3px] border-white dark:border-[#0b1120] flex items-center justify-center text-[10px] font-bold shadow-sm z-10">{conv.unreadCount}</div>}
                                 </div>
-                                {isActive && (
-                                    <motion.div
-                                        layoutId="active-indicator"
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
-                                    />
-                                )}
-                            </motion.div>
+                                
+                                <div className="flex-1 min-w-0 pr-1">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h3 className={`font-bold text-[15px] truncate tracking-tight transition-colors ${conv.unreadCount > 0 ? 'text-slate-900 dark:text-white' : isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                                            {otherUser.displayName || otherUser.username}
+                                        </h3>
+                                        {conv.lastMessageAt && (
+                                            <span className={`text-[11px] font-bold ${conv.unreadCount > 0 ? 'text-blue-500' : 'text-slate-400'}`}>
+                                                {formatTime(conv.lastMessageAt)}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className={`text-[13px] truncate font-medium ${isActive ? 'text-slate-600 dark:text-slate-300' : conv.unreadCount > 0 ? 'text-slate-800 dark:text-slate-200' : 'text-slate-500 dark:text-slate-500'}`}>
+                                        {conv.id === '' ? 'Start a new conversation' : (conv.lastMessage?.content || 'Sent an attachment')}
+                                    </p>
+                                </div>
+                            </button>
                         );
                     })
                 )}

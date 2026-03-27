@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { MessageCircle, X, Clock, ChevronUp, ArrowLeft, Send, Sparkles, Users } from 'lucide-react';
+import { MessageCircle, X, Clock, ChevronUp, ArrowLeft, Send, Sparkles, Users, Maximize2 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
@@ -26,7 +26,7 @@ interface Conversation {
 
 interface MessageDropdownProps {
     onChatSelect?: (user: any) => void;
-    variant?: 'header' | 'sidebar';
+    variant?: 'header' | 'sidebar' | 'floating';
 }
 
 export default function MessageDropdown({ onChatSelect, variant = 'header' }: MessageDropdownProps) {
@@ -46,7 +46,9 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const { socket } = useSocket();
+    const router = useRouter();
     const isSidebar = variant === 'sidebar';
+    const isFloating = variant === 'floating';
 
     const fetchConversations = async () => {
         try {
@@ -152,13 +154,7 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                 recipientId: activeUser.id,
                 content: currentInput
             });
-            const newMessage = res.data.message || {
-                id: Date.now().toString(),
-                content: currentInput,
-                senderId: currentUser?.id,
-                createdAt: new Date().toISOString(),
-                sender: currentUser
-            };
+            const newMessage = res.data.message || res.data;
             setInternalMessages(prev => {
                 if (prev.some(m => m.id === newMessage.id)) return prev;
                 return [...prev, newMessage];
@@ -172,9 +168,9 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
     };
 
     return (
-        <div className={`relative ${isSidebar ? 'w-full mb-2' : ''}`}>
+        <div className={isFloating ? "fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[90]" : `relative ${isSidebar ? 'w-full mb-2' : ''}`}>
             <AnimatePresence>
-                {showDropdown && (
+                {showDropdown && !isFloating && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -185,82 +181,150 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                 )}
             </AnimatePresence>
 
-            <button
-                onClick={() => {
-                    setShowDropdown(!showDropdown);
-                    if (!showDropdown) setActiveUser(null);
-                }}
-                className={isSidebar
-                    ? `w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${showDropdown ? 'bg-blue-600 shadow-lg text-white' : 'text-slate-500 dark:text-[#94a3b8] hover:bg-white/5 hover:text-white'}`
-                    : "p-2 rounded-full hover:bg-white/5 transition-colors relative"
-                }
-            >
-                <div className="flex items-center gap-3 relative">
-                    <div className={`p-1.5 rounded-xl ${showDropdown ? 'bg-white/20' : 'bg-blue-500/10'}`}>
-                        <MessageCircle className={`w-4 h-4 ${showDropdown ? 'text-white' : 'text-blue-500'}`} />
-                    </div>
-                    {isSidebar && <span className="text-[13px] font-bold">Messages</span>}
-                    {unreadTotal > 0 && (
-                        <span className="absolute -top-1 -left-1 min-w-[16px] h-[16px] bg-red-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-slate-200 dark:border-[#1e293b]">
-                            {unreadTotal > 9 ? '9+' : unreadTotal}
-                        </span>
+            {!(isFloating && showDropdown) && (
+                <button
+                    onClick={() => {
+                        setShowDropdown(!showDropdown);
+                        if (!showDropdown) setActiveUser(null);
+                    }}
+                    className={
+                        isFloating
+                            ? `flex items-center px-4 py-3 rounded-[20px] shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-1 active:scale-95 z-50 bg-blue-600 text-white`
+                            : isSidebar
+                                ? `w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl transition-all duration-300 group ${showDropdown ? 'bg-blue-600 shadow-md text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`
+                                : "p-2 rounded-full hover:bg-white/5 transition-colors relative"
+                    }
+                >
+                    {isFloating ? (
+                        <div className="flex items-center gap-2">
+                            <div className="relative flex items-center justify-center">
+                                <MessageCircle className="w-5 h-5" />
+                                {unreadTotal > 0 && (
+                                    <span className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 border-blue-600">
+                                        {unreadTotal > 9 ? '9+' : unreadTotal}
+                                    </span>
+                                )}
+                            </div>
+                            <span className="font-bold text-[15px]">Messages</span>
+                            <ChevronUp className="w-4 h-4 ml-1 opacity-70" />
+                        </div>
+                    ) : (
+                        <>
+                            <div className="flex items-center gap-3 relative">
+                                <div className={`transition-colors ${showDropdown ? 'text-white' : 'text-slate-400'}`}>
+                                    <MessageCircle className="w-5 h-5 flex-shrink-0" />
+                                </div>
+                                {isSidebar && <span className="text-sm">Message</span>}
+                                {unreadTotal > 0 && (
+                                    <span className={`absolute -top-1 -left-1 min-w-[17px] h-[17px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center border-2 ${showDropdown ? 'border-blue-600' : 'border-white dark:border-[#0f172a]'}`}>
+                                        {unreadTotal > 9 ? '9+' : unreadTotal}
+                                    </span>
+                                )}
+                            </div>
+                            {isSidebar && <ChevronUp className={`w-3.5 h-3.5 transition-transform duration-300 ${showDropdown ? 'rotate-180 opacity-100' : 'opacity-40'}`} />}
+                        </>
                     )}
-                </div>
-                {isSidebar && <ChevronUp className={`w-3.5 h-3.5 opacity-40 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />}
-            </button>
+                </button>
+            )}
 
             <AnimatePresence>
                 {showDropdown && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.98, y: isSidebar ? -5 : 5 }}
-                        animate={{ opacity: 1, scale: 1, y: isSidebar ? -10 : 0 }}
-                        exit={{ opacity: 0, scale: 0.98, y: isSidebar ? -5 : 5 }}
-                        className={`absolute ${isSidebar ? 'top-[calc(100%+8px)] left-0' : 'right-0 mt-2'} bg-[#1a2233] border border-white/5 rounded-[20px] shadow-2xl z-50 flex flex-col overflow-hidden`}
-                        style={{ height: '440px', width: isSidebar ? '100%' : '300px' }}
+                        initial={{ opacity: 0, scale: 0.9, y: 20, transformOrigin: 'bottom right' }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{ duration: 0.2, type: "spring", stiffness: 300, damping: 25 }}
+                        className={isFloating 
+                            ? `absolute bottom-0 right-0 bg-white dark:bg-[#0b1120] border border-slate-100 dark:border-slate-800 rounded-2xl shadow-2xl z-[100] flex flex-col overflow-hidden outline-none`
+                            : `absolute bottom-full left-0 mb-5 bg-white dark:bg-[#0b1120] border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl dark:shadow-none z-50 flex flex-col overflow-hidden outline-none`}
+                        style={{ height: '520px', maxHeight: 'calc(100vh - 8rem)', width: isFloating ? '340px' : (isSidebar ? '100%' : '320px'), maxWidth: 'calc(100vw - 2rem)' }}
                     >
-                        {/* Header */}
-                        <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                            <div className="flex items-center gap-2.5 overflow-hidden">
+                        {/* ── SOFT HEADER ── */}
+                        <div className="px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0b1120]">
+                            <div className="flex items-center gap-2 overflow-hidden">
                                 {activeUser && (
-                                    <button onClick={() => setActiveUser(null)} className="p-1.5 hover:bg-white/5 rounded-lg">
-                                        <ArrowLeft className="w-4 h-4 text-slate-500 dark:text-[#94a3b8]" />
+                                    <button onClick={() => setActiveUser(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 hover:text-blue-600 transition-all">
+                                        <ArrowLeft className="w-5 h-5" />
                                     </button>
                                 )}
                                 <div className="flex flex-col truncate">
-                                    <h3 className="font-bold text-[13px] text-white truncate">
+                                    <h3 className="font-bold text-[15px] text-slate-900 dark:text-white tracking-tight truncate">
                                         {activeUser ? activeUser.displayName || activeUser.username : 'Messages'}
                                     </h3>
-                                    {activeUser && <span className="text-[9px] text-green-500 font-bold uppercase flex items-center gap-1"><span className="w-1.5 h-1.5 bg-green-500 rounded-full" />Online</span>}
                                 </div>
                             </div>
-                            <button onClick={() => setShowDropdown(false)} className="p-1.5 hover:bg-white/5 rounded-lg">
-                                <X className="w-4 h-4 text-slate-500 dark:text-[#64748b]" />
-                            </button>
+                            <div className="flex items-center gap-0.5">
+                                <button onClick={() => {
+                                    setShowDropdown(false);
+                                    router.push('/messages');
+                                }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full transition-all" title="Open Desktop Chat">
+                                    <Maximize2 className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => setShowDropdown(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-full transition-all">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         {!activeUser ? (
-                            <div className="flex-1 flex flex-col overflow-hidden">
-                                {/* Density Tabs */}
-                                <div className="flex gap-1 p-1 bg-black/20 mx-3 mt-3 rounded-lg border border-white/5">
-                                    <button onClick={() => setActiveTab('recent')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'recent' ? 'bg-[#334155] text-white' : 'text-slate-500 dark:text-[#64748b]'}`}>Recent</button>
-                                    <button onClick={() => setActiveTab('friends')} className={`flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all ${activeTab === 'friends' ? 'bg-[#334155] text-white' : 'text-slate-500 dark:text-[#64748b]'}`}>Friends</button>
+                            <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50 dark:bg-[#0b1120]">
+                                {/* ── PILL TABS ── */}
+                                <div className="flex px-4 pt-4">
+                                    <div className="flex w-full bg-slate-100 dark:bg-slate-800/80 p-1 rounded-[16px]">
+                                        <button 
+                                            onClick={() => setActiveTab('recent')} 
+                                            className={`flex-1 py-1.5 text-[13px] font-bold rounded-[12px] transition-all ${activeTab === 'recent' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                        >
+                                            Recent
+                                        </button>
+                                        <button 
+                                            onClick={() => setActiveTab('friends')} 
+                                            className={`flex-1 py-1.5 text-[13px] font-bold rounded-[12px] transition-all ${activeTab === 'friends' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                        >
+                                            Friends
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="flex-1 overflow-y-auto mt-2 custom-scrollbar px-1.5 pb-3">
+
+                                {/* ── FLOATING LIST ── */}
+                                <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1 custom-scrollbar">
                                     {(activeTab === 'recent' ? conversations : friends).map((item: any) => {
                                         const isConv = activeTab === 'recent';
                                         const otherUser = isConv ? item.participants[0] : item;
+                                        const hasUnread = isConv && item.unreadCount > 0;
+
                                         return (
-                                            <button key={item.id} onClick={() => handleUserSelect(otherUser)} className={`w-full flex items-center gap-3 p-2.5 mb-0.5 rounded-xl hover:bg-white/5 text-left group`}>
-                                                <div className="w-8 h-8 rounded-lg bg-[#334155] overflow-hidden">
-                                                    {otherUser.avatarUrl ? <img src={fixUrl(otherUser.avatarUrl)} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-blue-600/20 text-blue-400 font-bold text-xs">{(otherUser.displayName || otherUser.username)?.[0]?.toUpperCase()}</div>}
+                                            <button 
+                                                key={item.id} 
+                                                onClick={() => handleUserSelect(otherUser)} 
+                                                className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all duration-200 text-left group
+                                                    ${hasUnread ? 'bg-blue-50/50 dark:bg-slate-800 border border-blue-100/50 dark:border-blue-900/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800/80 border border-transparent'}
+                                                `}
+                                            >
+                                                <div className="relative flex-shrink-0">
+                                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 overflow-hidden flex items-center justify-center font-bold text-sm">
+                                                        {otherUser.avatarUrl ? (
+                                                            <img src={fixUrl(otherUser.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            (otherUser.displayName || otherUser.username)?.[0]?.toUpperCase()
+                                                        )}
+                                                    </div>
+                                                    {hasUnread && <div className="absolute top-0 right-0 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-[#0f172a]" />}
                                                 </div>
+
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-0.5">
-                                                        <span className="font-bold text-[12px] text-white/90 truncate">{otherUser.displayName || otherUser.username}</span>
-                                                        {isConv && item.lastMessage && <span className="text-[9px] text-slate-500 dark:text-[#64748b]">{formatTime(item.lastMessage.createdAt)}</span>}
+                                                        <span className={`text-[14px] truncate font-bold ${hasUnread ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>
+                                                            {otherUser.displayName || otherUser.username}
+                                                        </span>
+                                                        {isConv && item.lastMessage && (
+                                                            <span className={`text-[11px] font-bold ${hasUnread ? 'text-blue-500' : 'text-slate-400'}`}>
+                                                                {formatTime(item.lastMessage.createdAt)}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <p className={`text-[11px] truncate ${isConv && item.unreadCount > 0 ? 'text-blue-400 font-bold' : 'text-slate-500 dark:text-[#64748b]'}`}>
-                                                        {isConv ? item.lastMessage?.content || 'New message' : item.lastMessage?.content || ''}
+                                                    <p className={`text-[13px] truncate font-medium ${hasUnread ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                        {isConv ? item.lastMessage?.content || 'Sent an attachment' : 'Start a conversation'}
                                                     </p>
                                                 </div>
                                             </button>
@@ -269,8 +333,9 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex-1 flex flex-col bg-black/5 overflow-hidden">
-                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                            <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50 dark:bg-[#0b1120]">
+                                {/* ── MESSAGES ── */}
+                                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
                                     {internalMessages.length > 0 ? (
                                         internalMessages.map((msg) => (
                                             <MessageBubble
@@ -281,29 +346,31 @@ export default function MessageDropdown({ onChatSelect, variant = 'header' }: Me
                                             />
                                         ))
                                     ) : (
-                                        <div className="h-full flex flex-col items-center justify-center opacity-10">
-                                            <Sparkles className="w-8 h-8 mb-2" />
-                                            <p className="text-[10px] font-bold uppercase tracking-widest leading-none">Encrypted</p>
+                                        <div className="h-full flex flex-col items-center justify-center text-center px-6 opacity-60">
+                                            <div className="w-16 h-16 rounded-[20px] bg-slate-200 dark:bg-slate-800 flex items-center justify-center mb-4">
+                                                <MessageCircle className="w-8 h-8 text-slate-400" />
+                                            </div>
+                                            <p className="text-[14px] font-bold text-slate-500">Say Hello!</p>
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Compact Sticky Input */}
-                                <div className="p-2.5 mt-auto bg-white/5 border-t border-white/5">
-                                    <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-slate-50 dark:bg-[#0f172a] p-1 pr-1 pl-3 rounded-xl border border-white/5 focus-within:border-blue-500/30 transition-all">
+                                {/* ── FLOATING INPUT ── */}
+                                <div className="p-3 bg-white dark:bg-[#0b1120] border-t border-slate-100 dark:border-slate-800">
+                                    <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-1 pl-3 rounded-full border border-slate-200 dark:border-slate-700">
                                         <input
                                             type="text"
                                             value={inputText}
                                             onChange={(e) => setInputText(e.target.value)}
-                                            placeholder="Type a message..."
-                                            className="flex-1 bg-transparent text-[11px] text-white py-1.5 focus:outline-none"
+                                            placeholder="Write a message..."
+                                            className="flex-1 bg-transparent text-[14px] font-medium text-slate-800 dark:text-white py-2 focus:outline-none placeholder:text-slate-400"
                                         />
                                         <button
                                             type="submit"
                                             disabled={!inputText.trim()}
-                                            className="p-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white disabled:opacity-20 active:scale-95"
+                                            className="w-9 h-9 flex items-center justify-center shrink-0 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:opacity-50 transition-colors"
                                         >
-                                            <Send className="w-3 h-3" />
+                                            <Send className="w-4 h-4 ml-0.5" />
                                         </button>
                                     </form>
                                 </div>

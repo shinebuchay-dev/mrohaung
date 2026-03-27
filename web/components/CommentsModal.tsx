@@ -40,6 +40,7 @@ export default function CommentsModal({ isOpen, onClose, post, onCommentAdded }:
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!commentText.trim()) return;
+        if (submitting) return;
 
         setSubmitting(true);
         try {

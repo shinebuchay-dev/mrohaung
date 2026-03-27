@@ -217,14 +217,6 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             >
                                 {post.author.displayName || post.author.username}
                             </Link>
-                            <Link
-                                href={`/profile/${post.author.username}`}
-                                prefetch={false}
-                                onClick={(e) => e.stopPropagation()}
-                                className="text-[13px] text-slate-400 dark:text-slate-500 hover:underline truncate"
-                            >
-                                @{post.author.username}
-                            </Link>
                             <span className="text-slate-300 dark:text-slate-600 text-[13px]">·</span>
                             <span className="text-[13px] text-slate-400 dark:text-slate-500 flex-shrink-0">{timeAgo(post.createdAt)}</span>
                         </div>

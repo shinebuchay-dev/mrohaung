@@ -138,7 +138,6 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
     };
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this comment?')) return;
         try {
             await api.delete(`/comments/${comment.id}`);
             if (onDelete) onDelete(comment.id);
@@ -274,7 +273,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     placeholder={`Reply to ${comment.user?.displayName || comment.user?.username}...`}
-                                    className="flex-1 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-[#334155] rounded-full px-4 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
+                                    className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/10 transition-all rounded-full px-4 py-1.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500/50 placeholder-slate-500"
                                     autoFocus
                                 />
                                 <button
