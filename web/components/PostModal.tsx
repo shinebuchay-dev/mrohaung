@@ -19,6 +19,7 @@ interface PostModalProps {
     onUpdate?: (post: any) => void;
     onDelete?: (id?: string) => void;
     currentUserId?: string;
+    initialCommentId?: string | null;
 }
 
 // Edit textarea settings
@@ -43,7 +44,7 @@ const formatTimeRelative = (date: string) => {
 // CommentItem removed - using CommentSection component
 import CommentSection from './CommentSection';
 
-export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, currentUserId }: PostModalProps) {
+export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, currentUserId, initialCommentId }: PostModalProps) {
     const [comments, setComments] = useState<any[]>([]);
     const [commentText, setCommentText] = useState('');
     const [loading, setLoading] = useState(false);
@@ -88,29 +89,39 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
     const originalUrlRef = useRef<string | null>(null);
 
     useEffect(() => {
-        if (isOpen && post && post.author && post.id) {
-            const newUrl = `/profile/${post.author.username}/${post.id}`;
-            // Avoid double pushing if already on that URL
-            if (window.location.pathname !== newUrl) {
-                originalUrlRef.current = window.location.pathname + window.location.search;
-                window.history.pushState({ postModal: true }, '', newUrl);
+        if (isOpen && post && post.id) {
+            const currentParams = new URLSearchParams(window.location.search);
+            const originalPath = window.location.pathname;
+            
+            // Only push if it's not already there
+            if (currentParams.get('post') !== post.id) {
+                currentParams.set('post', post.id);
+                const newUrl = `${originalPath}?${currentParams.toString()}`;
+                window.history.pushState({ postModal: true, postId: post.id }, '', newUrl);
             }
 
-            const handlePopState = () => {
-                if (isOpen) {
+            const handlePopState = (event: PopStateEvent) => {
+                // If we hit the back button and the state doesn't have the post, close modal
+                if (isOpen && (!event.state || event.state.postId !== post.id)) {
                     onClose();
                 }
             };
+
             window.addEventListener('popstate', handlePopState);
             return () => {
                 window.removeEventListener('popstate', handlePopState);
-                // Restore URL if we were the ones who pushed it
-                if (originalUrlRef.current && window.location.pathname === newUrl) {
-                    window.history.pushState(null, '', originalUrlRef.current);
+                
+                // When closing, remove the 'post' param if it's still there
+                const finalParams = new URLSearchParams(window.location.search);
+                if (finalParams.get('post') === post.id) {
+                    finalParams.delete('post');
+                    const search = finalParams.toString();
+                    const restoredUrl = `${originalPath}${search ? '?' + search : ''}`;
+                    window.history.replaceState(null, '', restoredUrl);
                 }
             };
         }
-    }, [isOpen, post, onClose]);
+    }, [isOpen, post.id, onClose]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -130,8 +141,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         if (isOpen) {
             fetchComments();
             setEditContent(post.content || '');
-            fetchComments();
-            setEditContent(post.content || '');
+            
             // currentUser comes from AuthContext, no need to fetch
             // Reset Comment State
             setCommentText('');
@@ -168,7 +178,25 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 };
             }
         }
-    }, [isOpen, post, socket]);
+    }, [isOpen, post.id, socket]);
+
+    // Scroll to initial comment
+    useEffect(() => {
+        if (isOpen && initialCommentId && comments.length > 0) {
+            const timer = setTimeout(() => {
+                const element = document.getElementById(`comment-${initialCommentId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Highlight effect
+                    element.classList.add('bg-blue-500/10', 'dark:bg-blue-400/10');
+                    setTimeout(() => {
+                        element.classList.remove('bg-blue-500/10', 'dark:bg-blue-400/10');
+                    }, 2500);
+                }
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, initialCommentId, comments]);
 
 
 
@@ -487,6 +515,8 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                     comments={comments}
                                     currentUserId={currentUserId}
                                     postId={post.id}
+                                    onDelete={(id) => setComments(prev => prev.filter(c => c.id !== id))}
+                                    onUpdate={(id, content) => setComments(prev => prev.map(c => c.id === id ? { ...c, content } : c))}
                                 />
                             </div>
                         </div>
@@ -494,20 +524,21 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="flex-none px-3 py-2 bg-white dark:bg-[#0b1120] border-t border-slate-100 dark:border-white/5 z-10 w-full">
+                <div className="flex-none px-4 py-3 bg-white dark:bg-[#0b1120] border-t border-slate-100 dark:border-white/5 z-10 w-full">
                     {currentUserId ? (
-                        <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full">
+                        <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full max-w-4xl mx-auto">
                             {/* Left: Input Area */}
-                            <div className="flex-1 bg-slate-50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 transition-colors rounded-2xl px-3 py-2 min-h-[44px] flex items-center border border-slate-100 dark:border-white/5 focus-within:border-blue-500/50 transition-all">
+                            <div className="flex-1 bg-slate-100/50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-2xl px-3.5 py-2.5 min-h-[46px] flex items-center border border-slate-200 dark:border-white/5 focus-within:border-blue-500/30 focus-within:bg-white dark:focus-within:bg-white/[0.08] transition-all duration-300">
                                 {selectedSticker ? (
-                                    <div className="flex items-center gap-2 bg-white dark:bg-[#0b1120] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-[#0b1120] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit animate-in fade-in zoom-in-95">
                                         <img src={fixUrl(selectedSticker)} alt="Selected" className="w-8 h-8 object-contain" />
-                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-white/10 rounded-full text-slate-500 dark:text-[#94a3b8]"><X className="w-3 h-3" /></button>
+                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full text-slate-500"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : audioBlob ? (
-                                    <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 w-fit">
-                                        <span className="text-xs text-blue-300 font-medium whitespace-nowrap">Voice recording ready</span>
-                                        <button type="button" onClick={() => setAudioBlob(null)} className="p-1 hover:bg-white/10 rounded-full text-blue-200"><X className="w-3 h-3" /></button>
+                                    <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20 w-fit animate-in fade-in slide-in-from-left-2">
+                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
+                                        <span className="text-[11px] text-blue-500 font-bold uppercase tracking-wider">Voice Ready</span>
+                                        <button type="button" onClick={() => setAudioBlob(null)} className="p-1 hover:bg-blue-500/10 rounded-full text-blue-500"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : (
                                     <textarea
@@ -539,20 +570,20 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             </div>
 
                             {/* Right: Actions */}
-                            <div className="flex items-center gap-1 shrink-0 pb-1">
+                            <div className="flex items-center gap-0.5 shrink-0 pb-1">
                                 {!audioBlob && !selectedSticker && (
                                     <>
                                         <div className="relative">
                                             <button
                                                 type="button"
                                                 onClick={() => setShowStickers(!showStickers)}
-                                                className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-blue-500 rounded-full transition-all"
+                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 rounded-full transition-all"
                                             >
                                                 <Smile className="w-5 h-5" />
                                             </button>
                                             <AnimatePresence>
                                                 {showStickers && (
-                                                    <div className="absolute bottom-full right-0 mb-2 z-50">
+                                                    <div className="absolute bottom-full right-0 mb-4 z-50">
                                                         <StickerPicker
                                                             onSelect={(url) => setSelectedSticker(url)}
                                                             onClose={() => setShowStickers(false)}
@@ -567,15 +598,15 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                 <button
                                     type="submit"
                                     disabled={submitting || (!commentText.trim() && !audioBlob && !selectedSticker)}
-                                    className="p-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-full transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex-shrink-0"
+                                    className="p-2.5 text-blue-500 disabled:text-slate-300 dark:disabled:text-slate-700 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-full transition-all active:scale-90 flex-shrink-0"
                                 >
                                     {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                 </button>
                             </div>
                         </form>
                     ) : (
-                        <div className="flex items-center justify-center py-2 px-4 bg-white dark:bg-[#0b1120]/40 rounded-xl border border-slate-200 dark:border-[#334155]/50">
-                            <p className="text-sm text-slate-500 dark:text-[#94a3b8]">Please login to join the conversation</p>
+                        <div className="flex items-center justify-center py-3 px-4 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-slate-200 dark:border-white/5">
+                            <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium tracking-tight">Login to join the conversation</p>
                         </div>
                     )}
                 </div>

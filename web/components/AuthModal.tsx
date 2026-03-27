@@ -97,8 +97,8 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: Au
                         className={cn(
                             "relative z-50 overflow-hidden flex flex-col",
                             isMobile
-                                ? "absolute bottom-0 w-full bg-slate-50 dark:bg-[#0f172a]/95 backdrop-blur-3xl rounded-t-[2.5rem] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] border-t border-white/10"
-                                : "max-w-[420px] w-full bg-slate-50 dark:bg-[#0f172a]/80 backdrop-blur-3xl rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] border border-white/10 ring-1 ring-white/5"
+                                ? "absolute bottom-0 w-full bg-slate-50 dark:bg-[#0b1120] backdrop-blur-xl rounded-t-3xl shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5)] border-t border-slate-200 dark:border-white/5"
+                                : "max-w-[420px] w-full bg-slate-50 dark:bg-[#0b1120] backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-200 dark:border-white/5"
                         )}
                         style={{ maxHeight: isMobile ? '85vh' : 'auto' }}
                     >

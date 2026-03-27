@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Send, Heart, MoreHorizontal, Edit2, Trash2, Play, Square, ThumbsUp } from 'lucide-react';
+import { Loader2, Send, Heart, MoreHorizontal, Edit2, Trash2, Play, Square, ThumbsUp, X } from 'lucide-react';
 import api from '@/lib/api';
 import { formatRelativeTime, fixUrl } from '@/lib/utils';
 import Link from 'next/link';
@@ -72,7 +72,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
     const replies = allComments.filter(c => c.parentId === comment.id);
     replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-    const isOwnComment = currentUserId === comment.user?.id;
+    const isOwnComment = currentUserId === (comment.user?.id || comment.userId);
 
     useEffect(() => {
         if (isEditing && editRef.current) {
@@ -148,7 +148,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
     };
 
     return (
-        <div className={`flex flex-col w-full gap-2 ${depth > 0 ? 'mt-3' : ''}`}>
+        <div id={`comment-${comment.id}`} className={`flex flex-col w-full gap-2 ${depth > 0 ? 'mt-3' : ''} transition-colors duration-1000 rounded-2xl`}>
             <div className="flex items-start gap-2 relative group">
                 <Link href={`/profile/${comment.user?.username}`} className="flex-shrink-0">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[1px]">
@@ -170,38 +170,56 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1">
-                        <div className="bg-white dark:bg-[#1e293b]/60 rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#334155]/30 w-fit max-w-full relative group/bubble">
-                            <div className="flex justify-between items-start gap-4">
-                                <Link href={`/profile/${comment.user?.username}`} className="text-xs font-bold text-white hover:underline mb-0.5 block">
+                        <div className="w-full min-w-0 relative group/bubble">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <Link href={`/profile/${comment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline leading-tight">
                                     {comment.user?.displayName || comment.user?.username}
                                 </Link>
 
                                 {isOwnComment && !isEditing && (
-                                    <div className="relative">
-                                        <button
-                                            onClick={() => setShowMenu(!showMenu)}
-                                            className="opacity-0 group-hover/bubble:opacity-100 p-1 hover:bg-white/10 rounded-full transition-all text-slate-500 dark:text-[#64748b] hover:text-white"
-                                        >
-                                            <MoreHorizontal className="w-3 h-3" />
-                                        </button>
-                                        <AnimatePresence>
-                                            {showMenu && (
-                                                <>
-                                                    <motion.div
-                                                        initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                        exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                        className="absolute right-0 mt-1 w-24 bg-white dark:bg-[#1e293b]/95 backdrop-blur-xl rounded-lg shadow-xl overflow-hidden z-[50] border border-slate-200 dark:border-[#334155]/50"
+                                    <div className="relative inline-flex items-center">
+                                        <AnimatePresence mode="wait">
+                                            {!showMenu ? (
+                                                <motion.button
+                                                    key="more"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    onClick={() => setShowMenu(true)}
+                                                    className="opacity-0 group-hover/bubble:opacity-100 p-1 rounded-full transition-all text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-blue-400"
+                                                >
+                                                    <MoreHorizontal className="w-3.5 h-3.5" />
+                                                </motion.button>
+                                            ) : (
+                                                <motion.div
+                                                    key="actions"
+                                                    initial={{ opacity: 0, x: -5 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -5 }}
+                                                    className="flex items-center gap-2 ml-1"
+                                                >
+                                                    <button 
+                                                        onClick={() => { setShowMenu(false); setIsEditing(true); }} 
+                                                        className="text-[11px] font-medium text-slate-400 hover:text-blue-500 dark:text-slate-500 dark:hover:text-blue-400 transition-colors flex items-center gap-1"
                                                     >
-                                                        <button onClick={() => { setShowMenu(false); setIsEditing(true); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] text-white hover:bg-[#334155]">
-                                                            <Edit2 className="w-3 h-3" /> Edit
-                                                        </button>
-                                                        <button onClick={() => { setShowMenu(false); handleDelete(); }} className="w-full flex items-center gap-2 px-3 py-1.5 text-[10px] text-red-400 hover:bg-[#334155]">
-                                                            <Trash2 className="w-3 h-3" /> Delete
-                                                        </button>
-                                                    </motion.div>
-                                                    <div className="fixed inset-0 z-[40]" onClick={() => setShowMenu(false)} />
-                                                </>
+                                                        <Edit2 className="w-3 h-3" />
+                                                        <span>Edit</span>
+                                                    </button>
+                                                    <div className="w-[1px] h-2 bg-slate-200 dark:bg-white/10" />
+                                                    <button 
+                                                        onClick={() => { setShowMenu(false); handleDelete(); }} 
+                                                        className="text-[11px] font-medium text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 transition-colors flex items-center gap-1"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                        <span>Delete</span>
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setShowMenu(false)}
+                                                        className="ml-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 transition-colors"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </motion.div>
                                             )}
                                         </AnimatePresence>
                                     </div>
@@ -224,13 +242,16 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                                     </div>
                                 </div>
                             ) : (
-                                <>
-                                    <p className="text-[13px] text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
-                                        {comment.content}
-                                    </p>
+                                <div className="mt-1">
+                                    {comment.audioUrl ? (
+                                        <AudioCommentPlayer src={fixUrl(comment.audioUrl)!} />
+                                    ) : (
+                                        <p className="text-[14px] text-slate-800 dark:text-slate-200 leading-normal whitespace-pre-wrap break-words">
+                                            {comment.content}
+                                        </p>
+                                    )}
                                     {comment.stickerUrl && <img src={fixUrl(comment.stickerUrl)} alt="Sticker" className="w-20 h-20 object-contain mt-1" />}
-                                    {comment.audioUrl && <AudioCommentPlayer src={fixUrl(comment.audioUrl) || ''} />}
-                                </>
+                                </div>
                             )}
                         </div>
 
@@ -309,7 +330,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
     );
 }
 
-export default function CommentSection({ comments, currentUserId, postId }: { comments: any[], currentUserId?: string, postId: string }) {
+export default function CommentSection({ comments, currentUserId, postId, onDelete, onUpdate }: { comments: any[], currentUserId?: string, postId: string, onDelete?: (id: string) => void, onUpdate?: (id: string, content: string) => void }) {
     // Only render top-level comments here
     const rootComments = comments.filter(c => !c.parentId);
 
@@ -347,6 +368,8 @@ export default function CommentSection({ comments, currentUserId, postId }: { co
                         allComments={comments}
                         currentUserId={currentUserId}
                         depth={0}
+                        onDelete={onDelete}
+                        onUpdate={onUpdate}
                     />
                 ))
             )}

@@ -16,7 +16,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const optionalAuthMiddleware = require('../middleware/optionalAuthMiddleware');
 
-router.get('/search', authMiddleware, profileController.searchUsers);
+router.get('/search', optionalAuthMiddleware, profileController.searchUsers);
 
 router.get('/:id', optionalAuthMiddleware, profileController.getProfile);
 

@@ -13,6 +13,7 @@ import SearchBar from '@/components/SearchBar';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
+import { useSearchParams } from 'next/navigation';
 
 export default function FeedPage() {
   const { user: currentUser } = useAuth();
@@ -25,6 +26,8 @@ export default function FeedPage() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+  const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -47,6 +50,23 @@ export default function FeedPage() {
     };
     fetchPosts();
   }, []);
+
+  // Handle direct post link (?post=ID)
+  useEffect(() => {
+    const postId = searchParams.get('post');
+    if (postId && !selectedPost) {
+      const fetchSinglePost = async () => {
+        try {
+          const response = await api.get(`/posts/${postId}`);
+          setSelectedPost(response.data);
+          setShowPostModal(true);
+        } catch (error) {
+          console.error('Failed to fetch post from URL:', error);
+        }
+      };
+      fetchSinglePost();
+    }
+  }, [searchParams]);
 
   // Infinite Scroll Trigger
   useEffect(() => {
@@ -207,12 +227,14 @@ export default function FeedPage() {
                         setSelectedPost(post);
                         setShowPostModal(true);
                       }}
-                      onViewComments={(post) => {
+                      onViewComments={(post, commentId) => {
                         setSelectedPost(post);
+                        setInitialCommentId(commentId || null);
                         setShowPostModal(true);
                       }}
                       onClick={() => {
                         setSelectedPost(post);
+                        setInitialCommentId(null);
                         setShowPostModal(true);
                       }}
                     />
@@ -252,6 +274,7 @@ export default function FeedPage() {
           onClose={() => {
             setShowPostModal(false);
             setSelectedPost(null);
+            setInitialCommentId(null);
           }}
           post={selectedPost}
           onUpdate={(updatedPost) => {
@@ -262,6 +285,7 @@ export default function FeedPage() {
             setShowPostModal(false);
           }}
           currentUserId={currentUser?.id}
+          initialCommentId={initialCommentId}
         />
       )}
     </div>

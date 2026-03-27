@@ -17,7 +17,7 @@ interface PostCardProps {
     onDelete?: (id?: string) => void;
     onUpdate?: (post: any) => void;
     onEdit?: (post: any) => void;
-    onViewComments?: (post: any) => void;
+    onViewComments?: (post: any, commentId?: string) => void;
     onClick?: () => void;
 }
 
@@ -35,7 +35,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
     }, [post._count?.comments]);
 
     const [showReactions, setShowReactions] = useState(false);
-    const [firstComment, setFirstComment] = useState<any>(null);
+    const [recentComments, setRecentComments] = useState<any[]>([]);
     const [showMenu, setShowMenu] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -54,7 +54,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             document.addEventListener('mousedown', handleClickOutside);
         }
 
-        fetchFirstComment();
+        fetchRecentComments();
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -71,14 +71,18 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
         const handleNewComment = (newComment: any) => {
             if (newComment.postId === post.id) {
                 setCommentCount((prev: number) => prev + 1);
-                if (!firstComment) setFirstComment(newComment);
+                setRecentComments(prev => {
+                    if (prev.find(c => c.id === newComment.id)) return prev;
+                    const newList = [newComment, ...prev];
+                    return newList.slice(0, 2);
+                });
             }
         };
 
         const handleCommentDeleted = ({ postId }: { postId: string }) => {
             if (postId === post.id) {
                 setCommentCount((prev: number) => Math.max(0, prev - 1));
-                fetchFirstComment();
+                fetchRecentComments();
             }
         };
 
@@ -92,11 +96,14 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
         };
     }, [socket, post.id]);
 
-    const fetchFirstComment = async () => {
+    const fetchRecentComments = async () => {
         try {
             const response = await api.get(`/posts/${post.id}/comments`);
             if (response.data.length > 0) {
-                setFirstComment(response.data[0]);
+                // Show up to 2 most recent
+                setRecentComments(response.data.slice(0, 2));
+            } else {
+                setRecentComments([]);
             }
         } catch (error) {
             console.error('Failed to fetch comments:', error);
@@ -146,6 +153,8 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
         }, 'Join the community to support creators!');
     };
 
+
+
     const handleDelete = async () => {
         if (!confirm('Are you sure you want to delete this post?')) return;
 
@@ -178,7 +187,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className={`relative py-4 px-4 sm:px-0 border-b border-slate-100 dark:border-white/5 cursor-pointer ${showMenu ? 'z-[50]' : 'z-0'}`}
+            className={`relative py-3 px-4 sm:px-0 border-b border-slate-100 dark:border-white/5 cursor-pointer ${showMenu ? 'z-[50]' : 'z-0'}`}
             onClick={onClick}
         >
             <div className="flex gap-3">
@@ -367,6 +376,9 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             )}
                         </motion.button>
 
+                        {/* Spacer to push Share to the right */}
+                        <div className="flex-1" />
+
                         {/* Share */}
                         <motion.button
                             whileTap={{ scale: 0.9 }}
@@ -392,41 +404,86 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                         </motion.button>
                     </div>
 
-                    {/* First Comment Preview */}
-                    {firstComment && (
-                        <div onClick={(e) => e.stopPropagation()} className="mt-3 flex items-start gap-2">
-                            <Link href={`/profile/${firstComment.user?.username}`} className="flex-shrink-0">
-                                <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                                    {firstComment.user?.avatarUrl ? (
-                                        <img src={fixUrl(firstComment.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <span className="text-slate-500 dark:text-white text-[10px] font-bold">
-                                                {(firstComment.user?.displayName || firstComment.user?.username)?.[0]?.toUpperCase() || 'U'}
-                                            </span>
+                    {/* Comment Previews */}
+                    {recentComments.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 space-y-3">
+                            {recentComments.filter(c => !c.parentId || !recentComments.find(p => p.id === c.parentId)).map((rootComment) => (
+                                <div key={rootComment.id} className="space-y-3">
+                                    {/* Root Comment */}
+                                    <div 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            requireAuth(() => onViewComments && onViewComments(post, rootComment.id), 'Log in to join the conversation!');
+                                        }} 
+                                        className="flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-300 cursor-pointer"
+                                    >
+                                        <Link href={`/profile/${rootComment.user?.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                            <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
+                                                {rootComment.user?.avatarUrl ? (
+                                                    <img src={fixUrl(rootComment.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] font-bold">
+                                                        {(rootComment.user?.displayName || rootComment.user?.username)?.[0]?.toUpperCase() || 'U'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Link>
+                                        <div className="w-full min-w-0">
+                                            <Link href={`/profile/${rootComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight mb-0.5" onClick={(e) => e.stopPropagation()}>
+                                                {rootComment.user?.displayName || rootComment.user?.username || 'User'}
+                                            </Link>
+                                            <p className="text-[13px] text-slate-600 dark:text-slate-300 leading-normal line-clamp-2">
+                                                {rootComment.content}
+                                            </p>
                                         </div>
-                                    )}
+                                    </div>
+
+                                    {/* Direct Replies (if any in the 2-comment slice) */}
+                                    {recentComments.filter(reply => reply.parentId === rootComment.id).map(reply => (
+                                        <div 
+                                            key={reply.id}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                requireAuth(() => onViewComments && onViewComments(post, reply.id), 'Log in to join the conversation!');
+                                            }}
+                                            className="ml-3 pl-3 border-l-2 border-slate-100 dark:border-white/5 flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-300 cursor-pointer"
+                                        >
+                                            <Link href={`/profile/${reply.user?.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
+                                                    {reply.user?.avatarUrl ? (
+                                                        <img src={fixUrl(reply.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-[9px] font-bold">
+                                                            {(reply.user?.displayName || reply.user?.username)?.[0]?.toUpperCase() || 'U'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                            <div className="w-full min-w-0">
+                                                <Link href={`/profile/${reply.user?.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight mb-0.5" onClick={(e) => e.stopPropagation()}>
+                                                    {reply.user?.displayName || reply.user?.username || 'User'}
+                                                </Link>
+                                                <p className="text-[12px] text-slate-600 dark:text-slate-300 leading-normal line-clamp-2">
+                                                    {reply.content}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            </Link>
-                            <div className="flex-1 min-w-0 bg-slate-100 dark:bg-white/5 rounded-2xl px-3 py-2">
-                                <Link href={`/profile/${firstComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline">
-                                    {firstComment.user?.displayName || firstComment.user?.username || 'User'}
-                                </Link>
-                                <p className={`text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed ${!isCommentExpanded && 'line-clamp-2'}`}>
-                                    {firstComment.content}
-                                </p>
-                            </div>
+                            ))}
+
+                            {commentCount > 1 && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
+                                    className="text-[13px] font-bold text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors ml-9"
+                                >
+                                    View all {commentCount} comments
+                                </button>
+                            )}
                         </div>
                     )}
 
-                    {commentCount > 1 && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
-                            className="mt-1.5 ml-9 text-[13px] font-medium text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                        >
-                            View {commentCount} comments
-                        </button>
-                    )}
+
                 </div>
             </div>
         </motion.article>

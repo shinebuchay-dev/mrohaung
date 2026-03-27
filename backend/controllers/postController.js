@@ -639,3 +639,68 @@ exports.getPostById = async (req, res) => {
         res.status(500).json({ message: 'Error fetching post' });
     }
 };
+
+exports.searchPosts = async (req, res) => {
+    try {
+        const { q } = req.query;
+        const currentUserId = req.userId;
+
+        if (!q || q.trim().length < 2) {
+            return res.json([]);
+        }
+
+        const query = `
+            SELECT p.*, u.username, u.avatarUrl, u.displayName,
+            (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
+            (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
+            EXISTS(SELECT 1 FROM \`Like\` WHERE postId = p.id AND userId = ?) as isLiked
+            FROM Post p 
+            JOIN User u ON p.authorId = u.id 
+            WHERE 
+            p.content LIKE ?
+            AND p.privacy = 'public'
+            AND NOT EXISTS (
+                SELECT 1 FROM BlockedUser 
+                WHERE (blockerId = ? AND blockedId = p.authorId)
+                OR (blockerId = p.authorId AND blockedId = ?)
+            )
+            ORDER BY p.createdAt DESC
+            LIMIT 20
+        `;
+
+        const [posts] = await pool.query(query, [
+            currentUserId || null,
+            `%${q}%`,
+            currentUserId || null,
+            currentUserId || null
+        ]);
+
+        const formattedPosts = posts.map(post => {
+            const formatted = {
+                ...post,
+                author: {
+                    id: post.authorId,
+                    username: post.username,
+                    displayName: post.displayName,
+                    avatarUrl: post.avatarUrl
+                },
+                isLiked: !!post.isLiked,
+                _count: {
+                    likes: parseInt(post.likeCount || 0),
+                    comments: parseInt(post.commentCount || 0)
+                }
+            };
+            delete formatted.username;
+            delete formatted.displayName;
+            delete formatted.avatarUrl;
+            delete formatted.likeCount;
+            delete formatted.commentCount;
+            return formatted;
+        });
+
+        res.json(formattedPosts);
+    } catch (error) {
+        console.error('Error in searchPosts:', error);
+        res.status(500).json({ message: 'Error searching posts' });
+    }
+};

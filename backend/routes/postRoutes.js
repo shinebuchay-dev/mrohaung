@@ -12,6 +12,7 @@ const verificationMiddleware = require('../middleware/verificationMiddleware');
 router.post('/', authMiddleware, verificationMiddleware, upload.single('image'), postController.createPost);
 router.get('/feed', optionalAuthMiddleware, postController.getFeed);
 router.get('/user/:id', optionalAuthMiddleware, postController.getPostsByUser);
+router.get('/search', optionalAuthMiddleware, postController.searchPosts);
 router.get('/:postId', optionalAuthMiddleware, postController.getPostById);
 router.post('/:postId/like', authMiddleware, verificationMiddleware, postController.likePost);
 router.post('/:postId/comment', authMiddleware, verificationMiddleware, upload.single('audio'), postController.addComment);

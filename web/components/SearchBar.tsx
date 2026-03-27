@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search as SearchIcon, X, User, Hash } from 'lucide-react';
+import { Search as SearchIcon, X, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface SearchResult {
     type: 'user' | 'post';
@@ -31,14 +32,13 @@ export default function SearchBar() {
 
             setLoading(true);
             try {
-                // Search users
                 const usersRes = await api.get(`/profile/search?q=${encodeURIComponent(query)}`);
                 const userResults: SearchResult[] = usersRes.data.map((user: any) => ({
                     type: 'user',
                     id: user.id,
                     username: user.username,
                     title: user.displayName || user.username,
-                    subtitle: user.email,
+                    subtitle: `@${user.username}`,
                     avatarUrl: user.avatarUrl
                 }));
 
@@ -62,15 +62,23 @@ export default function SearchBar() {
         setShowResults(false);
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && query.trim()) {
+            router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+            setShowResults(false);
+        }
+    };
+
     return (
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative w-full max-w-[320px]">
             <div className="relative group">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-[#64748b] group-focus-within:text-blue-500 transition-colors" />
+                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                 <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setShowResults(true)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Search people, posts..."
                     className="w-full bg-slate-100 dark:bg-slate-800/50 border-none rounded-full pl-10 pr-10 py-2 text-sm text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-500/50 outline-none transition-all placeholder:text-slate-400"
                 />
@@ -88,60 +96,62 @@ export default function SearchBar() {
             </div>
 
             {/* Search Results Dropdown */}
-            {showResults && query.trim().length >= 2 && (
-                <div className="absolute top-full mt-2 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
-                    {loading ? (
-                        <div className="p-4 text-center text-slate-500 dark:text-[#64748b]">
-                            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
-                        </div>
-                    ) : results.length > 0 ? (
-                        <div className="max-h-96 overflow-y-auto">
-                            {results.map((result) => (
+            <AnimatePresence>
+                {showResults && query.trim().length >= 2 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full mt-2 w-full bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-50 py-1"
+                    >
+                        {loading ? (
+                            <div className="p-4 text-center text-slate-500 dark:text-[#64748b]">
+                                <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                            </div>
+                        ) : results.length > 0 ? (
+                            <div className="max-h-96 overflow-y-auto">
+                                {results.map((result) => (
+                                    <button
+                                        key={result.id}
+                                        onClick={() => handleResultClick(result)}
+                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
+                                    >
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+                                            {result.avatarUrl ? (
+                                                <img src={fixUrl(result.avatarUrl)} alt={result.title} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-white text-xs">
+                                                    {result.title[0].toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-slate-900 dark:text-white font-semibold truncate">{result.title}</p>
+                                            <p className="text-xs text-slate-500 dark:text-[#64748b] truncate">{result.subtitle}</p>
+                                        </div>
+                                    </button>
+                                ))}
                                 <button
-                                    key={result.id}
-                                    onClick={() => handleResultClick(result)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left"
+                                    onClick={() => {
+                                        router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+                                        setShowResults(false);
+                                    }}
+                                    className="w-full p-3 text-center border-t border-slate-100 dark:border-white/5 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                                 >
-                                    {result.type === 'user' ? (
-                                        <>
-                                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
-                                                {result.avatarUrl ? (
-                                                    <img src={fixUrl(result.avatarUrl)} alt={result.title} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-                                                        <span className="text-white font-bold">{result.title[0].toUpperCase()}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-slate-900 dark:text-white font-semibold truncate">{result.title}</p>
-                                                {result.subtitle && (
-                                                    <p className="text-xs text-slate-500 dark:text-[#64748b] truncate">{result.subtitle}</p>
-                                                )}
-                                            </div>
-                                            <User className="w-4 h-4 text-slate-500 dark:text-[#64748b] flex-shrink-0" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Hash className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-slate-900 dark:text-white truncate">{result.title}</p>
-                                            </div>
-                                        </>
-                                    )}
+                                    View all results for "{query}"
                                 </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="p-4 text-center text-slate-500 dark:text-[#64748b]">
-                            No results found
-                        </div>
-                    )}
-                </div>
-            )}
+                            </div>
+                        ) : (
+                            <div className="p-4 text-center text-slate-500 dark:text-[#64748b] text-sm font-medium">
+                                No results found
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Backdrop to close results */}
-            {showResults && query && (
+            {showResults && (
                 <div
                     className="fixed inset-0 z-40"
                     onClick={() => setShowResults(false)}

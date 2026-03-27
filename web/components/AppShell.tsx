@@ -10,6 +10,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import MessageDropdown from '@/components/MessageDropdown';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fixUrl } from '@/lib/utils';
 import PostModal from '@/components/PostModal';
 import AuthModal from '@/components/AuthModal';
@@ -205,15 +206,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50 transition-colors duration-300">
             <nav className="fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between transition-all duration-300">
-                    <Link
-                        href="/"
-                        className="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight"
-                    >
-                        MROHAUNG
-                    </Link>
+                    <div className="flex items-center gap-6">
+                        <Link
+                            href="/"
+                            className="group flex items-center transition-transform duration-300 active:scale-95 shrink-0"
+                        >
+                            <span className="text-2xl font-black tracking-tighter bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">
+                                MROHAUNG
+                            </span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 ml-0.5 mt-2" />
+                        </Link>
 
-                    <div className="hidden md:flex flex-1 max-w-sm mx-8 text-slate-800 dark:text-slate-200">
-                        <SearchBar />
+                        <div className="hidden md:flex max-w-[320px] w-80">
+                            <SearchBar />
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -236,38 +242,58 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                                         )}
                                     </button>
 
-                                    {showUserMenu && (
-                                        <>
-                                            <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl overflow-hidden z-[60]">
-                                                <Link
-                                                    href={`/profile/${currentUser.username}`}
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                                    onClick={() => setShowUserMenu(false)}
+                                    <AnimatePresence>
+                                        {showUserMenu && (
+                                            <>
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    className="absolute right-0 mt-3 w-56 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[100]"
                                                 >
-                                                    <User className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                                                    <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">Profile</span>
-                                                </Link>
-                                                <Link
-                                                    href="/settings"
-                                                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                                    onClick={() => setShowUserMenu(false)}
-                                                >
-                                                    <Settings className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                                                    <span className="text-slate-700 dark:text-slate-200 font-medium text-sm">Settings</span>
-                                                </Link>
-                                                <div className="border-t border-slate-100 dark:border-white/5" />
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"
-                                                >
-                                                    <LogOut className="w-5 h-5 text-red-500" />
-                                                    <span className="text-red-500 font-medium text-sm">Logout</span>
-                                                </button>
-                                            </div>
-                                            {/* Invisible overlay for clicks outside */}
-                                            <div className="fixed inset-0 z-[50]" onClick={() => setShowUserMenu(false)} />
-                                        </>
-                                    )}
+                                                    <div className="p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+                                                        <p className="text-[13px] font-bold text-slate-900 dark:text-white truncate">
+                                                            {currentUser.displayName || currentUser.username}
+                                                        </p>
+                                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                            @{currentUser.username}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="py-1">
+                                                        <Link
+                                                            href={`/profile/${currentUser.username}`}
+                                                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                                                            onClick={() => setShowUserMenu(false)}
+                                                        >
+                                                            <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                                            <span className="text-slate-700 dark:text-slate-200 font-medium text-[13px]">Profile</span>
+                                                        </Link>
+                                                        <Link
+                                                            href="/settings"
+                                                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
+                                                            onClick={() => setShowUserMenu(false)}
+                                                        >
+                                                            <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                                                            <span className="text-slate-700 dark:text-slate-200 font-medium text-[13px]">Settings</span>
+                                                        </Link>
+                                                    </div>
+
+                                                    <div className="border-t border-slate-100 dark:border-white/5 py-1">
+                                                        <button
+                                                            onClick={handleLogout}
+                                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors text-left"
+                                                        >
+                                                            <LogOut className="w-4 h-4 text-red-500" />
+                                                            <span className="text-red-500 font-bold text-[13px]">Logout</span>
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
+                                                {/* Invisible overlay for clicks outside */}
+                                                <div className="fixed inset-0 z-[50]" onClick={() => setShowUserMenu(false)} />
+                                            </>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
 
