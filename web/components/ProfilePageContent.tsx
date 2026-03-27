@@ -502,20 +502,7 @@ export default function ProfilePageContent() {
                                     key={post.id}
                                     post={post}
                                     onDelete={fetchProfile}
-                                    onEdit={(post) => {
-                                        setSelectedPost(post);
-                                        setShowPostModal(true);
-                                    }}
-                                    onViewComments={(post) => {
-                                        setSelectedPost(post);
-                                        setShowPostModal(true);
-                                        window.history.pushState(null, '', `?post=${post.id}`);
-                                    }}
-                                    onClick={() => { 
-                                        setSelectedPost(post); 
-                                        setShowPostModal(true); 
-                                        window.history.pushState(null, '', `?post=${post.id}`);
-                                    }}
+                                    onClick={() => { setSelectedPost(post); setShowPostModal(true); }}
                                 />
                             )) : (
                                 <div className="py-16 text-center">
@@ -616,10 +603,7 @@ export default function ProfilePageContent() {
             {selectedPost && (
                 <PostModal
                     isOpen={showPostModal}
-                    onClose={() => {
-                        setShowPostModal(false);
-                        window.history.replaceState(null, '', window.location.pathname);
-                    }}
+                    onClose={() => setShowPostModal(false)}
                     post={selectedPost}
                     onDelete={() => { setShowPostModal(false); fetchProfile(); }}
                 />

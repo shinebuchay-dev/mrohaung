@@ -366,10 +366,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {deepLinkPost && (
                 <PostModal
                     isOpen={showDeepLinkModal}
-                    onClose={() => {
-                        setShowDeepLinkModal(false);
-                        window.history.replaceState(null, '', window.location.pathname);
-                    }}
+                    onClose={() => setShowDeepLinkModal(false)}
                     post={deepLinkPost}
                     currentUserId={currentUser?.id}
                 />
