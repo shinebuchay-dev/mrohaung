@@ -86,6 +86,7 @@ exports.getFeed = async (req, res) => {
                         avatarUrl: post.avatarUrl
                     },
                     isLiked: false,
+                    userReaction: null,
                     _count: {
                         likes: parseInt(post.likeCount || 0),
                         comments: parseInt(post.commentCount || 0)
@@ -110,15 +111,16 @@ exports.getFeed = async (req, res) => {
         const friendOffset = (page - 1) * friendLimit;
         const suggestedOffset = (page - 1) * suggestedLimit;
 
-        // 1. Fetch Friends & Own Posts
         const friendsQuery = `
             SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
-            EXISTS(SELECT 1 FROM \`Like\` WHERE postId = p.id AND userId = ?) as isLiked,
+            l.id IS NOT NULL as isLiked,
+            l.type as userReaction,
             'friend' as feedType
             FROM Post p 
             JOIN User u ON p.authorId = u.id 
+            LEFT JOIN \`Like\` l ON l.postId = p.id AND l.userId = ?
             WHERE 
             NOT EXISTS (
                 SELECT 1 FROM BlockedUser 
@@ -137,15 +139,16 @@ exports.getFeed = async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        // 2. Fetch Suggested Posts (Public posts from non-friends)
         const suggestedQuery = `
             SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
-            EXISTS(SELECT 1 FROM \`Like\` WHERE postId = p.id AND userId = ?) as isLiked,
+            l.id IS NOT NULL as isLiked,
+            l.type as userReaction,
             'suggested' as feedType
             FROM Post p 
             JOIN User u ON p.authorId = u.id 
+            LEFT JOIN \`Like\` l ON l.postId = p.id AND l.userId = ?
             WHERE 
             p.privacy = 'public'
             AND p.authorId != ?
@@ -166,13 +169,15 @@ exports.getFeed = async (req, res) => {
         const [friendPosts] = await pool.query(friendsQuery, [
             currentUserId,
             currentUserId, currentUserId,
-            currentUserId, currentUserId, currentUserId,
+            currentUserId,
+            currentUserId, currentUserId,
             friendLimit, friendOffset
         ]);
 
         const [suggestedPosts] = await pool.query(suggestedQuery, [
             currentUserId,
-            currentUserId, currentUserId, currentUserId,
+            currentUserId,
+            currentUserId, currentUserId,
             currentUserId, currentUserId,
             suggestedLimit, suggestedOffset
         ]);
@@ -191,6 +196,7 @@ exports.getFeed = async (req, res) => {
                     avatarUrl: post.avatarUrl
                 },
                 isLiked: !!post.isLiked,
+                userReaction: post.userReaction || null,
                 _count: {
                     likes: parseInt(post.likeCount || 0),
                     comments: parseInt(post.commentCount || 0)
@@ -232,9 +238,12 @@ exports.getPostsByUser = async (req, res) => {
         const query = `
             SELECT p.*, u.username, u.avatarUrl, u.displayName,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
-            (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount
+            (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
+            l.id IS NOT NULL as isLiked,
+            l.type as userReaction
             FROM Post p 
             JOIN User u ON p.authorId = u.id 
+            LEFT JOIN \`Like\` l ON l.postId = p.id AND l.userId = ?
             WHERE p.authorId = ?
             AND (
                 p.privacy = 'public'
@@ -254,6 +263,7 @@ exports.getPostsByUser = async (req, res) => {
         `;
 
         const [posts] = await pool.execute(query, [
+            currentUserId || null,
             targetUserId,
             currentUserId || null,
             currentUserId || null, currentUserId || null,
@@ -269,6 +279,8 @@ exports.getPostsByUser = async (req, res) => {
                     displayName: post.displayName,
                     avatarUrl: post.avatarUrl
                 },
+                isLiked: !!post.isLiked,
+                userReaction: post.userReaction || null,
                 _count: {
                     likes: parseInt(post.likeCount || 0),
                     comments: parseInt(post.commentCount || 0)
@@ -579,9 +591,11 @@ exports.getPostById = async (req, res) => {
             SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
-            EXISTS(SELECT 1 FROM \`Like\` WHERE postId = p.id AND userId = ?) as isLiked
+            l.id IS NOT NULL as isLiked,
+            l.type as userReaction
             FROM Post p 
             JOIN User u ON p.authorId = u.id 
+            LEFT JOIN \`Like\` l ON l.postId = p.id AND l.userId = ?
             WHERE p.id = ?
             AND (
                 p.privacy = 'public'
@@ -621,6 +635,7 @@ exports.getPostById = async (req, res) => {
                 avatarUrl: post.avatarUrl
             },
             isLiked: !!post.isLiked,
+            userReaction: post.userReaction || null,
             _count: {
                 likes: parseInt(post.likeCount || 0),
                 comments: parseInt(post.commentCount || 0)
@@ -653,9 +668,11 @@ exports.searchPosts = async (req, res) => {
             SELECT p.*, u.username, u.avatarUrl, u.displayName,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
-            EXISTS(SELECT 1 FROM \`Like\` WHERE postId = p.id AND userId = ?) as isLiked
+            l.id IS NOT NULL as isLiked,
+            l.type as userReaction
             FROM Post p 
             JOIN User u ON p.authorId = u.id 
+            LEFT JOIN \`Like\` l ON l.postId = p.id AND l.userId = ?
             WHERE 
             p.content LIKE ?
             AND p.privacy = 'public'
@@ -685,6 +702,7 @@ exports.searchPosts = async (req, res) => {
                     avatarUrl: post.avatarUrl
                 },
                 isLiked: !!post.isLiked,
+                userReaction: post.userReaction || null,
                 _count: {
                     likes: parseInt(post.likeCount || 0),
                     comments: parseInt(post.commentCount || 0)

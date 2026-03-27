@@ -55,7 +55,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
     const [editContent, setEditContent] = useState(post.content || '');
     const [saving, setSaving] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
-    const [reactionType, setReactionType] = useState<string | null>(null);
+    const [reactionType, setReactionType] = useState<string | null>(post.userReaction || (post.isLiked ? 'like' : null));
     const [showReactions, setShowReactions] = useState(false);
 
     // Voice & Sticker State
@@ -122,6 +122,10 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
             };
         }
     }, [isOpen, post.id, onClose]);
+
+    useEffect(() => {
+        setReactionType(post.userReaction || (post.isLiked ? 'like' : null));
+    }, [post.userReaction, post.isLiked]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -222,15 +226,16 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         }
     }, [isOpen, post]);
 
-    const getReactionIcon = (type: string | null) => {
-        switch (type) {
-            case 'love': return <Heart className="w-4 h-4 text-red-500 fill-red-500" />;
-            case 'haha': return <Laugh className="w-4 h-4 text-yellow-500" />;
-            case 'wow': return <Star className="w-4 h-4 text-purple-500" />;
-            case 'sad': return <Frown className="w-4 h-4 text-blue-400" />;
-            case 'angry': return <Angry className="w-4 h-4 text-orange-500" />;
-            case 'like': return <ThumbsUp className="w-4 h-4 text-blue-500 fill-blue-500" />;
-            default: return <Heart className="w-4 h-4 text-slate-500 dark:text-[#64748b]" />;
+    const getReactionStyle = (type: string | null) => {
+        const t = type?.toLowerCase();
+        switch (t) {
+            case 'love': return { icon: <Heart className="w-4 h-4 text-red-500 fill-red-500" />, label: 'Love', color: 'text-red-500' };
+            case 'haha': return { icon: <Laugh className="w-4 h-4 text-yellow-500 fill-yellow-500" />, label: 'Haha', color: 'text-yellow-500' };
+            case 'wow': return { icon: <Star className="w-4 h-4 text-purple-500 fill-purple-500" />, label: 'Wow', color: 'text-purple-500' };
+            case 'sad': return { icon: <Frown className="w-4 h-4 text-blue-400 fill-blue-400" />, label: 'Sad', color: 'text-blue-400' };
+            case 'angry': return { icon: <Angry className="w-4 h-4 text-orange-500 fill-orange-500" />, label: 'Angry', color: 'text-orange-500' };
+            case 'like': return { icon: <ThumbsUp className="w-4 h-4 text-blue-500 fill-blue-500" />, label: 'Like', color: 'text-blue-500' };
+            default: return { icon: <ThumbsUp className="w-4 h-4 text-slate-500 dark:text-[#64748b]" />, label: 'Like', color: 'text-slate-500 dark:text-[#64748b]' };
         }
     };
 
@@ -471,12 +476,17 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                         <motion.button
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => handleReaction(reactionType || 'like')}
-                                            className="flex items-center gap-1.5 group/like relative z-10 translate-y-[1px]"
+                                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors group/like ${getReactionStyle(reactionType).color} hover:bg-slate-50 dark:hover:bg-slate-800/50 relative z-10 translate-y-[1px]`}
                                         >
-                                            <div className="p-2 rounded-full group-hover/like:bg-white/5 transition-colors">
-                                                {getReactionIcon(reactionType)}
+                                            <div className={`p-0.5 rounded-full transition-colors ${reactionType ? '' : 'group-hover/like:bg-red-50 dark:group-hover/like:bg-red-500/10'}`}>
+                                                {getReactionStyle(reactionType).icon}
                                             </div>
-                                            <span className={`text-xs font-bold transition-colors ${reactionType ? 'text-blue-500' : 'text-slate-500 dark:text-[#64748b] group-hover/like:text-blue-500'}`}>{likeCount}</span>
+                                            <span className={`text-[13px] font-medium ${reactionType ? '' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                {reactionType ? getReactionStyle(reactionType).label : 'Like'}
+                                            </span>
+                                            {likeCount > 0 && (
+                                                <span className="text-[13px] font-medium opacity-60 ml-0.5">{likeCount}</span>
+                                            )}
                                         </motion.button>
                                     </div>
                                     <div className="flex items-center gap-1.5 group/comment translate-y-[1px]">

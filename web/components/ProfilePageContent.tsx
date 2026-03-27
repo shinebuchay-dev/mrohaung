@@ -509,12 +509,12 @@ export default function ProfilePageContent() {
                                     onViewComments={(post) => {
                                         setSelectedPost(post);
                                         setShowPostModal(true);
-                                        window.history.pushState(null, '', `?post=${post.id}`);
+                                        window.history.replaceState(null, '', `?post=${post.id}`);
                                     }}
                                     onClick={() => { 
                                         setSelectedPost(post); 
                                         setShowPostModal(true); 
-                                        window.history.pushState(null, '', `?post=${post.id}`);
+                                        window.history.replaceState(null, '', `?post=${post.id}`);
                                     }}
                                 />
                             )) : (

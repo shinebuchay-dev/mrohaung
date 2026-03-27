@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 import CreatePost from '@/components/CreatePost';
@@ -13,7 +13,6 @@ import SearchBar from '@/components/SearchBar';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
-import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Suspense } from 'react';
 
@@ -29,8 +28,7 @@ function FeedContent() {
   const [showPostModal, setShowPostModal] = useState(false);
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
   const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const deepLinkHandled = useRef(false);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -54,10 +52,13 @@ function FeedContent() {
     fetchPosts();
   }, []);
 
-  // Handle direct post link (?post=ID)
+  // Handle direct post link (?post=ID) - ONLY on initial page load
   useEffect(() => {
-    const postId = searchParams.get('post');
-    if (postId && !selectedPost) {
+    if (deepLinkHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const postId = params.get('post');
+    if (postId) {
+      deepLinkHandled.current = true;
       const fetchSinglePost = async () => {
         try {
           const response = await api.get(`/posts/${postId}`);
@@ -69,7 +70,7 @@ function FeedContent() {
       };
       fetchSinglePost();
     }
-  }, [searchParams]);
+  }, []);
 
   // Infinite Scroll Trigger
   useEffect(() => {
@@ -234,13 +235,13 @@ function FeedContent() {
                         setSelectedPost(post);
                         setInitialCommentId(commentId || null);
                         setShowPostModal(true);
-                        window.history.pushState(null, '', `?post=${post.id}`);
+                        window.history.replaceState(null, '', `?post=${post.id}`);
                       }}
                       onClick={() => {
                         setSelectedPost(post);
                         setInitialCommentId(null);
                         setShowPostModal(true);
-                        window.history.pushState(null, '', `?post=${post.id}`);
+                        window.history.replaceState(null, '', `?post=${post.id}`);
                       }}
                     />
                   </motion.div>

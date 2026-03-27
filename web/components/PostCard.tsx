@@ -23,13 +23,17 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, isGuest = false, onDelete, onUpdate, onEdit, onViewComments, onClick, hideComments = false }: PostCardProps) {
-    const [reactionType, setReactionType] = useState<string | null>(null);
+    const [reactionType, setReactionType] = useState<string | null>(post.userReaction || (post.isLiked ? 'like' : null));
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [commentCount, setCommentCount] = useState(post._count?.comments || 0);
 
     useEffect(() => {
         setLikeCount(post._count?.likes || 0);
     }, [post._count?.likes]);
+
+    useEffect(() => {
+        setReactionType(post.userReaction || (post.isLiked ? 'like' : null));
+    }, [post.userReaction, post.isLiked]);
 
     useEffect(() => {
         setCommentCount(post._count?.comments || 0);
@@ -111,15 +115,16 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
         }
     };
 
-    const getReactionIcon = (type: string | null) => {
-        switch (type) {
-            case 'love': return <Heart className="w-[18px] h-[18px] text-red-500 fill-red-500" />;
-            case 'haha': return <Laugh className="w-[18px] h-[18px] text-yellow-500" />;
-            case 'wow': return <Star className="w-[18px] h-[18px] text-purple-500" />;
-            case 'sad': return <Frown className="w-[18px] h-[18px] text-blue-400" />;
-            case 'angry': return <Angry className="w-[18px] h-[18px] text-orange-500" />;
-            case 'like': return <ThumbsUp className="w-[18px] h-[18px] text-blue-500 fill-blue-500" />;
-            default: return <Heart className="w-[18px] h-[18px] text-slate-400 dark:text-slate-500" />;
+    const getReactionStyle = (type: string | null) => {
+        const t = type?.toLowerCase();
+        switch (t) {
+            case 'love': return { icon: <Heart className="w-[18px] h-[18px] text-red-500 fill-red-500" />, label: 'Love', color: 'text-red-500' };
+            case 'haha': return { icon: <Laugh className="w-[18px] h-[18px] text-yellow-500 fill-yellow-500" />, label: 'Haha', color: 'text-yellow-500' };
+            case 'wow': return { icon: <Star className="w-[18px] h-[18px] text-purple-500 fill-purple-500" />, label: 'Wow', color: 'text-purple-500' };
+            case 'sad': return { icon: <Frown className="w-[18px] h-[18px] text-blue-400 fill-blue-400" />, label: 'Sad', color: 'text-blue-400' };
+            case 'angry': return { icon: <Angry className="w-[18px] h-[18px] text-orange-500 fill-orange-500" />, label: 'Angry', color: 'text-orange-500' };
+            case 'like': return { icon: <ThumbsUp className="w-[18px] h-[18px] text-blue-500 fill-blue-500" />, label: 'Like', color: 'text-blue-500' };
+            default: return { icon: <ThumbsUp className="w-[18px] h-[18px]" />, label: 'Like', color: 'text-slate-400 dark:text-slate-500' };
         }
     };
 
@@ -352,13 +357,16 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             <motion.button
                                 whileTap={{ scale: 0.9 }}
                                 onClick={(e) => { e.stopPropagation(); handleReaction(reactionType || 'like'); }}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors group ${reactionType ? 'text-blue-500' : 'text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400'}`}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors group ${getReactionStyle(reactionType).color} hover:bg-slate-50 dark:hover:bg-slate-800/50`}
                             >
-                                <div className={`p-0.5 rounded-full transition-colors ${reactionType ? 'bg-blue-500/10' : 'group-hover:bg-red-50 dark:group-hover:bg-red-500/10'}`}>
-                                    {getReactionIcon(reactionType)}
+                                <div className={`p-0.5 rounded-full transition-colors ${reactionType ? '' : 'group-hover:bg-red-50 dark:group-hover:bg-red-500/10'}`}>
+                                    {getReactionStyle(reactionType).icon}
                                 </div>
+                                <span className={`text-[13px] font-medium ${reactionType ? '' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    {reactionType ? getReactionStyle(reactionType).label : 'Like'}
+                                </span>
                                 {likeCount > 0 && (
-                                    <span className="text-[13px] font-medium">{likeCount}</span>
+                                    <span className="text-[13px] font-medium opacity-60 ml-0.5">{likeCount}</span>
                                 )}
                             </motion.button>
                         </div>
