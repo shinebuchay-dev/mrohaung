@@ -170,7 +170,7 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1">
-                        <div className="bg-white dark:bg-[#1e293b]/60 rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#334155]/30 inline-block max-w-full relative group/bubble">
+                        <div className="bg-white dark:bg-[#1e293b]/60 rounded-2xl px-3 py-2 border border-slate-200 dark:border-[#334155]/30 w-fit max-w-full relative group/bubble">
                             <div className="flex justify-between items-start gap-4">
                                 <Link href={`/profile/${comment.user?.username}`} className="text-xs font-bold text-white hover:underline mb-0.5 block">
                                     {comment.user?.displayName || comment.user?.username}
