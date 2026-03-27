@@ -13,7 +13,7 @@ import SearchBar from '@/components/SearchBar';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import { Suspense } from 'react';
 
@@ -30,6 +30,7 @@ function FeedContent() {
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
   const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -233,11 +234,13 @@ function FeedContent() {
                         setSelectedPost(post);
                         setInitialCommentId(commentId || null);
                         setShowPostModal(true);
+                        window.history.pushState(null, '', `?post=${post.id}`);
                       }}
                       onClick={() => {
                         setSelectedPost(post);
                         setInitialCommentId(null);
                         setShowPostModal(true);
+                        window.history.pushState(null, '', `?post=${post.id}`);
                       }}
                     />
                   </motion.div>
@@ -277,6 +280,7 @@ function FeedContent() {
             setShowPostModal(false);
             setSelectedPost(null);
             setInitialCommentId(null);
+            window.history.replaceState(null, '', window.location.pathname);
           }}
           post={selectedPost}
           onUpdate={(updatedPost) => {
