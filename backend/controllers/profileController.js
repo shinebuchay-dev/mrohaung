@@ -127,6 +127,7 @@ exports.updateProfile = async (req, res) => {
 exports.searchUsers = async (req, res) => {
     try {
         const { q } = req.query;
+        const currentUserId = req.userId;
 
         if (!q || q.trim().length < 2) {
             return res.json([]);
@@ -134,14 +135,23 @@ exports.searchUsers = async (req, res) => {
 
         const searchTerm = `%${q}%`;
         const [users] = await pool.query(
-            `SELECT id, username, email, avatarUrl 
-             FROM User 
-             WHERE username LIKE ? OR email LIKE ?
-             LIMIT 10`,
-            [searchTerm, searchTerm]
+            `SELECT u.id, u.username, u.email, u.avatarUrl, u.displayName,
+             EXISTS(SELECT 1 FROM Friendship WHERE ((userId = ? AND friendId = u.id) OR (userId = u.id AND friendId = ?)) AND status = 'accepted') as isFriend,
+             EXISTS(SELECT 1 FROM Friendship WHERE (userId = ? AND friendId = u.id) AND status = 'pending') as isRequestSent
+             FROM User u
+             WHERE (u.username LIKE ? OR u.displayName LIKE ? OR u.email LIKE ?)
+             AND u.id != ?
+             LIMIT 20`,
+            [currentUserId || null, currentUserId || null, currentUserId || null, searchTerm, searchTerm, searchTerm, currentUserId || null]
         );
 
-        res.json(users);
+        const formatted = users.map(u => ({
+            ...u,
+            isFriend: !!u.isFriend,
+            isRequestSent: !!u.isRequestSent
+        }));
+
+        res.json(formatted);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });

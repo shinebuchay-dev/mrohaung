@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, Loader2, ArrowLeft, Users, FileText, UserPlus, X, User as UserIcon } from 'lucide-react';
+import { Search, Loader2, ArrowLeft, Users, FileText, UserPlus, X, User as UserIcon, Check, UserCheck } from 'lucide-react';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,72 +96,73 @@ function SearchResults() {
             ) : (
                 <div className="space-y-12">
                     {/* Users Section */}
-                    {userResults.length > 0 && (
-                        <section className="space-y-2">
-                            <div className="flex items-center gap-2 mb-4 ml-1">
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2 ml-1">
                                 <Users className="w-4 h-4 text-blue-500" />
-                                <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">People</h2>
+                                <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-500">People</h2>
                             </div>
-                            <div className="space-y-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {userResults.map((user, idx) => (
                                     <motion.div
                                         key={user.id}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.03 }}
-                                        className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white dark:hover:bg-white/[0.03] transition-all group"
+                                        className="group bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-white/5 rounded-2xl p-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] hover:shadow-sm"
                                     >
-                                        <Link href={`/profile/${user.username}`} className="shrink-0">
-                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-800 ring-2 ring-transparent group-hover:ring-blue-500/30 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div
+                                                onClick={() => router.push(`/profile/${user.username}`)}
+                                                className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer relative flex-shrink-0"
+                                            >
                                                 {user.avatarUrl ? (
                                                     <img 
                                                         src={fixUrl(user.avatarUrl)} 
                                                         alt={user.username} 
-                                                        className="w-full h-full object-cover" 
+                                                        className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" 
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 text-slate-500 dark:text-slate-400 font-bold text-xs">
-                                                        {(user.displayName || user.username)?.[0]?.toUpperCase()}
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-lg bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 uppercase">
+                                                        {(user.displayName || user.username)?.[0]}
                                                     </div>
                                                 )}
                                             </div>
-                                        </Link>
-
-                                        <div className="flex-1 min-w-0">
-                                            <Link href={`/profile/${user.username}`}>
-                                                <p className="text-[14px] font-bold text-slate-800 dark:text-slate-100 hover:text-blue-500 transition-colors">
+                                            
+                                            <div className="flex-1 min-w-0">
+                                                <h3 
+                                                    onClick={() => router.push(`/profile/${user.username}`)}
+                                                    className="font-bold text-slate-900 dark:text-white text-[15px] truncate group-hover:text-blue-500 transition-colors mb-2 cursor-pointer"
+                                                >
                                                     {user.displayName || user.username}
-                                                </p>
-                                            </Link>
-                                            <p className="text-[11px] text-slate-500 dark:text-slate-500">
-                                                @{user.username}
-                                            </p>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => handleAddFriend(user.id)}
-                                                disabled={addedIds.includes(user.id)}
-                                                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-90 ${
-                                                    addedIds.includes(user.id)
-                                                        ? 'bg-green-500 text-white'
-                                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                }`}
-                                            >
-                                                <UserPlus className="w-3.5 h-3.5" />
-                                            </button>
-                                            <Link
-                                                href={`/profile/${user.username}`}
-                                                className="w-7 h-7 rounded-full flex items-center justify-center bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-blue-500 transition-all md:opacity-0 group-hover:opacity-100"
-                                            >
-                                                <UserIcon className="w-3.5 h-3.5" />
-                                            </Link>
+                                                </h3>
+                                                
+                                                <div className="flex items-center gap-2">
+                                                    {(addedIds.includes(user.id) || user.isRequestSent) ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-lg font-bold text-[10px]">
+                                                            <Check className="w-3 h-3" />
+                                                            Sent
+                                                        </div>
+                                                    ) : user.isFriend ? (
+                                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg font-bold text-[10px]">
+                                                            <UserCheck className="w-3 h-3" />
+                                                            Friends
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleAddFriend(user.id)}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[10px] transition-all active:scale-95 shadow-sm shadow-blue-500/10"
+                                                        >
+                                                            <UserPlus className="w-3 h-3" />
+                                                            Add Friend
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ))}
                             </div>
                         </section>
-                    )}
 
                     {/* Separator */}
                     {userResults.length > 0 && postResults.length > 0 && (
