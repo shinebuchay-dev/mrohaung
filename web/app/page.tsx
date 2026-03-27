@@ -15,7 +15,9 @@ import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
 import { useSearchParams } from 'next/navigation';
 
-export default function FeedPage() {
+import { Suspense } from 'react';
+
+function FeedContent() {
   const { user: currentUser } = useAuth();
   const { socket } = useSocket();
   const [posts, setPosts] = useState<any[]>([]);
@@ -289,5 +291,17 @@ export default function FeedPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function FeedPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+      </div>
+    }>
+      <FeedContent />
+    </Suspense>
   );
 }

@@ -19,7 +19,9 @@ interface UserResult {
     isRequestSent?: boolean;
 }
 
-export default function SearchPage() {
+import { Suspense } from 'react';
+
+function SearchResults() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const query = searchParams.get('q') || '';
@@ -187,6 +189,19 @@ export default function SearchPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center py-32">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+                <p className="mt-4 text-slate-500 font-medium">Loading search results...</p>
+            </div>
+        }>
+            <SearchResults />
+        </Suspense>
     );
 }
 
