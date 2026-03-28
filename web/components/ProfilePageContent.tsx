@@ -8,7 +8,7 @@ import {
     Image as ImageIcon, MoreVertical, MessageCircle,
     Star, Check, X, ShieldAlert,
     Share2, Mail, Edit2, Clock, Camera,
-    Phone, Video, Play
+    Phone, Video, Play, Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -32,6 +32,81 @@ interface User {
     reputation?: number;
     isVerified?: boolean;
     _count: { posts: number; friends: number; };
+}
+
+// ── Short Video Card with outside top-left three-dot menu ────────────────────
+function ShortVideoCard({ video, isOwnProfile, onDeleted }: {
+    video: any;
+    isOwnProfile: boolean;
+    onDeleted: (id: string) => void;
+}) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        if (menuOpen) document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [menuOpen]);
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!confirm('Delete this short video?')) return;
+        try {
+            setDeleting(true);
+            await api.delete(`/short-videos/${video.id}`);
+            onDeleted(video.id);
+        } catch { setDeleting(false); }
+    };
+
+    return (
+        <div className="relative">
+            {/* Three-dot button — outside top-left of the card */}
+            {isOwnProfile && (
+                <div ref={menuRef} className="absolute -top-2 -left-2 z-20">
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMenuOpen(o => !o); }}
+                        className="w-7 h-7 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    >
+                        <MoreVertical className="w-4 h-4" />
+                    </button>
+                    {menuOpen && (
+                        <div className="absolute top-8 left-0 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-white/10 py-1 min-w-[130px] z-30">
+                            <button
+                                onClick={handleDelete}
+                                disabled={deleting}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                {deleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+            <Link
+                href={`/short-video/${video.id}`}
+                className="group relative aspect-[9/16] bg-slate-900 rounded-xl overflow-hidden block"
+            >
+                <video
+                    src={fixUrl(video.videoUrl)}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex items-end">
+                    <div className="flex items-center gap-1.5 text-white">
+                        <Play className="w-4 h-4 fill-white" />
+                        <span className="text-xs font-bold">{video.views || 0}</span>
+                    </div>
+                </div>
+            </Link>
+        </div>
+    );
 }
 
 interface Post {
@@ -548,22 +623,12 @@ export default function ProfilePageContent() {
                             {shortVideos.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                     {shortVideos.map(video => (
-                                        <Link 
-                                            key={video.id} 
-                                            href={`/short-video/${video.id}`}
-                                            className="group relative aspect-[9/16] bg-slate-900 rounded-xl overflow-hidden block"
-                                        >
-                                            <video 
-                                                src={fixUrl(video.videoUrl)} 
-                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                                            />
-                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex items-end">
-                                                <div className="flex items-center gap-1.5 text-white">
-                                                    <Play className="w-4 h-4 fill-white" />
-                                                    <span className="text-xs font-bold">{video.views || 0}</span>
-                                                </div>
-                                            </div>
-                                        </Link>
+                                        <ShortVideoCard
+                                            key={video.id}
+                                            video={video}
+                                            isOwnProfile={isOwnProfile}
+                                            onDeleted={(id) => setShortVideos(prev => prev.filter(v => v.id !== id))}
+                                        />
                                     ))}
                                 </div>
                             ) : (
@@ -579,6 +644,7 @@ export default function ProfilePageContent() {
                             )}
                         </div>
                     )}
+
 
                     {/* Friends */}
                     {activeTab === 'friends' && (
