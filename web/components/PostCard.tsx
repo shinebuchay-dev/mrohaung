@@ -445,9 +445,16 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                             </div>
                                         </Link>
                                         <div className="w-full min-w-0">
-                                            <Link href={`/profile/${rootComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight mb-0.5" onClick={(e) => e.stopPropagation()}>
-                                                {rootComment.user?.displayName || rootComment.user?.username || 'User'}
-                                            </Link>
+                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                                <Link href={`/profile/${rootComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
+                                                    {rootComment.user?.displayName || rootComment.user?.username || 'User'}
+                                                </Link>
+                                                {rootComment.user?.isVerified && (
+                                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px] drop-shadow-sm">
+                                                        <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
+                                                    </div>
+                                                )}
+                                            </div>
                                             <p className="text-[13px] text-slate-600 dark:text-slate-300 leading-normal line-clamp-2">
                                                 {rootComment.content}
                                             </p>
@@ -476,9 +483,16 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                                 </div>
                                             </Link>
                                             <div className="w-full min-w-0">
-                                                <Link href={`/profile/${reply.user?.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight mb-0.5" onClick={(e) => e.stopPropagation()}>
-                                                    {reply.user?.displayName || reply.user?.username || 'User'}
-                                                </Link>
+                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                    <Link href={`/profile/${reply.user?.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
+                                                        {reply.user?.displayName || reply.user?.username || 'User'}
+                                                    </Link>
+                                                    {reply.user?.isVerified && (
+                                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px] drop-shadow-sm">
+                                                            <Check className="w-[4.5px] h-[4.5px] text-white" strokeWidth={6} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <p className="text-[12px] text-slate-600 dark:text-slate-300 leading-normal line-clamp-2">
                                                     {reply.content}
                                                 </p>
