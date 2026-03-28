@@ -224,18 +224,27 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                             </div>
 
                             {isEditing ? (
-                                <div className="mt-1">
+                                <div className="mt-1 animate-in fade-in slide-in-from-top-1 duration-300">
                                     <textarea
                                         ref={editRef}
                                         value={editContent}
-                                        onChange={(e) => setEditContent(e.target.value)}
-                                        className="w-full bg-transparent border-none p-0 text-[13px] text-[#e2e8f0] resize-none focus:outline-none focus:ring-0 overflow-hidden min-h-[20px]"
+                                        onChange={(e) => {
+                                            setEditContent(e.target.value);
+                                            const el = editRef.current;
+                                            if (el) {
+                                                el.style.height = 'auto';
+                                                el.style.height = el.scrollHeight + 'px';
+                                            }
+                                        }}
+                                        className="w-full bg-transparent border-none p-0 text-[14px] text-slate-900 dark:text-white resize-none focus:outline-none focus:ring-0 overflow-hidden font-medium"
                                         rows={1}
                                         autoFocus
                                     />
-                                    <div className="flex justify-end gap-2 mt-2">
-                                        <button onClick={() => setIsEditing(false)} className="text-[10px] text-slate-400 hover:text-white">Cancel</button>
-                                        <button onClick={handleSaveEdit} disabled={saving} className="text-[10px] bg-blue-600 px-2 py-0.5 rounded text-white">{saving ? '...' : 'Save'}</button>
+                                    <div className="flex items-center gap-4 mt-2 pt-2 border-t border-slate-50 dark:border-white/5">
+                                        <button onClick={() => setIsEditing(false)} className="text-[10px] font-black text-slate-400 hover:text-slate-900 dark:hover:text-white uppercase tracking-[0.2em] transition-colors">Cancel</button>
+                                        <button onClick={handleSaveEdit} disabled={saving} className="text-[10px] font-black text-blue-500 hover:text-blue-600 uppercase tracking-[0.2em] transition-all">
+                                            {saving ? 'Saving...' : 'Save Changes'}
+                                        </button>
                                     </div>
                                 </div>
                             ) : (

@@ -430,22 +430,41 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
 
                     {/* Post Body & Details */}
                     <div className="px-5 pb-4">
-                        <div className={isEditing ? "mb-2" : "mb-4"}>
+                        <div className="mb-4">
                             {isEditing ? (
-                                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 border border-slate-100 dark:border-white/5 animate-in fade-in duration-300">
+                                <div className="animate-in fade-in slide-in-from-top-1 duration-300">
                                     <textarea 
                                         ref={editTextareaRef} 
                                         value={editContent} 
-                                        onChange={(e) => setEditContent(e.target.value)} 
-                                        className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 resize-none text-[15px] leading-relaxed" 
-                                        style={{ minHeight: EDIT_TEXTAREA_MIN_HEIGHT, maxHeight: EDIT_TEXTAREA_MAX_HEIGHT }} 
-                                        rows={2} 
-                                        placeholder="Edit your post..." 
+                                        onChange={(e) => {
+                                            setEditContent(e.target.value);
+                                            const el = editTextareaRef.current;
+                                            if (el) {
+                                                el.style.height = 'auto';
+                                                el.style.height = el.scrollHeight + 'px';
+                                            }
+                                        }} 
+                                        className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none text-[15px] leading-relaxed p-0 m-0 font-medium" 
+                                        style={{ minHeight: '60px', maxHeight: '400px' }} 
+                                        rows={1} 
+                                        placeholder="What's on your mind?" 
                                         autoFocus 
                                     />
-                                    <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
-                                        <button onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} className="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">Cancel</button>
-                                        <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm disabled:opacity-50">{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save'}</button>
+                                    <div className="flex items-center gap-5 mt-4 pt-4 border-t border-slate-50 dark:border-white/5">
+                                        <button 
+                                            onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} 
+                                            className="text-[11px] font-black text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-[0.2em]"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={handleSaveEdit} 
+                                            disabled={saving || !editContent.trim()} 
+                                            className="text-[11px] font-black text-blue-500 hover:text-blue-600 disabled:text-slate-200 dark:disabled:text-slate-800 transition-all uppercase tracking-[0.2em] flex items-center gap-2"
+                                        >
+                                            {saving && <Loader2 className="w-3 h-3 animate-spin" />}
+                                            {saving ? 'Saving' : 'Save Changes'}
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
