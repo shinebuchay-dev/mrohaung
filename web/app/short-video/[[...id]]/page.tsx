@@ -29,6 +29,9 @@ interface VideoComment {
     id: string;
     content: string;
     createdAt: string;
+    parentId?: string | null;
+    likeCount?: number;
+    isLiked?: boolean;
     // Standard nested user object
     user?: {
         id: string;
@@ -46,7 +49,7 @@ interface VideoComment {
 }
 
 export default function ShortVideoPage() {
-    const { user } = useAuth();
+    const { user, requireAuth } = useAuth();
     const router = useRouter();
     const params = useParams();
     const urlId = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -54,6 +57,8 @@ export default function ShortVideoPage() {
     const [videos, setVideos] = useState<ShortVideo[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+    const [replyingTo, setReplyingTo] = useState<VideoComment | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     // Modals
     const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -480,6 +485,8 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
     const [loading, setLoading] = useState(true);
     const [inputText, setInputText] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [replyingTo, setReplyingTo] = useState<VideoComment | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const fetchComments = async () => {
         try {
@@ -502,15 +509,45 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
             if (!inputText.trim() || submitting) return;
             try {
                 setSubmitting(true);
-                const res = await api.post(`/short-videos/${videoId}/comments`, { content: inputText.trim() });
+                const res = await api.post(`/short-videos/${videoId}/comments`, { 
+                    content: inputText.trim(),
+                    parentId: replyingTo?.id || null
+                });
                 setComments(prev => [res.data, ...prev]);
                 setInputText('');
+                setReplyingTo(null);
             } catch (err) {
                 console.error('Post comment failed:', err);
             } finally {
                 setSubmitting(false);
             }
         });
+    };
+
+    const handleLikeComment = (commentId: string) => {
+        requireAuth(async () => {
+            try {
+                const res = await api.post(`/short-videos/comments/${commentId}/like`);
+                setComments(prev => prev.map(c => {
+                    if (c.id === commentId) {
+                        return {
+                            ...c,
+                            isLiked: res.data.liked,
+                            likeCount: res.data.liked ? (c.likeCount || 0) + 1 : Math.max(0, (c.likeCount || 0) - 1)
+                        };
+                    }
+                    return c;
+                }));
+            } catch (err) {
+                console.error('Like comment failed:', err);
+            }
+        });
+    };
+
+    const startReply = (comment: any) => {
+        setReplyingTo(comment);
+        setInputText(`@${comment.user?.username || comment.username} `);
+        inputRef.current?.focus();
     };
 
     return (
@@ -534,35 +571,97 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                     </div>
                 ) : comments.length > 0 ? (
                     <div className="divide-y divide-slate-100 dark:divide-white/5">
-                        {comments.map((comment) => (
-                            <div key={comment.id} className="p-4 px-6 flex gap-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
-                                <div className="shrink-0 pt-0.5">
-                                    {(comment.user?.avatarUrl || comment.avatarUrl) ? (
-                                        <img src={fixUrl(comment.user?.avatarUrl || comment.avatarUrl)} className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200/50 dark:ring-white/10" alt="" />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
-                                            {(comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User')[0].toUpperCase()}
+                        {comments.filter(c => !c.parentId).map((comment) => (
+                            <div key={comment.id}>
+                                <div className="p-4 px-6 flex gap-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                                    <div className="shrink-0 pt-0.5">
+                                        {(comment.user?.avatarUrl || comment.avatarUrl) ? (
+                                            <img src={fixUrl(comment.user?.avatarUrl || comment.avatarUrl)} className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200/50 dark:ring-white/10" alt="" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                                                {(comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User')[0].toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-0.5">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User'}</h4>
+                                                {(comment.user?.isVerified || comment.isVerified) && (
+                                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
+                                                        <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] text-slate-400 font-medium">
+                                                {new Date(comment.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                            </span>
                                         </div>
-                                    )}
+                                        <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium break-words">
+                                            {comment.content}
+                                        </p>
+                                        <div className="flex items-center gap-4 mt-2">
+                                            <button 
+                                                onClick={() => handleLikeComment(comment.id)}
+                                                className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${comment.isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                                            >
+                                                <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? 'fill-rose-500' : ''}`} />
+                                                <span>{comment.likeCount || 0}</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => startReply(comment)}
+                                                className="text-[11px] font-bold text-slate-400 hover:text-blue-500 transition-colors"
+                                            >
+                                                Reply
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-0.5">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User'}</h4>
-                                            {(comment.user?.isVerified || comment.isVerified) && (
-                                                <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
-                                                    <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                
+                                {/* Nested Replies */}
+                                {comments.filter(r => r.parentId === comment.id).map(reply => (
+                                    <div key={reply.id} className="ml-12 p-3 pr-6 flex gap-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
+                                        <div className="shrink-0 pt-0.5">
+                                            {(reply.user?.avatarUrl || reply.avatarUrl) ? (
+                                                <img src={fixUrl(reply.user?.avatarUrl || reply.avatarUrl)} className="w-6 h-6 rounded-full object-cover" alt="" />
+                                            ) : (
+                                                <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-500 dark:text-slate-400">
+                                                    {(reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'U')[0].toUpperCase()}
                                                 </div>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-slate-400 font-medium">
-                                            {new Date(comment.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                                        </span>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <h4 className="text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">{reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'User'}</h4>
+                                                    {(reply.user?.isVerified || reply.isVerified) && (
+                                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px]">
+                                                            <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <p className="text-[12px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium break-words">
+                                                {reply.content}
+                                            </p>
+                                            <div className="flex items-center gap-4 mt-1.5">
+                                                <button 
+                                                    onClick={() => handleLikeComment(reply.id)}
+                                                    className={`flex items-center gap-1 text-[10px] font-bold transition-colors ${reply.isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                                                >
+                                                    <Heart className={`w-3 h-3 ${reply.isLiked ? 'fill-rose-500' : ''}`} />
+                                                    <span>{reply.likeCount || 0}</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => startReply(comment)} 
+                                                    className="text-[10px] font-bold text-slate-400 hover:text-blue-500 transition-colors"
+                                                >
+                                                    Reply
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed font-medium break-words">
-                                        {comment.content}
-                                    </p>
-                                </div>
+                                ))}
                             </div>
                         ))}
                     </div>
@@ -578,13 +677,17 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
             <div className="p-4 md:p-6 bg-transparent shrink-0">
                 <div className="flex items-center gap-3 bg-white/50 dark:bg-white/5 backdrop-blur-md rounded-full py-2.5 px-5 border border-slate-200/50 dark:border-white/10 focus-within:border-blue-500/50 dark:focus-within:border-blue-500/50 transition-colors shadow-sm">
                     <input 
+                        ref={inputRef}
                         type="text" 
-                        placeholder="Add a comment..." 
+                        placeholder={replyingTo ? `Reply to ${replyingTo.user?.displayName || replyingTo.user?.username}...` : "Add a comment..."} 
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handlePost()}
                         className="bg-transparent border-none outline-none flex-1 text-sm md:text-base text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0 px-0"
                     />
+                    {replyingTo && (
+                        <button onClick={() => setReplyingTo(null)} className="text-[10px] text-slate-400 hover:text-slate-600 px-2 font-bold uppercase transition-colors">Cancel</button>
+                    )}
                     <button 
                         onClick={handlePost}
                         disabled={!inputText.trim() || submitting}

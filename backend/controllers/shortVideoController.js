@@ -262,29 +262,37 @@ exports.deleteVideo = async (req, res) => {
 exports.getComments = async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.userId || null;
+
         const [rows] = await pool.query(
             `SELECT
                 svc.id,
                 svc.videoId,
                 svc.userId,
+                svc.parentId,
                 svc.content,
                 svc.createdAt,
                 u.username,
                 u.displayName,
                 u.avatarUrl,
-                (SELECT isVerified FROM User WHERE id = svc.userId LIMIT 1) AS isVerified
+                (SELECT isVerified FROM User WHERE id = svc.userId LIMIT 1) AS isVerified,
+                (SELECT COUNT(*) FROM ShortVideoCommentLike WHERE commentId = svc.id) AS likeCount,
+                ${userId ? 'IF((SELECT 1 FROM ShortVideoCommentLike WHERE commentId = svc.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'}
              FROM ShortVideoComment svc
              JOIN User u ON svc.userId = u.id
              WHERE svc.videoId = ?
-             ORDER BY svc.createdAt DESC`,
-            [id]
+             ORDER BY svc.createdAt ASC`,
+            userId ? [userId, id] : [id]
         );
         const formatted = rows.map(c => ({
             id: c.id,
             videoId: c.videoId,
             userId: c.userId,
+            parentId: c.parentId,
             content: c.content,
             createdAt: c.createdAt,
+            likeCount: parseInt(c.likeCount || 0),
+            isLiked: !!c.isLiked,
             user: {
                 id: c.userId,
                 username: c.username,
@@ -305,7 +313,7 @@ exports.addComment = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.userId;
-        const { content } = req.body;
+        const { content, parentId = null } = req.body;
 
         if (!content || !content.trim()) {
             return res.status(400).json({ message: 'Comment content is required' });
@@ -313,8 +321,8 @@ exports.addComment = async (req, res) => {
 
         const commentId = uuidv4();
         await pool.execute(
-            'INSERT INTO ShortVideoComment (id, videoId, userId, content) VALUES (?, ?, ?, ?)',
-            [commentId, id, userId, content.trim()]
+            'INSERT INTO ShortVideoComment (id, videoId, userId, content, parentId) VALUES (?, ?, ?, ?, ?)',
+            [commentId, id, userId, content.trim(), parentId]
         );
 
         const [[comment]] = await pool.execute(
@@ -322,6 +330,7 @@ exports.addComment = async (req, res) => {
                 svc.id,
                 svc.videoId,
                 svc.userId,
+                svc.parentId,
                 svc.content,
                 svc.createdAt,
                 u.username,
@@ -338,8 +347,11 @@ exports.addComment = async (req, res) => {
             id: comment.id,
             videoId: comment.videoId,
             userId: comment.userId,
+            parentId: comment.parentId,
             content: comment.content,
             createdAt: comment.createdAt,
+            likeCount: 0,
+            isLiked: false,
             user: {
                 id: comment.userId,
                 username: comment.username,
@@ -351,5 +363,36 @@ exports.addComment = async (req, res) => {
     } catch (err) {
         console.error('[ShortVideo] addComment error:', err);
         res.status(500).json({ message: 'Failed to add comment' });
+    }
+};
+
+// ── POST /api/short-videos/comments/:commentId/like ──────────────────────────
+exports.toggleCommentLike = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const userId = req.userId;
+
+        const [[existing]] = await pool.execute(
+            'SELECT id FROM ShortVideoCommentLike WHERE commentId = ? AND userId = ?',
+            [commentId, userId]
+        );
+
+        if (existing) {
+            await pool.execute(
+                'DELETE FROM ShortVideoCommentLike WHERE commentId = ? AND userId = ?',
+                [commentId, userId]
+            );
+            res.json({ liked: false });
+        } else {
+            const likeId = uuidv4();
+            await pool.execute(
+                'INSERT INTO ShortVideoCommentLike (id, commentId, userId) VALUES (?, ?, ?)',
+                [likeId, commentId, userId]
+            );
+            res.json({ liked: true });
+        }
+    } catch (err) {
+        console.error('[ShortVideo] toggleCommentLike error:', err);
+        res.status(500).json({ message: 'Failed to toggle comment like' });
     }
 };

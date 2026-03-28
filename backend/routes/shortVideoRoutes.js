@@ -35,6 +35,7 @@ router.post('/:id/like', authMiddleware, ctrl.toggleLike);
 // Comments
 router.get('/:id/comments', optionalAuth, ctrl.getComments);
 router.post('/:id/comments', authMiddleware, ctrl.addComment);
+router.post('/comments/:commentId/like', authMiddleware, ctrl.toggleCommentLike);
 
 // Delete
 router.delete('/:id', authMiddleware, ctrl.deleteVideo);
