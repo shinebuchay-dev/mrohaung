@@ -163,12 +163,12 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1">
                         <div className="w-full min-w-0 relative group/bubble">
-                            <div className="flex items-center gap-1.5 mb-0.5 mt-0.5">
-                                <Link href={`/profile/${comment.user?.username}`} className="text-[13px] font-black text-slate-900 dark:text-white hover:underline leading-tight">
+                            <div className="flex items-center gap-[4px] mb-0.5 mt-0.5">
+                                <Link href={`/profile/${comment.user?.username}`} className="text-[13px] font-black text-slate-900 dark:text-white hover:underline leading-tight underline-offset-2">
                                     {comment.user?.displayName || comment.user?.username}
                                 </Link>
                                 {comment.user?.isVerified && (
-                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
                                         <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                     </div>
                                 )}

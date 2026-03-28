@@ -223,17 +223,17 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                 <div className="flex-1 min-w-0">
                     {/* Header Row */}
                     <div className="flex items-start justify-between gap-2 mb-0.5">
-                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <div className="flex items-center gap-[4px] flex-wrap min-w-0">
                             <Link
                                 href={`/profile/${post.author.username}`}
                                 prefetch={false}
                                 onClick={(e) => e.stopPropagation()}
-                                className="font-bold text-[15px] text-slate-900 dark:text-white hover:underline truncate"
+                                className="font-bold text-[15px] text-slate-900 dark:text-white hover:underline truncate underline-offset-2"
                             >
                                 {post.author.displayName || post.author.username}
                             </Link>
                             {post.author.isVerified && (
-                                <div className="flex-shrink-0 ml-[0px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
+                                <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
                                     <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                 </div>
                             )}
@@ -445,12 +445,12 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                             </div>
                                         </Link>
                                         <div className="w-full min-w-0">
-                                            <div className="flex items-center gap-1.5 mb-0.5">
+                                            <div className="flex items-center gap-[4px] mb-0.5">
                                                 <Link href={`/profile/${rootComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
                                                     {rootComment.user?.displayName || rootComment.user?.username || 'User'}
                                                 </Link>
                                                 {rootComment.user?.isVerified && (
-                                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px] drop-shadow-sm">
+                                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px] drop-shadow-sm mt-[1px]">
                                                         <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
                                                     </div>
                                                 )}
@@ -483,12 +483,12 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                                 </div>
                                             </Link>
                                             <div className="w-full min-w-0">
-                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                <div className="flex items-center gap-[4px] mb-0.5">
                                                     <Link href={`/profile/${reply.user?.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
                                                         {reply.user?.displayName || reply.user?.username || 'User'}
                                                     </Link>
                                                     {reply.user?.isVerified && (
-                                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px] drop-shadow-sm">
+                                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px] drop-shadow-sm mt-[1px]">
                                                             <Check className="w-[4.5px] h-[4.5px] text-white" strokeWidth={6} />
                                                         </div>
                                                     )}

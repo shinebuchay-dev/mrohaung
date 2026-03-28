@@ -366,12 +366,12 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-[#0b1120]" />
                             </Link>
                             <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[15px] hover:underline" onClick={onClose}>
+                                <div className="flex items-center gap-[4px] flex-wrap">
+                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[15px] hover:underline underline-offset-2" onClick={onClose}>
                                         {post.author.displayName || post.author.username}
                                     </Link>
                                     {post.author.isVerified && (
-                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
+                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
                                             <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                         </div>
                                     )}

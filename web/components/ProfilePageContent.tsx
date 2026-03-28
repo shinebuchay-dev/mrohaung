@@ -366,12 +366,12 @@ export default function ProfilePageContent() {
 
                         {/* Identity (Aligned Center with Avatar) */}
                         <div className="flex flex-col justify-center">
-                            <div className="flex items-center gap-1.5 mb-0.5">
+                            <div className="flex items-center gap-[4px] mb-0.5">
                                 <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     {user.displayName || user.username}
                                 </h1>
                                 {user.isVerified && (
-                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[17px] h-[17px] ml-[4px] mt-0.5 shadow-sm">
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[17px] h-[17px] mt-0.5 shadow-sm">
                                         <Check className="w-[10px] h-[10px] text-white" strokeWidth={6} />
                                     </div>
                                 )}
