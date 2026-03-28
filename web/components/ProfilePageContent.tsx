@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
     ArrowLeft, Calendar, UserPlus,
     Image as ImageIcon, MoreVertical, MessageCircle,
-    Star, Check, X, ShieldAlert, Shield,
+    Star, Check, X, ShieldAlert,
     Share2, Mail, Edit2, Clock, Camera,
     Phone, Video
 } from 'lucide-react';
@@ -272,7 +272,7 @@ export default function ProfilePageContent() {
                             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white dark:to-[#0f172a] transition-colors duration-500" />
                         </div>
                     ) : (
-                        <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100/50 to-white dark:from-slate-800 dark:via-slate-800/50 dark:to-[#0f172a]" />
                     )}
                 </div>
 
@@ -338,15 +338,15 @@ export default function ProfilePageContent() {
                 )}
 
                 {/* 5. Minimal Identity Section (Floating on extension) */}
-                <div className="relative pt-[160px] sm:pt-[220px] px-4 pb-6 z-10 w-full">
-                    <div className="flex items-end gap-3 sm:gap-4 mb-4">
+                <div className="relative pt-[120px] sm:pt-[160px] px-4 pb-6 z-10 w-full">
+                    <div className="flex items-center gap-4 sm:gap-6 mb-5">
                         {/* Avatar (Clean White Border) */}
                         <div className="relative flex-shrink-0">
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[4px] border-white dark:border-[#0f172a] overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm relative group">
+                            <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full border-[4px] border-white dark:border-[#0f172a] overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-sm relative group">
                                 {user.avatarUrl ? (
                                     <img src={fixUrl(user.avatarUrl)} className="w-full h-full object-cover" alt="Avatar" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-slate-400">
+                                    <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-slate-400 font-urbanist">
                                         {(user.displayName || user.username)[0].toUpperCase()}
                                     </div>
                                 )}
@@ -358,15 +358,19 @@ export default function ProfilePageContent() {
                             </div>
                         </div>
 
-                        {/* Identity */}
-                        <div className="pb-1 sm:pb-2">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                        {/* Identity (Aligned Center with Avatar) */}
+                        <div className="flex flex-col justify-center">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                                <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     {user.displayName || user.username}
                                 </h1>
-                                {user.isVerified && <Shield className="w-5 h-5 text-blue-500 fill-blue-500/10" />}
+                                {user.isVerified && (
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[20px] h-[20px] ml-[4px] mt-0.5 shadow-sm">
+                                        <Check className="w-[11.5px] h-[11.5px] text-white" strokeWidth={6} />
+                                    </div>
+                                )}
                             </div>
-                            <p className="text-slate-400 text-sm font-medium">@{user.username}</p>
+                            <p className="text-slate-400 text-sm sm:text-base font-medium opacity-80">@{user.username}</p>
                         </div>
                     </div>
 
@@ -593,10 +597,13 @@ export default function ProfilePageContent() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 py-2.5">
-                                <Shield className={`w-4 h-4 flex-shrink-0 ${user.isVerified ? 'text-blue-500' : 'text-slate-400'}`} />
+                                <div className={`flex-shrink-0 flex items-center justify-center rounded-full w-[17px] h-[17px] mt-0.5 ${user.isVerified ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                                    {user.isVerified && <Check className="w-[10.5px] h-[10.5px] text-white" strokeWidth={6} />}
+                                    {!user.isVerified && <X className="w-3 h-3 text-slate-400" />}
+                                </div>
                                 <div>
                                     <p className="text-xs text-slate-400">Status</p>
-                                    <p className={`text-sm font-semibold ${user.isVerified ? 'text-blue-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <p className={`text-sm font-semibold ${user.isVerified ? 'text-amber-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {user.isVerified ? 'Verified Account' : 'Standard Account'}
                                     </p>
                                 </div>

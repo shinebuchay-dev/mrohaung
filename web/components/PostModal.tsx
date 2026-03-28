@@ -6,6 +6,7 @@ import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import VoiceRecorder from './VoiceRecorder';
+import { useRouter } from 'next/navigation';
 import { useSocket } from '@/lib/socket';
 import StickerPicker from './StickerPicker';
 import ReactionPicker from './ReactionPicker';
@@ -363,9 +364,16 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                 <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#1e293b]" />
                             </Link>
                             <div className="flex flex-col justify-center">
-                                <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-bold text-[15px] hover:underline decoration-blue-500/50 underline-offset-2 leading-tight" onClick={onClose}>
-                                    {post.author.displayName || post.author.username}
-                                </Link>
+                                <div className="flex items-center gap-1">
+                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-bold text-[15px] hover:underline decoration-blue-500/50 underline-offset-2 leading-tight" onClick={onClose}>
+                                        {post.author.displayName || post.author.username}
+                                    </Link>
+                                    {post.author.isVerified && (
+                                        <div className="flex-shrink-0 ml-[2px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1.5px]">
+                                            <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-[#64748b] mt-0.5">
                                     <Clock className="w-3 h-3" />
                                     <p>{formatTimeRelative(post.createdAt)}</p>

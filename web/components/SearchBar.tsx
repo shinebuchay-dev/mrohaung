@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search as SearchIcon, X, User } from 'lucide-react';
+import { Search, X, Loader2, User, Check, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
@@ -14,6 +14,7 @@ interface SearchResult {
     title: string;
     subtitle?: string;
     avatarUrl?: string;
+    isVerified?: boolean;
 }
 
 export default function SearchBar() {
@@ -39,7 +40,8 @@ export default function SearchBar() {
                     username: user.username,
                     title: user.displayName || user.username,
                     subtitle: `@${user.username}`,
-                    avatarUrl: user.avatarUrl
+                    avatarUrl: user.avatarUrl,
+                    isVerified: !!user.isVerified
                 }));
 
                 setResults(userResults);
@@ -72,7 +74,7 @@ export default function SearchBar() {
     return (
         <div className="relative w-full max-w-[320px]">
             <div className="relative group">
-                <SearchIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                 <input
                     type="text"
                     value={query}
@@ -126,7 +128,16 @@ export default function SearchBar() {
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-slate-900 dark:text-white font-semibold truncate">{result.title}</p>
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <p className="text-slate-900 dark:text-white font-semibold truncate">
+                                                    {result.title}
+                                                </p>
+                                                {result.isVerified && (
+                                                    <div className="flex-shrink-0 ml-[2px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
+                                                        <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                                    </div>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-slate-500 dark:text-[#64748b] truncate">{result.subtitle}</p>
                                         </div>
                                     </button>

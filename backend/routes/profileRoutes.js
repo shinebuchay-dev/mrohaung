@@ -17,12 +17,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 const optionalAuthMiddleware = require('../middleware/optionalAuthMiddleware');
 
 router.get('/search', optionalAuthMiddleware, profileController.searchUsers);
-
+router.post('/verify-request', authMiddleware, profileController.requestVerification);
+router.get('/verify-status', authMiddleware, profileController.getVerificationStatus);
 router.get('/:id', optionalAuthMiddleware, profileController.getProfile);
 
 // Note: PUT /profile is handled directly in index.js to ensure reliable matching
-
-
 
 module.exports = router;
 

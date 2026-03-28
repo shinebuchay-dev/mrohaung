@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, User, Lock, Bell, Shield, LogOut, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Lock, Bell, Shield, LogOut, Trash2, ShieldCheck, Check, Loader2, X } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useTheme } from '@/lib/ThemeContext';
 import api from '@/lib/api';
@@ -14,12 +14,49 @@ export default function SettingsPage() {
     const [isPrivate, setIsPrivate] = useState(false);
     const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [verificationStatus, setVerificationStatus] = useState<any>(null);
+    const [requesting, setRequesting] = useState(false);
+    const [reason, setReason] = useState('');
+    const [showVerifyForm, setShowVerifyForm] = useState(false);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         setCurrentUser(user);
         fetchPrivacySettings();
+        fetchVerificationStatus();
     }, []);
+
+    const [isVerifying, setIsVerifying] = useState(true);
+
+    const fetchVerificationStatus = async () => {
+        setIsVerifying(true);
+        try {
+            const res = await api.get('/profile/verify-status');
+            setVerificationStatus(res.data);
+        } catch (error) {
+            console.error('Failed to fetch verification status:', error);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
+    const handleRequestVerification = async () => {
+        if (!reason.trim() || reason.trim().length < 10) {
+            return alert('Please provide a reason (minimum 10 characters)');
+        }
+        setRequesting(true);
+        try {
+            await api.post('/profile/verify-request', { reason });
+            fetchVerificationStatus();
+            setReason('');
+            setShowVerifyForm(false);
+            alert('Verification request submitted!');
+        } catch (error: any) {
+            alert(error.response?.data?.message || 'Failed to submit request');
+        } finally {
+            setRequesting(false);
+        }
+    };
 
     const fetchPrivacySettings = async () => {
         try {
@@ -226,6 +263,110 @@ export default function SettingsPage() {
                                     </div>
                                 )}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Verification Section */}
+                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="p-5 border-b border-slate-100 dark:border-white/5">
+                            <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                Verification
+                            </h2>
+                        </div>
+                        <div className="p-5">
+                            {isVerifying ? (
+                                <div className="flex flex-col items-center justify-center py-10">
+                                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Loading your status...</p>
+                                </div>
+                            ) : verificationStatus?.request?.status === 'pending' ? (
+                                <div className="bg-blue-50 dark:bg-blue-500/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-500/20">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600">
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        </div>
+                                        <p className="font-bold text-blue-700 dark:text-blue-400">Verification Under Review</p>
+                                    </div>
+                                    <p className="text-sm text-blue-600 dark:text-blue-500 font-medium leading-relaxed">
+                                        Your request is currently being reviewed by our team. Please wait while we process your application.
+                                    </p>
+                                    <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-500/10">
+                                        <p className="text-[11px] uppercase tracking-wider font-black text-blue-400 dark:text-blue-600">Submitted Reason</p>
+                                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1 font-medium italic">"{verificationStatus.request.reason}"</p>
+                                    </div>
+                                </div>
+                            ) : verificationStatus?.isVerified ? (
+                                <div className="bg-green-50 dark:bg-green-500/10 p-5 rounded-2xl border border-green-100 dark:border-green-500/20 flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/20">
+                                        <Check className="w-7 h-7 font-black" />
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-green-700 dark:text-green-400 text-lg">Account Verified</p>
+                                        <p className="text-sm text-green-600 dark:text-green-500 mt-0.5 font-medium">Your account has been successfully verified. You now have a blue badge on your profile.</p>
+                                    </div>
+                                </div>
+                            ) : verificationStatus?.request?.status === 'rejected' ? (
+                                <div className="space-y-4">
+                                    <div className="bg-red-50 dark:bg-red-500/10 p-5 rounded-2xl border border-red-100 dark:border-red-500/20">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shrink-0">
+                                                <X className="w-4 h-4 font-black" />
+                                            </div>
+                                            <p className="font-bold text-red-700 dark:text-red-400">Request Denied</p>
+                                        </div>
+                                        <p className="text-sm text-red-600 dark:text-red-500 font-medium">
+                                            We're sorry, your verification request has been declined at this time. You can try submitting a new request with more information.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowVerifyForm(true)}
+                                        className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                                    >
+                                        Apply Again
+                                    </button>
+                                </div>
+                            ) : showVerifyForm ? (
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Why should you be verified?</label>
+                                        <textarea
+                                            value={reason}
+                                            onChange={(e) => setReason(e.target.value)}
+                                            placeholder="Provide a detailed reason for your verification request..."
+                                            className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                                        />
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={handleRequestVerification}
+                                            disabled={requesting || reason.trim().length < 10}
+                                            className="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                                        >
+                                            {requesting ? 'Submitting...' : 'Submit Application'}
+                                        </button>
+                                        <button
+                                            onClick={() => setShowVerifyForm(false)}
+                                            className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl text-sm hover:bg-slate-200"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p className="font-bold text-slate-900 dark:text-white mb-1">Apply for Blue Badge</p>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                                        Verified accounts have a blue badge next to their names to show that the account is the authentic presence of the public figure, celebrity, or brand it represents.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowVerifyForm(true)}
+                                        className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                                    >
+                                        Get Started
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 

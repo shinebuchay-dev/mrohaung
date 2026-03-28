@@ -9,7 +9,7 @@ const getNotifications = async (req, res) => {
         const offset = (page - 1) * limit;
 
         const query = `SELECT n.id, n.type, n.message, n.read, n.createdAt, n.postId,
-                    u.id as fromUserId, u.username as fromUsername, u.displayName as fromDisplayName, u.avatarUrl as fromAvatarUrl,
+                    u.id as fromUserId, u.username as fromUsername, u.displayName as fromDisplayName, u.avatarUrl as fromAvatarUrl, u.isVerified as fromIsVerified,
                     p.id as postIdRef, p.content as postContent
              FROM Notification n
              JOIN User u ON n.fromUserId = u.id
@@ -30,7 +30,8 @@ const getNotifications = async (req, res) => {
                 id: n.fromUserId,
                 username: n.fromUsername,
                 displayName: n.fromDisplayName,
-                avatarUrl: n.fromAvatarUrl
+                avatarUrl: n.fromAvatarUrl,
+                isVerified: !!n.fromIsVerified
             },
             post: n.postIdRef ? { id: n.postIdRef, content: n.postContent } : null
         }));

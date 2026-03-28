@@ -1,5 +1,6 @@
 const pool = require('../utils/prisma');
 const { decrypt } = require('../utils/crypto');
+const { sendNotification } = require('../utils/notificationHelper');
 
 const parsePagination = (req) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -16,6 +17,7 @@ exports.getOverview = async (req, res) => {
         const [[storyRow]] = await pool.execute('SELECT COUNT(*) as count FROM Story');
         const [[messageRow]] = await pool.execute('SELECT COUNT(*) as count FROM Message');
         const [[notificationRow]] = await pool.execute('SELECT COUNT(*) as count FROM Notification');
+        const [[pendingVerificationsRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"');
 
         res.json({
             counts: {
@@ -24,7 +26,8 @@ exports.getOverview = async (req, res) => {
                 comments: parseInt(commentRow.count || 0),
                 stories: parseInt(storyRow.count || 0),
                 messages: parseInt(messageRow.count || 0),
-                notifications: parseInt(notificationRow.count || 0)
+                notifications: parseInt(notificationRow.count || 0),
+                pendingVerifications: parseInt(pendingVerificationsRow.count || 0)
             }
         });
     } catch (error) {
@@ -298,5 +301,63 @@ exports.deleteNotification = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to delete notification' });
+    }
+};
+
+exports.listVerificationRequests = async (req, res) => {
+    try {
+        const { limit, offset, page } = parsePagination(req);
+        const [requests] = await pool.query(
+            `SELECT vr.*, u.username, u.displayName, u.avatarUrl
+             FROM VerificationRequest vr
+             JOIN User u ON vr.userId = u.id
+             ORDER BY vr.createdAt DESC
+             LIMIT ? OFFSET ?`,
+            [limit, offset]
+        );
+
+        const [[countRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest');
+        const total = parseInt(countRow.count || 0);
+
+        res.json({ requests, page, limit, total });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to load verification requests' });
+    }
+};
+
+exports.handleVerificationAction = async (req, res) => {
+    try {
+        const { requestId, action } = req.body; // action: 'approved' | 'rejected'
+
+        if (!['approved', 'rejected'].includes(action)) {
+            return res.status(400).json({ message: 'Invalid action' });
+        }
+
+        const [[request]] = await pool.execute('SELECT userId FROM VerificationRequest WHERE id = ?', [requestId]);
+        if (!request) return res.status(404).json({ message: 'Request not found' });
+
+        await pool.execute('UPDATE VerificationRequest SET status = ? WHERE id = ?', [action, requestId]);
+
+        if (action === 'approved') {
+            await pool.execute('UPDATE User SET isVerified = 1 WHERE id = ?', [request.userId]);
+        }
+
+        // Send notification
+        const io = req.app.get('io');
+        const msg = action === 'approved' 
+            ? 'Your verification request has been approved! You now have a blue badge.' 
+            : 'Your verification request has been rejected.';
+        
+        await sendNotification(io, request.userId, {
+            type: 'verification',
+            message: msg,
+            fromUserId: req.userId
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Verify Action Error:', error);
+        res.status(500).json({ message: error.message || 'Failed to process verification' });
     }
 };

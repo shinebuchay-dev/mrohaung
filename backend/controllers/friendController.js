@@ -65,7 +65,7 @@ exports.getUserFriends = async (req, res) => {
         const userId = req.params.userId;
 
         const [friends] = await pool.execute(
-            `SELECT u.id, u.username, u.displayName, u.avatarUrl, u.bio
+            `SELECT u.id, u.username, u.displayName, u.avatarUrl, u.isVerified, u.bio
        FROM Friendship f
        JOIN User u ON (f.userId = u.id OR f.friendId = u.id)
        WHERE (f.userId = ? OR f.friendId = ?) 
@@ -85,7 +85,7 @@ exports.getUserFriends = async (req, res) => {
 exports.getPendingRequests = async (req, res) => {
     try {
         const [requests] = await pool.execute(
-            `SELECT f.id, f.friendId, u.id as userId, u.username, u.displayName, u.avatarUrl 
+            `SELECT f.id, f.friendId, u.id as userId, u.username, u.displayName, u.avatarUrl, u.isVerified 
        FROM Friendship f
        JOIN User u ON f.userId = u.id
        WHERE f.friendId = ? AND f.status = 'PENDING'`,
@@ -103,7 +103,7 @@ exports.getPendingRequests = async (req, res) => {
 exports.getFriends = async (req, res) => {
     try {
         const [friends] = await pool.execute(
-            `SELECT u.id, u.username, u.displayName, u.avatarUrl 
+            `SELECT u.id, u.username, u.displayName, u.avatarUrl, u.isVerified 
        FROM Friendship f
        JOIN User u ON (f.userId = u.id OR f.friendId = u.id)
        WHERE (f.userId = ? OR f.friendId = ?) 
@@ -210,7 +210,7 @@ exports.rejectFriendRequest = async (req, res) => {
 exports.getSentRequests = async (req, res) => {
     try {
         const [requests] = await pool.execute(
-            `SELECT f.id, f.friendId, u.id as userId, u.username, u.displayName, u.avatarUrl 
+            `SELECT f.id, f.friendId, u.id as userId, u.username, u.displayName, u.avatarUrl, u.isVerified 
        FROM Friendship f
        JOIN User u ON f.friendId = u.id
        WHERE f.userId = ? AND f.status = 'PENDING'`,

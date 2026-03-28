@@ -67,10 +67,9 @@ exports.register = async (req, res) => {
         const userId = uuidv4();
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
-        // Create user
         await pool.execute(
             'INSERT INTO User (id, username, email, password, displayName, dob, gender, phoneNumber, verificationToken, isVerified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [userId, username, email, hashedPassword, displayName, dob || null, gender || null, phoneNumber || null, verificationToken, true]
+            [userId, username, email, hashedPassword, displayName, dob || null, gender || null, phoneNumber || null, verificationToken, false]
         );
 
         /* 
@@ -124,7 +123,7 @@ exports.register = async (req, res) => {
                 username,
                 email,
                 displayName,
-                isVerified: true
+                isVerified: false
             }
         });
     } catch (error) {

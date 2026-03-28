@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, X, UserPlus, Heart, MessageCircle, MoreHorizontal } from 'lucide-react';
+import { Bell, Check, Trash2, UserPlus, Heart, MessageSquare, ShieldCheck, X } from 'lucide-react';
 import { useSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
@@ -10,13 +10,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface Notification {
     id: string;
-    type: 'friend_request' | 'like' | 'comment';
+    type: 'friend_request' | 'like' | 'comment' | 'verification';
     message: string;
     from: {
         id: string;
         username: string;
         displayName?: string;
         avatarUrl?: string;
+        isVerified?: boolean;
     };
     createdAt: string;
     read: boolean;
@@ -163,7 +164,14 @@ export default function NotificationDropdown() {
                                             </div>
                                             <div className="flex-1 min-w-0 pt-0.5">
                                                 <p className="text-[13px] text-slate-800 dark:text-slate-200 leading-relaxed">
-                                                    <span className="font-bold dark:text-white">{notification.from.displayName || notification.from.username}</span>
+                                                    <span className="inline-flex items-center gap-1 font-bold dark:text-white">
+                                                        {notification.from.displayName || notification.from.username}
+                                                        {notification.from.isVerified && (
+                                                            <div className="flex-shrink-0 ml-[2.5px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
+                                                                <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                                            </div>
+                                                        )}
+                                                    </span>
                                                     <span className="ml-1 opacity-90">{notification.message}</span>
                                                 </p>
                                                 <p className="text-[11px] text-slate-500 dark:text-slate-500 font-medium mt-1">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, X, RefreshCw } from 'lucide-react';
+import { UserPlus, X, RefreshCw, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ interface Suggestion {
     username: string;
     displayName?: string;
     avatarUrl?: string;
+    isVerified?: boolean;
     mutualFriendsCount: number;
     friendsCount?: number;
 }
@@ -141,9 +142,16 @@ export default function FriendSuggestions() {
                             {/* Info */}
                             <div className="flex-1 min-w-0">
                                 <Link href={`/profile/${suggestion.username}`}>
-                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-                                        {suggestion.displayName || suggestion.username}
-                                    </p>
+                                    <div className="flex items-center gap-1 min-w-0">
+                                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                                            {suggestion.displayName || suggestion.username}
+                                        </p>
+                                        {suggestion.isVerified && (
+                                            <div className="flex-shrink-0 ml-[4px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1.5px]">
+                                                <Check className="w-[5.5px] h-[5.5px] text-white" strokeWidth={5} />
+                                            </div>
+                                        )}
+                                    </div>
                                 </Link>
                                 <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
                                     {suggestion.mutualFriendsCount > 0

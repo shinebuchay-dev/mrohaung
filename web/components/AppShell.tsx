@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp } from 'lucide-react';
+import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp, Play } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -104,6 +104,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             const items = [
                 { href: '/', label: 'News', icon: Home },
+                { href: '/short-video', label: 'Short Video', icon: Play, protected: true },
                 { href: '/friends', label: 'Friends', icon: Users, protected: true },
             ];
 

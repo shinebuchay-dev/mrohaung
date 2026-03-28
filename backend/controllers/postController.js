@@ -62,7 +62,7 @@ exports.getFeed = async (req, res) => {
         if (!currentUserId) {
             // Guest Feed: Show only public posts
             const guestQuery = `
-                SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+                SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate, u.isVerified,
                 (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
                 (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
                 FALSE as isLiked,
@@ -83,7 +83,8 @@ exports.getFeed = async (req, res) => {
                         id: post.authorId,
                         username: post.username,
                         displayName: post.displayName,
-                        avatarUrl: post.avatarUrl
+                        avatarUrl: post.avatarUrl,
+                        isVerified: !!post.isVerified
                     },
                     isLiked: false,
                     userReaction: null,
@@ -112,7 +113,7 @@ exports.getFeed = async (req, res) => {
         const suggestedOffset = (page - 1) * suggestedLimit;
 
         const friendsQuery = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate, u.isVerified,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             l.id IS NOT NULL as isLiked,
@@ -140,7 +141,7 @@ exports.getFeed = async (req, res) => {
         `;
 
         const suggestedQuery = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate, u.isVerified,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             l.id IS NOT NULL as isLiked,
@@ -193,7 +194,8 @@ exports.getFeed = async (req, res) => {
                     id: post.authorId,
                     username: post.username,
                     displayName: post.displayName,
-                    avatarUrl: post.avatarUrl
+                    avatarUrl: post.avatarUrl,
+                    isVerified: !!post.isVerified
                 },
                 isLiked: !!post.isLiked,
                 userReaction: post.userReaction || null,
@@ -236,7 +238,7 @@ exports.getPostsByUser = async (req, res) => {
         const targetUserId = users[0].id;
 
         const query = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName,
+            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isVerified,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             l.id IS NOT NULL as isLiked,
@@ -277,7 +279,8 @@ exports.getPostsByUser = async (req, res) => {
                     id: post.authorId,
                     username: post.username,
                     displayName: post.displayName,
-                    avatarUrl: post.avatarUrl
+                    avatarUrl: post.avatarUrl,
+                    isVerified: !!post.isVerified
                 },
                 isLiked: !!post.isLiked,
                 userReaction: post.userReaction || null,
@@ -547,7 +550,7 @@ exports.getComments = async (req, res) => {
         const { postId } = req.params;
 
         const [comments] = await pool.execute(
-            `SELECT c.*, u.username, u.avatarUrl, u.displayName,
+            `SELECT c.*, u.username, u.avatarUrl, u.displayName, u.isVerified,
              (SELECT COUNT(*) FROM CommentLike WHERE commentId = c.id) as likeCount,
              EXISTS(SELECT 1 FROM CommentLike WHERE commentId = c.id AND userId = ?) as isLiked 
              FROM Comment c 
@@ -563,7 +566,8 @@ exports.getComments = async (req, res) => {
                 id: comment.userId,
                 username: comment.username,
                 displayName: comment.displayName,
-                avatarUrl: comment.avatarUrl
+                avatarUrl: comment.avatarUrl,
+                isVerified: !!comment.isVerified
             },
             isLiked: !!comment.isLiked
         }));
@@ -573,6 +577,7 @@ exports.getComments = async (req, res) => {
             delete comment.username;
             delete comment.displayName;
             delete comment.avatarUrl;
+            delete comment.isVerified;
         });
 
         res.json(formattedComments);
@@ -588,7 +593,7 @@ exports.getPostById = async (req, res) => {
         const currentUserId = req.userId;
 
         const query = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate,
+            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isPrivate, u.isVerified,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             l.id IS NOT NULL as isLiked,
@@ -632,7 +637,8 @@ exports.getPostById = async (req, res) => {
                 id: post.authorId,
                 username: post.username,
                 displayName: post.displayName,
-                avatarUrl: post.avatarUrl
+                avatarUrl: post.avatarUrl,
+                isVerified: !!post.isVerified
             },
             isLiked: !!post.isLiked,
             userReaction: post.userReaction || null,
@@ -665,7 +671,7 @@ exports.searchPosts = async (req, res) => {
         }
 
         const query = `
-            SELECT p.*, u.username, u.avatarUrl, u.displayName,
+            SELECT p.*, u.username, u.avatarUrl, u.displayName, u.isVerified,
             (SELECT COUNT(*) FROM \`Like\` WHERE postId = p.id) as likeCount,
             (SELECT COUNT(*) FROM Comment WHERE postId = p.id) as commentCount,
             l.id IS NOT NULL as isLiked,
@@ -699,7 +705,8 @@ exports.searchPosts = async (req, res) => {
                     id: post.authorId,
                     username: post.username,
                     displayName: post.displayName,
-                    avatarUrl: post.avatarUrl
+                    avatarUrl: post.avatarUrl,
+                    isVerified: !!post.isVerified
                 },
                 isLiked: !!post.isLiked,
                 userReaction: post.userReaction || null,

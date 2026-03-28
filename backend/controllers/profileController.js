@@ -7,7 +7,7 @@ exports.getProfile = async (req, res) => {
         const currentUserId = req.userId;
 
         const [users] = await pool.query(
-            `SELECT u.id, u.username, u.displayName, u.bio, u.avatarUrl, u.coverUrl, u.coverOffset, u.createdAt, u.reputation,
+            `SELECT u.id, u.username, u.displayName, u.bio, u.avatarUrl, u.coverUrl, u.coverOffset, u.createdAt, u.reputation, u.isVerified,
             (SELECT COUNT(*) FROM Post WHERE authorId = u.id) as postCount,
             (SELECT COUNT(*) FROM Friendship WHERE (userId = u.id OR friendId = u.id) AND status = 'accepted') as friendCount
             FROM User u WHERE u.id = ? OR u.username = ?
@@ -207,5 +207,49 @@ exports.deleteAccount = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to delete account' });
+    }
+};
+
+exports.requestVerification = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { reason } = req.body;
+        const requestId = require('crypto').randomUUID();
+
+        if (!reason || reason.trim().length < 10) {
+            return res.status(400).json({ message: 'Please provide a valid reason (min 10 chars)' });
+        }
+
+        // Check if already pending or verified
+        const [[user]] = await pool.execute('SELECT isVerified FROM User WHERE id = ?', [userId]);
+        if (user?.isVerified) return res.status(400).json({ message: 'You are already verified' });
+
+        const [existing] = await pool.execute('SELECT status FROM VerificationRequest WHERE userId = ? AND status = "pending"', [userId]);
+        if (existing.length > 0) return res.status(400).json({ message: 'Request already pending' });
+
+        await pool.execute('INSERT INTO VerificationRequest (id, userId, status, reason) VALUES (?, ?, "pending", ?)', [requestId, userId, reason]);
+
+        res.json({ success: true, message: 'Request submitted successfully' });
+    } catch (error) {
+        console.error('Verification Request Error:', error);
+        res.status(500).json({ message: error.message || 'Failed to submit request' });
+    }
+};
+
+exports.getVerificationStatus = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const [[user]] = await pool.execute('SELECT isVerified FROM User WHERE id = ?', [userId]);
+        const [[request]] = await pool.execute(
+            'SELECT status, createdAt, reason FROM VerificationRequest WHERE userId = ? ORDER BY createdAt DESC LIMIT 1',
+            [userId]
+        );
+        res.json({ 
+            isVerified: user?.isVerified === 1, 
+            request 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to check status' });
     }
 };

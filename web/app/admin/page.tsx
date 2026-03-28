@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import api from '@/lib/api';
 
-type Tab = 'overview' | 'users' | 'notifications';
+type Tab = 'overview' | 'users' | 'notifications' | 'verification';
 
 type Overview = {
     counts: {
@@ -14,6 +14,7 @@ type Overview = {
         stories: number;
         messages: number;
         notifications: number;
+        pendingVerifications?: number;
     };
 };
 
@@ -30,6 +31,7 @@ export default function AdminDashboardPage() {
     const [total, setTotal] = useState(0);
     const [q, setQ] = useState('');
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [processingId, setProcessingId] = useState<string | null>(null);
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
@@ -45,6 +47,7 @@ export default function AdminDashboardPage() {
         const urlMap: Record<string, string> = {
             users: '/admin/users',
             notifications: '/admin/notifications',
+            verification: '/admin/verification-requests',
         };
 
         const res = await api.get(urlMap[tab], { params });
@@ -52,10 +55,25 @@ export default function AdminDashboardPage() {
         const listKeyMap: Record<string, string> = {
             users: 'users',
             notifications: 'notifications',
+            verification: 'requests',
         };
 
         setRows(res.data[listKeyMap[tab]] || []);
         setTotal(res.data.total || 0);
+    };
+
+    const handleVerification = async (requestId: string, action: 'approved' | 'rejected') => {
+        setProcessingId(requestId);
+        setError('');
+        try {
+            await api.post('/admin/verify-action', { requestId, action });
+            await fetchList();
+        } catch (e: any) {
+            const msg = e?.response?.data?.message || 'Action failed';
+            setError(msg);
+        } finally {
+            setProcessingId(null);
+        }
     };
 
     useEffect(() => {
@@ -132,6 +150,16 @@ export default function AdminDashboardPage() {
                     <div className="flex flex-wrap gap-2 py-4">
                         <TabButton tab={tab} value="overview" onClick={setTab}>Overview</TabButton>
                         <TabButton tab={tab} value="users" onClick={setTab}>Users</TabButton>
+                        <TabButton tab={tab} value="verification" onClick={setTab}>
+                            <div className="flex items-center gap-2">
+                                Verification
+                                {overview?.counts?.pendingVerifications ? (
+                                    <span className="w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] rounded-full font-black animate-pulse shrink-0">
+                                        {overview.counts.pendingVerifications}
+                                    </span>
+                                ) : null}
+                            </div>
+                        </TabButton>
                         <TabButton tab={tab} value="notifications" onClick={setTab}>Notifications</TabButton>
                     </div>
                 </div>
@@ -198,13 +226,32 @@ export default function AdminDashboardPage() {
                                                         <td key={idx} className="py-3 px-4 align-top whitespace-nowrap max-w-[340px] truncate">{cell}</td>
                                                     ))}
                                                     <td className="py-3 px-4 whitespace-nowrap">
-                                                        <button
-                                                            onClick={() => deleteRow(r.id)}
-                                                            disabled={deletingId === r.id}
-                                                            className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors font-bold text-xs"
-                                                        >
-                                                            {deletingId === r.id ? 'Deleting…' : 'Delete'}
-                                                        </button>
+                                                        {tab === 'verification' ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => handleVerification(r.id, 'approved')}
+                                                                    disabled={processingId === r.id || r.status !== 'pending'}
+                                                                    className="px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-500/20 disabled:opacity-50 transition-colors font-bold text-xs"
+                                                                >
+                                                                    {processingId === r.id ? 'Wait...' : 'Approve'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleVerification(r.id, 'rejected')}
+                                                                    disabled={processingId === r.id || r.status !== 'pending'}
+                                                                    className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors font-bold text-xs"
+                                                                >
+                                                                    Reject
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => deleteRow(r.id)}
+                                                                disabled={deletingId === r.id}
+                                                                className="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 transition-colors font-bold text-xs"
+                                                            >
+                                                                {deletingId === r.id ? 'Deleting…' : 'Delete'}
+                                                            </button>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))
@@ -304,6 +351,8 @@ function getColumns(tab: Tab) {
     switch (tab) {
         case 'users':
             return ['ID', 'Username', 'Email', 'Created'];
+        case 'verification':
+            return ['User', 'Display Name', 'Reason', 'Status', 'Requested At'];
         case 'notifications':
             return ['ID', 'Type', 'To', 'From', 'Read', 'Created', 'Message'];
         default:
@@ -315,6 +364,30 @@ function renderCells(tab: Tab, r: any) {
     switch (tab) {
         case 'users':
             return [r.id, r.username, r.email, new Date(r.createdAt).toLocaleString()];
+        case 'verification':
+            return [
+                <div className="flex items-center gap-3" key="user">
+                    {r.avatarUrl ? (
+                        <img src={r.avatarUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
+                    ) : (
+                        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-[10px]">
+                            {r.username[0].toUpperCase()}
+                        </div>
+                    )}
+                    <span className="font-bold">@{r.username}</span>
+                </div>,
+                r.displayName || '-',
+                <div key="reason" className="max-w-[200px] truncate italic text-slate-500 dark:text-slate-400 text-xs" title={r.reason}>
+                    "{r.reason}"
+                </div>,
+                <span key="status" className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${r.status === 'approved' ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-400' :
+                        r.status === 'rejected' ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
+                            'bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
+                    }`}>
+                    {r.status}
+                </span>,
+                new Date(r.createdAt).toLocaleString()
+            ];
         case 'notifications':
             return [
                 r.id,

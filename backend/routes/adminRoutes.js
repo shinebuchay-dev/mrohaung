@@ -27,6 +27,9 @@ router.delete('/users/:userId', adminController.deleteUser);
 router.get('/notifications', adminController.listNotifications);
 router.delete('/notifications/:notificationId', adminController.deleteNotification);
 
+router.get('/verification-requests', adminController.listVerificationRequests);
+router.post('/verify-action', adminController.handleVerificationAction);
+
 // Notifications management is handled by separate routes if needed, 
 // for now we keep the list available in dashboard for basic admin oversight 
 // if the user didn't explicitly ask to remove it too. 

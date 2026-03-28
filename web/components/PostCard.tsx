@@ -1,7 +1,7 @@
 'use client';
 
 import ReactionPicker from './ReactionPicker';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
@@ -232,6 +232,11 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             >
                                 {post.author.displayName || post.author.username}
                             </Link>
+                            {post.author.isVerified && (
+                                <div className="flex-shrink-0 ml-[0px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
+                                    <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                </div>
+                            )}
                             <span className="text-slate-300 dark:text-slate-600 text-[13px]">·</span>
                             <span className="text-[13px] text-slate-400 dark:text-slate-500 flex-shrink-0">{timeAgo(post.createdAt)}</span>
                         </div>

@@ -12,7 +12,7 @@ exports.getFriendSuggestions = async (req, res) => {
         // 3. Not pending friend requests
         // 4. Have mutual friends with current user
         const [suggestions] = await pool.query(
-            `SELECT DISTINCT u.id, u.username, u.displayName, u.avatarUrl, u.bio,
+            `SELECT DISTINCT u.id, u.username, u.displayName, u.avatarUrl, u.bio, u.isVerified,
              (SELECT COUNT(DISTINCT f2.friendId)
               FROM Friendship f1
               JOIN Friendship f2 ON f1.friendId = f2.userId
@@ -82,7 +82,7 @@ exports.getRandomSuggestions = async (req, res) => {
         const limit = parseInt(req.query.limit) || 5;
 
         const [suggestions] = await pool.query(
-            `SELECT u.id, u.username, u.displayName, u.avatarUrl, u.bio,
+            `SELECT u.id, u.username, u.displayName, u.avatarUrl, u.bio, u.isVerified,
              (SELECT COUNT(*) FROM Friendship WHERE userId = u.id AND status = 'accepted') as friendsCount
              FROM User u
              WHERE u.id != ?
@@ -101,6 +101,7 @@ exports.getRandomSuggestions = async (req, res) => {
 
         res.json(suggestions.map(s => ({
             ...s,
+            isVerified: !!s.isVerified,
             friendsCount: parseInt(s.friendsCount || 0),
             mutualFriendsCount: 0,
             mutualFriends: []
