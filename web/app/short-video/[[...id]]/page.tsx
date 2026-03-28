@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, Share2, MessageCircle, Volume2, VolumeX, Plus, X, UploadCloud, Loader2, ChevronUp, ChevronDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+import { Play, Heart, Share2, MessageCircle, Volume2, VolumeX, Plus, X, UploadCloud, Loader2, ChevronUp, ChevronDown, MoreVertical, Trash2, Flag } from 'lucide-react';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
@@ -177,8 +177,6 @@ export default function ShortVideoPage() {
                                 isActive={activeVideoId === video.id} 
                                 onIntersect={(isIntersecting) => handleVideoInView(video.id, isIntersecting)}
                                 onOpenComments={() => setCommentVideoId(prev => prev === video.id ? null : video.id)}
-                                currentUser={user}
-                                onDelete={(id) => setVideos(prev => prev.filter(v => v.id !== id))}
                             />
                         </div>
                     ))}
@@ -242,44 +240,16 @@ export default function ShortVideoPage() {
 }
 
 // ─── SEAMLESS VIDEO ITEM COMPONENT (9:16 Ratio) ─────────────────────────────
-function VideoItem({ video, isActive, onIntersect, onOpenComments, currentUser, onDelete }: { 
-    video: ShortVideo; isActive: boolean; onIntersect: (val: boolean) => void; onOpenComments: () => void;
-    currentUser: any; onDelete: (id: string) => void;
-}) {
+function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: ShortVideo; isActive: boolean; onIntersect: (val: boolean) => void; onOpenComments: () => void }) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const menuRef = useRef<HTMLDivElement>(null);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [likeData, setLikeData] = useState({ isLiked: video.isLiked, count: video.likeCount });
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [deleting, setDeleting] = useState(false);
-
-    const isOwner = currentUser?.id === video.author.id;
-
-    // Close menu on outside click
-    useEffect(() => {
-        if (!menuOpen) return;
-        const handler = (e: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-        };
-        document.addEventListener('mousedown', handler);
-        return () => document.removeEventListener('mousedown', handler);
-    }, [menuOpen]);
-
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!confirm('Delete this video?')) return;
-        try {
-            setDeleting(true);
-            await api.delete(`/short-videos/${video.id}`);
-            onDelete(video.id);
-        } catch (err) {
-            console.error('Delete failed:', err);
-            setDeleting(false);
-        }
-    };
+    const [showOptions, setShowOptions] = useState(false);
+    const { user, requireAuth } = useAuth();
+    const isOwner = user?.id === video.author.id || user?.username === video.author.username;
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -363,7 +333,58 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments, currentUser, 
     return (
         // The outer snap container is exactly 100% height of the scroll port. No padding so it's a perfect fit.
         <div ref={containerRef} className="h-full w-full snap-start snap-always relative flex items-center justify-center p-0">
-            
+
+            {/* ⋯ Top-left options button — outside the video, left side */}
+            <div className="hidden md:block absolute z-30"
+                 style={{ left: 'calc(50% - ((100vh - 96px) * 9 / 32) - 52px)', top: '24px' }}>
+                <div className="relative">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setShowOptions(v => !v); }}
+                        className="w-9 h-9 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 dark:bg-white/5 dark:hover:bg-white/10 backdrop-blur-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200/30 dark:border-white/10"
+                        title="Options"
+                    >
+                        <MoreVertical className="w-4 h-4" />
+                    </button>
+                    {/* Dropdown */}
+                    <AnimatePresence>
+                        {showOptions && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                                transition={{ duration: 0.12 }}
+                                className="absolute left-0 top-11 w-44 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-white/10 overflow-hidden z-50"
+                            >
+                                {isOwner && (
+                                    <button
+                                        onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (!confirm('Delete this short video?')) return;
+                                            try {
+                                                await api.delete(`/short-videos/${video.id}`);
+                                                window.location.reload();
+                                            } catch { alert('Failed to delete.'); }
+                                            setShowOptions(false);
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Delete Video
+                                    </button>
+                                )}
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); alert('Report feature coming soon.'); setShowOptions(false); }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                >
+                                    <Flag className="w-4 h-4" />
+                                    Report
+                                </button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+
             {/* Strict 9:16 aspect ratio layout scaling correctly with height */}
             <div className="relative w-full h-full md:w-auto md:aspect-[9/16]">
                 
@@ -399,47 +420,6 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments, currentUser, 
                 >
                     {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
                 </button>
-
-                {/* 3-dot Owner Menu — top left */}
-                {isOwner && (
-                    <div ref={menuRef} className="absolute top-5 left-5 z-30">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v); }}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-sm text-white/80 hover:text-white hover:bg-black/50 transition-all"
-                        >
-                            <MoreHorizontal className="w-4 h-4" />
-                        </button>
-
-                        <AnimatePresence>
-                            {menuOpen && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.92, y: -4 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.92, y: -4 }}
-                                    transition={{ duration: 0.12 }}
-                                    className="absolute top-10 left-0 w-40 bg-black/70 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl"
-                                >
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setMenuOpen(false); alert('Edit coming soon'); }}
-                                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition-colors text-left"
-                                    >
-                                        <Pencil className="w-3.5 h-3.5 shrink-0" />
-                                        Edit Video
-                                    </button>
-                                    <div className="h-px bg-white/10" />
-                                    <button
-                                        onClick={handleDelete}
-                                        disabled={deleting}
-                                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-rose-400 hover:bg-rose-500/20 transition-colors text-left disabled:opacity-50"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                                        {deleting ? 'Deleting...' : 'Delete Video'}
-                                    </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                )}
 
                 <div className="absolute bottom-0 left-0 w-full p-6 pt-32 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none flex items-end justify-between z-20">
                     

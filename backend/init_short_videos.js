@@ -44,6 +44,19 @@ async function run() {
         `);
         console.log("Created ShortVideoLike table.");
 
+        await conn.execute(`
+            CREATE TABLE IF NOT EXISTS ShortVideoComment (
+                id VARCHAR(36) PRIMARY KEY,
+                videoId VARCHAR(36) NOT NULL,
+                userId VARCHAR(36) NOT NULL,
+                content TEXT NOT NULL,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (videoId) REFERENCES ShortVideo(id) ON DELETE CASCADE,
+                FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE
+            )
+        `);
+        console.log("Created ShortVideoComment table.");
+
         await conn.end();
         console.log("Done.");
     } catch (e) {
