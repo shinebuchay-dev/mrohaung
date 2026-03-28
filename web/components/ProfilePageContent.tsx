@@ -263,7 +263,7 @@ export default function ProfilePageContent() {
     return (
         <div>
             {/* ── CLEAN & MINIMAL HERO: Cover extending behind Bio/Stats ── */}
-            <div className="relative w-full rounded-2xl overflow-hidden bg-white dark:bg-[#0f172a] mb-0 group">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-white dark:bg-[#0f172a] mb-0 group min-h-[350px] sm:min-h-[415px]">
                 {/* 1. The Cover Background (Clean & Natural Extension) */}
                 <div className="absolute inset-x-0 top-0 h-[350px] sm:h-[415px]">
                     {user.coverUrl ? (
@@ -274,8 +274,8 @@ export default function ProfilePageContent() {
                                 style={{ objectPosition: `center ${user.coverOffset ?? 50}%` }}
                                 alt="Cover"
                             />
-                            {/* Seamless Transition to Background (Transparent Fade) */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white dark:to-[#0f172a] transition-colors duration-500" />
+                            {/* Seamless Transition to Background (Transparent Fade) - Hide or fade in reposition mode */}
+                            <div className={`absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white dark:to-[#0f172a] transition-all duration-500 ${repositionMode ? 'opacity-20' : 'opacity-100'}`} />
                         </div>
                     ) : (
                         <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-100/50 to-white dark:from-slate-800 dark:via-slate-800/50 dark:to-[#0f172a]" />
@@ -287,7 +287,7 @@ export default function ProfilePageContent() {
                     <div
                         ref={coverContainerRef}
                         onMouseDown={handleCoverMouseDown}
-                        className="absolute inset-x-0 top-0 h-[260px] z-20 cursor-ns-resize active:cursor-grabbing bg-black/40 backdrop-blur-md"
+                        className="absolute inset-x-0 top-0 h-[350px] sm:h-[415px] z-20 cursor-ns-resize active:cursor-grabbing bg-black/5 flex items-center justify-center transition-colors"
                     >
                         <div className="absolute inset-0 flex items-center justify-center">
                             <p className="bg-white/10 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-xl border border-white/20 uppercase tracking-widest">
