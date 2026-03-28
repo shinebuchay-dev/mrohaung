@@ -11,44 +11,71 @@ const parsePagination = (req) => {
 
 exports.getOverview = async (req, res) => {
     try {
-        const [[userRow]] = await pool.execute('SELECT COUNT(*) as count FROM User');
-        const [[postRow]] = await pool.execute('SELECT COUNT(*) as count FROM Post');
-        const [[commentRow]] = await pool.execute('SELECT COUNT(*) as count FROM Comment');
-        const [[storyRow]] = await pool.execute('SELECT COUNT(*) as count FROM Story');
-        const [[messageRow]] = await pool.execute('SELECT COUNT(*) as count FROM Message');
-        const [[notificationRow]] = await pool.execute('SELECT COUNT(*) as count FROM Notification');
-        const [[pendingVerificationsRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"');
+        const fetchCount = async (sql) => {
+            try {
+                const [rows] = await pool.execute(sql);
+                return parseInt(rows[0]?.count || 0);
+            } catch (e) {
+                console.error(`Overview Query Error [${sql.slice(0, 30)}...]:`, e.message);
+                return 0;
+            }
+        };
 
-        // Total users active in last 24h (distinct creators of posts, stories, messages, comments, or likes)
-        const [[activeTodayRow]] = await pool.execute(`
-            SELECT COUNT(DISTINCT userId) as count FROM (
-                SELECT authorId as userId FROM Post WHERE createdAt > NOW() - INTERVAL 1 DAY
-                UNION ALL
-                SELECT userId FROM Story WHERE createdAt > NOW() - INTERVAL 1 DAY
-                UNION ALL
-                SELECT senderId as userId FROM Message WHERE createdAt > NOW() - INTERVAL 1 DAY
-                UNION ALL
-                SELECT userId FROM Comment WHERE createdAt > NOW() - INTERVAL 1 DAY
-                UNION ALL
-                SELECT userId FROM ShortVideo WHERE createdAt > NOW() - INTERVAL 1 DAY
-            ) as ActiveUsers
-        `);
+        // Fetch counts for all main tables safely
+        const [
+            users, posts, comments, stories, messages, notifications, pendingVerifications
+        ] = await Promise.all([
+            fetchCount('SELECT COUNT(*) as count FROM User'),
+            fetchCount('SELECT COUNT(*) as count FROM Post'),
+            fetchCount('SELECT COUNT(*) as count FROM Comment'),
+            fetchCount('SELECT COUNT(*) as count FROM Story'),
+            fetchCount('SELECT COUNT(*) as count FROM Message'),
+            fetchCount('SELECT COUNT(*) as count FROM Notification'),
+            fetchCount('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"')
+        ]);
+
+        // Active today query is complex, wrap separately
+        let activeToday = 0;
+        try {
+            const [rows] = await pool.execute(`
+                SELECT COUNT(DISTINCT userId) as count FROM (
+                    SELECT authorId as userId FROM Post WHERE createdAt > NOW() - INTERVAL 1 DAY
+                    UNION ALL
+                    SELECT userId FROM Story WHERE createdAt > NOW() - INTERVAL 1 DAY
+                    UNION ALL
+                    SELECT senderId as userId FROM Message WHERE createdAt > NOW() - INTERVAL 1 DAY
+                    UNION ALL
+                    SELECT userId FROM Comment WHERE createdAt > NOW() - INTERVAL 1 DAY
+                    UNION ALL
+                    SELECT authorId as userId FROM ShortVideo WHERE createdAt > NOW() - INTERVAL 1 DAY
+                ) as ActiveUsers
+            `);
+            activeToday = parseInt(rows[0]?.count || 0);
+        } catch (e) {
+            console.error('Active Users Query Failed:', e.message);
+            activeToday = 0;
+        }
 
         res.json({
             counts: {
-                users: parseInt(userRow.count || 0),
-                posts: parseInt(postRow.count || 0),
-                comments: parseInt(commentRow.count || 0),
-                stories: parseInt(storyRow.count || 0),
-                messages: parseInt(messageRow.count || 0),
-                notifications: parseInt(notificationRow.count || 0),
-                pendingVerifications: parseInt(pendingVerificationsRow.count || 0),
-                activeToday: parseInt(activeTodayRow.count || 0)
+                users,
+                posts,
+                comments,
+                stories,
+                messages,
+                notifications,
+                pendingVerifications,
+                activeToday
             }
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to load overview' });
+        console.error('Fatal Overview Error:', error);
+        // Last line of defense: Return zeros instead of 500
+        res.json({
+            counts: {
+                users: 0, posts: 0, comments: 0, stories: 0, messages: 0, notifications: 0, pendingVerifications: 0, activeToday: 0
+            }
+        });
     }
 };
 
@@ -292,15 +319,23 @@ exports.listNotifications = async (req, res) => {
              ORDER BY n.createdAt DESC
              LIMIT ? OFFSET ?`,
             [limit, offset]
-        );
+        ).catch(e => {
+            console.error('listNotifications Query Failed:', e.message);
+            return [[]]; // Return empty array
+        });
 
-        const [[countRow]] = await pool.execute('SELECT COUNT(*) as count FROM Notification');
-        const total = parseInt(countRow.count || 0);
+        let total = 0;
+        try {
+            const [[countRow]] = await pool.execute('SELECT COUNT(*) as count FROM Notification');
+            total = parseInt(countRow.count || 0);
+        } catch (e) {
+            console.error('listNotifications Count Failed:', e.message);
+        }
 
-        res.json({ notifications, page, limit, total });
+        res.json({ notifications: notifications || [], page, limit, total });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to load notifications' });
+        console.error('Fatal listNotifications Error:', error);
+        res.json({ notifications: [], page: 1, limit: 20, total: 0 });
     }
 };
 
@@ -323,6 +358,7 @@ exports.deleteNotification = async (req, res) => {
 exports.listVerificationRequests = async (req, res) => {
     try {
         const { limit, offset, page } = parsePagination(req);
+        
         const [requests] = await pool.query(
             `SELECT vr.*, u.username, u.displayName, u.avatarUrl
              FROM VerificationRequest vr
@@ -330,15 +366,23 @@ exports.listVerificationRequests = async (req, res) => {
              ORDER BY vr.createdAt DESC
              LIMIT ? OFFSET ?`,
             [limit, offset]
-        );
+        ).catch(e => {
+            console.error('listVerificationRequests Query Failed:', e.message);
+            return [[]];
+        });
 
-        const [[countRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest');
-        const total = parseInt(countRow.count || 0);
+        let total = 0;
+        try {
+            const [[countRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest');
+            total = parseInt(countRow.count || 0);
+        } catch (e) {
+            console.error('listVerificationRequests Count Failed:', e.message);
+        }
 
-        res.json({ requests, page, limit, total });
+        res.json({ requests: requests || [], page, limit, total });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to load verification requests' });
+        console.error('Fatal listVerificationRequests Error:', error);
+        res.json({ requests: [], page: 1, limit: 20, total: 0 });
     }
 };
 
