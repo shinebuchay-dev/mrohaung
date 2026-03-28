@@ -14,6 +14,9 @@ const s3Client = process.env.R2_ACCESS_KEY_ID ? new S3Client({
     },
 }) : null;
 
+// Support both R2_PUBLIC_URL and R2_PUBLIC_DOMAIN env var names
+const R2_PUBLIC_BASE = process.env.R2_PUBLIC_URL || process.env.R2_PUBLIC_DOMAIN || 'https://pub-e61e1977203c41d499155e42c923617c.r2.dev';
+
 const initBucket = async () => {
     if (!s3Client) {
         console.warn('⚠️ WARNING: Cloudflare R2 is NOT configured. Media uploads will fail.');
@@ -59,7 +62,7 @@ const uploadFile = async (fileBuffer, originalName, mimeType, userId = 'guest', 
                 ContentType: mimeType,
             }));
 
-            const publicBase = process.env.R2_PUBLIC_URL || 'https://media.mrohaung.com';
+            const publicBase = R2_PUBLIC_BASE;
             const url = `${publicBase.replace(/\/$/, '')}/${key}`;
             
             return { fileName: filename, url };

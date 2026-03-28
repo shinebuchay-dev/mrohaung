@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import api from '@/lib/api';
+import { fixUrl } from '@/lib/utils';
 
 type Tab = 'overview' | 'users' | 'notifications' | 'verification';
 
@@ -368,7 +369,7 @@ function renderCells(tab: Tab, r: any) {
             return [
                 <div className="flex items-center gap-3" key="user">
                     {r.avatarUrl ? (
-                        <img src={r.avatarUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
+                        <img src={fixUrl(r.avatarUrl)} className="w-8 h-8 rounded-full object-cover" alt="" />
                     ) : (
                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-[10px]">
                             {r.username[0].toUpperCase()}

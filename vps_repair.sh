@@ -66,11 +66,13 @@ ADMIN_USER_IDS="2f572063-e0e6-4e55-afc0-33ea5bcdcf46"
 BASE_URL="https://mrohaung.com"
 
 # Cloudflare R2 Config
+CLOUDFLARE_ACCOUNT_ID=e85cc92c864ecfc6c14a199e00057ad5
 R2_ACCESS_KEY_ID=daa6f6e87b3efd516461f5dfe8a10f8e
 R2_SECRET_ACCESS_KEY=8624e67d60e48dff85da5145d69e3766d6b114ff386c2220dc211418d6ba908a
 R2_BUCKET_NAME=mrohaung-media
 R2_ENDPOINT=https://e85cc92c864ecfc6c14a199e00057ad5.r2.cloudflarestorage.com
-R2_PUBLIC_URL=https://media.mrohaung.com
+R2_PUBLIC_URL=https://pub-e61e1977203c41d499155e42c923617c.r2.dev
+R2_PUBLIC_DOMAIN=https://pub-e61e1977203c41d499155e42c923617c.r2.dev
 ENVEOF
 ok "Backend .env written."
 
@@ -79,6 +81,10 @@ banner "STEP 5 — Backend: Install & Restart"
 cd "$BACKEND_DIR"
 npm install --omit=dev
 ok "npm install done."
+
+echo "  Initializing Short Video tables..."
+node init_short_videos.js || true
+ok "Short Video tables verified."
 
 pm2 stop backend   2>/dev/null || true
 pm2 delete backend 2>/dev/null || true

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Users, UserPlus, UserCheck, X, Check, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
+import { fixUrl } from '@/lib/utils';
 
 interface Friend {
     id: string;
@@ -193,7 +194,7 @@ export default function FriendsPage() {
                                                 className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden cursor-pointer relative flex-shrink-0"
                                             >
                                                 {user.avatarUrl ? (
-                                                    <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                                                    <img src={fixUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-lg">
                                                         {(user.displayName || user.username)?.[0]?.toUpperCase()}
@@ -247,7 +248,7 @@ export default function FriendsPage() {
                                             className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 cursor-pointer"
                                         >
                                             {request.avatarUrl ? (
-                                                <img src={request.avatarUrl} alt={request.username} className="w-full h-full object-cover" />
+                                                <img src={fixUrl(request.avatarUrl)} alt={request.username} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-lg">
                                                     {(request.displayName || request.username)?.[0]?.toUpperCase()}
@@ -295,7 +296,7 @@ export default function FriendsPage() {
                                             className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0 cursor-pointer"
                                         >
                                             {request.avatarUrl ? (
-                                                <img src={request.avatarUrl} alt={request.username} className="w-full h-full object-cover" />
+                                                <img src={fixUrl(request.avatarUrl)} alt={request.username} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs">
                                                     {(request.displayName || request.username)?.[0]?.toUpperCase()}
