@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, Share2, MessageCircle, Volume2, VolumeX, Plus, X, UploadCloud, Loader2, ChevronUp, ChevronDown, MoreVertical, Trash2, Flag } from 'lucide-react';
+import { Play, Heart, Share2, MessageCircle, Volume2, VolumeX, Plus, X, UploadCloud, Loader2, ChevronUp, ChevronDown, MoreVertical, Trash2, Flag, Check } from 'lucide-react';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
 import { useAuth } from '@/lib/AuthContext';
@@ -29,9 +29,20 @@ interface VideoComment {
     id: string;
     content: string;
     createdAt: string;
-    username: string;
+    // Standard nested user object
+    user?: {
+        id: string;
+        username: string;
+        displayName?: string;
+        avatarUrl?: string;
+        isVerified?: boolean;
+    };
+    // Compatibility flat fields
+    userId?: string;
+    username?: string;
     displayName?: string;
     avatarUrl?: string;
+    isVerified?: boolean;
 }
 
 export default function ShortVideoPage() {
@@ -526,17 +537,24 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                         {comments.map((comment) => (
                             <div key={comment.id} className="p-4 px-6 flex gap-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
                                 <div className="shrink-0 pt-0.5">
-                                    {comment.avatarUrl ? (
-                                        <img src={fixUrl(comment.avatarUrl)} className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200/50 dark:ring-white/10" alt="" />
+                                    {(comment.user?.avatarUrl || comment.avatarUrl) ? (
+                                        <img src={fixUrl(comment.user?.avatarUrl || comment.avatarUrl)} className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200/50 dark:ring-white/10" alt="" />
                                     ) : (
                                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
-                                            {(comment.displayName || comment.username)[0].toUpperCase()}
+                                            {(comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User')[0].toUpperCase()}
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
-                                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{comment.displayName || comment.username}</h4>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User'}</h4>
+                                            {(comment.user?.isVerified || comment.isVerified) && (
+                                                <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
+                                                    <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                                </div>
+                                            )}
+                                        </div>
                                         <span className="text-[10px] text-slate-400 font-medium">
                                             {new Date(comment.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                                         </span>

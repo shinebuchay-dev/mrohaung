@@ -262,15 +262,38 @@ exports.deleteVideo = async (req, res) => {
 exports.getComments = async (req, res) => {
     try {
         const { id } = req.params;
-        const [comments] = await pool.query(
-            `SELECT svc.*, u.username, u.displayName, u.avatarUrl
+        const [rows] = await pool.query(
+            `SELECT
+                svc.id,
+                svc.videoId,
+                svc.userId,
+                svc.content,
+                svc.createdAt,
+                u.username,
+                u.displayName,
+                u.avatarUrl,
+                (SELECT isVerified FROM User WHERE id = svc.userId LIMIT 1) AS isVerified
              FROM ShortVideoComment svc
              JOIN User u ON svc.userId = u.id
              WHERE svc.videoId = ?
              ORDER BY svc.createdAt DESC`,
             [id]
         );
-        res.json(comments);
+        const formatted = rows.map(c => ({
+            id: c.id,
+            videoId: c.videoId,
+            userId: c.userId,
+            content: c.content,
+            createdAt: c.createdAt,
+            user: {
+                id: c.userId,
+                username: c.username,
+                displayName: c.displayName,
+                avatarUrl: c.avatarUrl,
+                isVerified: c.isVerified === 1 || c.isVerified === true
+            }
+        }));
+        res.json(formatted);
     } catch (err) {
         console.error('[ShortVideo] getComments error:', err);
         res.status(500).json({ message: 'Failed to load comments' });
@@ -295,14 +318,36 @@ exports.addComment = async (req, res) => {
         );
 
         const [[comment]] = await pool.execute(
-            `SELECT svc.*, u.username, u.displayName, u.avatarUrl
+            `SELECT
+                svc.id,
+                svc.videoId,
+                svc.userId,
+                svc.content,
+                svc.createdAt,
+                u.username,
+                u.displayName,
+                u.avatarUrl,
+                (SELECT isVerified FROM User WHERE id = svc.userId LIMIT 1) AS isVerified
              FROM ShortVideoComment svc
              JOIN User u ON svc.userId = u.id
              WHERE svc.id = ?`,
             [commentId]
         );
 
-        res.status(201).json(comment);
+        res.status(201).json({
+            id: comment.id,
+            videoId: comment.videoId,
+            userId: comment.userId,
+            content: comment.content,
+            createdAt: comment.createdAt,
+            user: {
+                id: comment.userId,
+                username: comment.username,
+                displayName: comment.displayName,
+                avatarUrl: comment.avatarUrl,
+                isVerified: comment.isVerified === 1 || comment.isVerified === true
+            }
+        });
     } catch (err) {
         console.error('[ShortVideo] addComment error:', err);
         res.status(500).json({ message: 'Failed to add comment' });

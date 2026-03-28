@@ -68,6 +68,7 @@ export default function ProfilePageContent() {
     const [errorCode, setErrorCode] = useState<number | null>(null);
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [showPostModal, setShowPostModal] = useState(false);
+    const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
 
     // Reposition mode
     const [repositionMode, setRepositionMode] = useState(false);
@@ -519,8 +520,13 @@ export default function ProfilePageContent() {
                                         setSelectedPost(post);
                                         setShowPostModal(true);
                                     }}
-                                    onViewComments={(post) => {
+                                    onViewComments={(post, commentId) => {
+                                        if (post.isShort) {
+                                            router.push(`/short-video/${post.id}${commentId ? `?comment=${commentId}` : ''}`);
+                                            return;
+                                        }
                                         setSelectedPost(post);
+                                        setInitialCommentId(commentId || null);
                                         setShowPostModal(true);
                                         window.history.replaceState(null, '', `?post=${post.id}`);
                                     }}

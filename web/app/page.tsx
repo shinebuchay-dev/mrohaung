@@ -235,6 +235,10 @@ function FeedContent() {
                         setShowPostModal(true);
                       }}
                       onViewComments={(post, commentId) => {
+                        if (post.isShort) {
+                          router.push(`/short-video/${post.id}${commentId ? `?comment=${commentId}` : ''}`);
+                          return;
+                        }
                         setSelectedPost(post);
                         setInitialCommentId(commentId || null);
                         setShowPostModal(true);

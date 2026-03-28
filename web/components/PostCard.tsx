@@ -3,6 +3,7 @@
 import ReactionPicker from './ReactionPicker';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star, Check, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import api from '@/lib/api';
@@ -23,6 +24,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, isGuest = false, onDelete, onUpdate, onEdit, onViewComments, onClick, hideComments = false }: PostCardProps) {
+    const router = useRouter();
     const [reactionType, setReactionType] = useState<string | null>(post.userReaction || (post.isLiked ? 'like' : null));
     const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
     const [commentCount, setCommentCount] = useState(post._count?.comments || 0);
@@ -103,10 +105,26 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
     const fetchRecentComments = async () => {
         try {
-            const response = await api.get(`/posts/${post.id}/comments`);
+            const endpoint = post.isShort ? `/short-videos/${post.id}/comments` : `/posts/${post.id}/comments`;
+            const response = await api.get(endpoint);
             if (response.data.length > 0) {
-                // Show up to 2 most recent
-                setRecentComments(response.data.slice(0, 2));
+                // Normalize short video comments — backend may return flat or nested user fields
+                const normalized = response.data.map((c: any) => {
+                    if (!c.user && (c.username || c.displayName)) {
+                        return {
+                            ...c,
+                            user: {
+                                id: c.userId,
+                                username: c.username,
+                                displayName: c.displayName,
+                                avatarUrl: c.avatarUrl,
+                                isVerified: c.isVerified === 1 || c.isVerified === true || !!c.isVerified
+                            }
+                        };
+                    }
+                    return c;
+                });
+                setRecentComments(normalized.slice(0, 2));
             } else {
                 setRecentComments([]);
             }
@@ -146,9 +164,10 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             setShowReactions(false);
 
             try {
-                const response = await api.post(`/posts/${post.id}/like`, { type });
+                const endpoint = post.isShort ? `/short-videos/${post.id}/like` : `/posts/${post.id}/like`;
+                const response = await api.post(endpoint, { type });
                 if (response.data.liked) {
-                    setReactionType(response.data.type);
+                    setReactionType(post.isShort ? 'like' : response.data.type);
                 } else {
                     setReactionType(null);
                 }
@@ -327,7 +346,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
 
                     {/* Image or Video */}
                     {post.isShort ? (
-                        <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-black relative aspect-[9/16] max-h-[500px] w-fit mx-auto">
+                        <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-black relative aspect-[9/16] max-h-[500px] w-full max-w-[320px]">
                             <video
                                 src={fixUrl(post.videoUrl)}
                                 className="w-full h-full object-cover"
@@ -343,7 +362,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             </div>
                         </div>
                     ) : post.imageUrl && (
-                        <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900">
+                        <div className="mb-4 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900">
                             <img
                                 src={fixUrl(post.imageUrl)}
                                 alt="Post"
@@ -396,7 +415,14 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                         {!hideComments && (
                             <motion.button
                                 whileTap={{ scale: 0.9 }}
-                                onClick={(e) => { e.stopPropagation(); requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') }}
+                                onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    if (post.isShort) {
+                                        router.push(`/short-video/${post.id}`);
+                                        return;
+                                    }
+                                    requireAuth(() => onViewComments && onViewComments(post), 'Log in to join the conversation!') 
+                                }}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors group"
                             >
                                 <div className="p-0.5 rounded-full group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 transition-colors">
@@ -445,27 +471,31 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                     <div
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            if (post.isShort) {
+                                                router.push(`/short-video/${post.id}?comment=${rootComment.id}`);
+                                                return;
+                                            }
                                             requireAuth(() => onViewComments && onViewComments(post, rootComment.id), 'Log in to join the conversation!');
                                         }}
                                         className="flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-300 cursor-pointer"
                                     >
-                                        <Link href={`/profile/${rootComment.user?.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                        <Link href={`/profile/${rootComment.user?.username || rootComment.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
                                             <div className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
-                                                {rootComment.user?.avatarUrl ? (
-                                                    <img src={fixUrl(rootComment.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                                {(rootComment.user?.avatarUrl || rootComment.avatarUrl) ? (
+                                                    <img src={fixUrl(rootComment.user?.avatarUrl || rootComment.avatarUrl)} alt="" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] font-bold">
-                                                        {(rootComment.user?.displayName || rootComment.user?.username)?.[0]?.toUpperCase() || 'U'}
+                                                        {(rootComment.user?.displayName || rootComment.user?.username || rootComment.displayName || rootComment.username || 'U')?.[0]?.toUpperCase()}
                                                     </div>
                                                 )}
                                             </div>
                                         </Link>
                                         <div className="w-full min-w-0">
                                             <div className="flex items-center gap-[4px] mb-0.5">
-                                                <Link href={`/profile/${rootComment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
-                                                    {rootComment.user?.displayName || rootComment.user?.username || 'User'}
+                                                <Link href={`/profile/${rootComment.user?.username || rootComment.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
+                                                    {rootComment.user?.displayName || rootComment.user?.username || rootComment.displayName || rootComment.username || 'User'}
                                                 </Link>
-                                                {rootComment.user?.isVerified && (
+                                                {(rootComment.user?.isVerified || rootComment.isVerified) && (
                                                     <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px] drop-shadow-sm mt-[1px]">
                                                         <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
                                                     </div>
@@ -483,27 +513,31 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                             key={reply.id}
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                if (post.isShort) {
+                                                    router.push(`/short-video/${post.id}?comment=${reply.id}`);
+                                                    return;
+                                                }
                                                 requireAuth(() => onViewComments && onViewComments(post, reply.id), 'Log in to join the conversation!');
                                             }}
                                             className="ml-3 pl-3 border-l-2 border-slate-100 dark:border-white/5 flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-300 cursor-pointer"
                                         >
-                                            <Link href={`/profile/${reply.user?.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
+                                            <Link href={`/profile/${reply.user?.username || reply.username}`} className="flex-shrink-0 mt-0.5" onClick={(e) => e.stopPropagation()}>
                                                 <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-white/5">
-                                                    {reply.user?.avatarUrl ? (
-                                                        <img src={fixUrl(reply.user.avatarUrl)} alt="" className="w-full h-full object-cover" />
+                                                    {(reply.user?.avatarUrl || reply.avatarUrl) ? (
+                                                        <img src={fixUrl(reply.user?.avatarUrl || reply.avatarUrl)} alt="" className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-slate-400 text-[9px] font-bold">
-                                                            {(reply.user?.displayName || reply.user?.username)?.[0]?.toUpperCase() || 'U'}
+                                                            {(reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'U')?.[0]?.toUpperCase()}
                                                         </div>
                                                     )}
                                                 </div>
                                             </Link>
                                             <div className="w-full min-w-0">
                                                 <div className="flex items-center gap-[4px] mb-0.5">
-                                                    <Link href={`/profile/${reply.user?.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
-                                                        {reply.user?.displayName || reply.user?.username || 'User'}
+                                                    <Link href={`/profile/${reply.user?.username || reply.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
+                                                        {reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'User'}
                                                     </Link>
-                                                    {reply.user?.isVerified && (
+                                                    {(reply.user?.isVerified || reply.isVerified) && (
                                                         <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px] drop-shadow-sm mt-[1px]">
                                                             <Check className="w-[4.5px] h-[4.5px] text-white" strokeWidth={6} />
                                                         </div>
