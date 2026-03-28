@@ -328,36 +328,63 @@ exports.listVerificationRequests = async (req, res) => {
 
 exports.handleVerificationAction = async (req, res) => {
     try {
-        const { requestId, action } = req.body; // action: 'approved' | 'rejected'
+        const { requestId, action } = req.body;
 
         if (!['approved', 'rejected'].includes(action)) {
-            return res.status(400).json({ message: 'Invalid action' });
+            return res.status(400).json({ message: 'Invalid action type' });
         }
 
-        const [[request]] = await pool.execute('SELECT userId FROM VerificationRequest WHERE id = ?', [requestId]);
-        if (!request) return res.status(404).json({ message: 'Request not found' });
+        const [requests] = await pool.execute('SELECT userId FROM VerificationRequest WHERE id = ?', [requestId]);
+        const request = requests[0];
+        
+        if (!request) {
+            return res.status(404).json({ message: 'Verification request not found' });
+        }
 
+        const userId = request.userId;
+
+        // Update the request status
         await pool.execute('UPDATE VerificationRequest SET status = ? WHERE id = ?', [action, requestId]);
 
         if (action === 'approved') {
-            await pool.execute('UPDATE User SET isVerified = 1 WHERE id = ?', [request.userId]);
+            // 1. Update User table
+            await pool.execute('UPDATE User SET isVerified = 1 WHERE id = ?', [userId]);
+            
+            // 2. Award verification badge if not already exists
+            const [existingBadges] = await pool.execute(
+                'SELECT id FROM Badge WHERE userId = ? AND type = "royal_gold"', 
+                [userId]
+            );
+            
+            if (existingBadges.length === 0) {
+                const badgeId = require('crypto').randomUUID();
+                await pool.execute(
+                    'INSERT INTO Badge (id, userId, type, awardedAt) VALUES (?, ?, "royal_gold", NOW())',
+                    [badgeId, userId]
+                );
+            }
         }
 
-        // Send notification
+        // Send notification to the user
         const io = req.app.get('io');
         const msg = action === 'approved' 
-            ? 'Your verification request has been approved! You now have a Royal Gold badge.' 
-            : 'Your verification request has been rejected.';
+            ? 'Congratulations! Your account has been verified. You now have the Royal Gold badge.' 
+            : 'Your verification request was reviewed and rejected at this time.';
         
-        await sendNotification(io, request.userId, {
-            type: 'verification',
-            message: msg,
-            fromUserId: req.userId
-        });
+        try {
+            await sendNotification(io, userId, {
+                type: 'verification',
+                message: msg,
+                fromUserId: req.userId
+            });
+        } catch (notifyError) {
+            console.error('Failed to send verification notification:', notifyError);
+            // Don't fail the whole request just because notification failed
+        }
 
-        res.json({ success: true });
+        res.json({ success: true, action, userId });
     } catch (error) {
         console.error('Verify Action Error:', error);
-        res.status(500).json({ message: error.message || 'Failed to process verification' });
+        res.status(500).json({ message: 'Internal server error during verification' });
     }
 };

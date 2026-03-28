@@ -21,7 +21,10 @@ import {
     Loader2,
     Clock,
     UserCheck,
-    ArrowUpRight
+    ArrowUpRight,
+    Info,
+    MailCheck,
+    Check
 } from 'lucide-react';
 
 type Tab = 'overview' | 'users' | 'notifications' | 'verification';
@@ -56,14 +59,18 @@ export default function AdminDashboardPage() {
     const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
     const fetchOverviewData = async () => {
-        const [oRes, vRes, nRes] = await Promise.all([
-            api.get('/admin/overview'),
-            api.get('/admin/verification-requests', { params: { page: 1, limit: 5 } }),
-            api.get('/admin/notifications', { params: { page: 1, limit: 10 } })
-        ]);
-        setOverview(oRes.data);
-        setRecentVerifications(vRes.data.requests || []);
-        setRecentNotifications(nRes.data.notifications || []);
+        try {
+            const [oRes, vRes, nRes] = await Promise.all([
+                api.get('/admin/overview'),
+                api.get('/admin/verification-requests', { params: { page: 1, limit: 5 } }),
+                api.get('/admin/notifications', { params: { page: 1, limit: 12 } })
+            ]);
+            setOverview(oRes.data);
+            setRecentVerifications(vRes.data.requests || []);
+            setRecentNotifications(nRes.data.notifications || []);
+        } catch (e: any) {
+            console.error('Overview Fetch Error:', e);
+        }
     };
 
     const fetchList = async () => {
@@ -98,7 +105,7 @@ export default function AdminDashboardPage() {
                 await fetchList();
             }
         } catch (e: any) {
-            setError(e?.response?.data?.message || 'Action failed');
+            setError(e?.response?.data?.message || 'Verification action failed');
         } finally {
             setProcessingId(null);
         }
@@ -106,7 +113,7 @@ export default function AdminDashboardPage() {
 
     const deleteRow = async (id: string, customTab?: Tab) => {
         const targetTab = customTab || tab;
-        if (!confirm(`Delete this ${targetTab.slice(0, -1)}?`)) return;
+        if (!confirm(`Permanently delete this ${targetTab.slice(0, -1)}?`)) return;
         setDeletingId(id);
         setError('');
 
@@ -123,7 +130,7 @@ export default function AdminDashboardPage() {
                 await fetchList();
             }
         } catch (e: any) {
-            setError(e?.response?.data?.message || 'Delete failed');
+            setError(e?.response?.data?.message || 'Deletion failed');
         } finally {
             setDeletingId(null);
         }
@@ -142,7 +149,7 @@ export default function AdminDashboardPage() {
                 }
             } catch (e: any) {
                 if (cancelled) return;
-                setError(e?.response?.data?.message || 'Request failed');
+                setError(e?.response?.data?.message || 'Data retrieval failed');
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -159,23 +166,24 @@ export default function AdminDashboardPage() {
     }, [tab]);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6">
-            {/* Header section - Compact */}
+        <div className="max-w-[1400px] mx-auto px-4 py-4 lg:py-6 overflow-x-hidden">
+            {/* Header section - Compact & Fixed width */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-                            <ShieldCheck className="w-4 h-4" />
-                        </div>
-                        Admin Dashboard
-                    </h1>
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                        <LayoutDashboard className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight leading-none">Admin Panel</h1>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Management Hub</p>
+                    </div>
                 </div>
 
-                <div className="flex bg-slate-100/80 dark:bg-white/5 p-1 rounded-xl border border-slate-200/50 dark:border-white/5">
-                    <TabButton active={tab === 'overview'} onClick={() => setTab('overview')}>Overview</TabButton>
+                <div className="flex bg-slate-100/80 dark:bg-white/5 p-1 rounded-xl border border-slate-200/50 dark:border-white/5 overflow-x-auto no-scrollbar">
+                    <TabButton active={tab === 'overview'} onClick={() => setTab('overview')}>Summary</TabButton>
                     <TabButton active={tab === 'users'} onClick={() => setTab('users')}>Users</TabButton>
                     <TabButton active={tab === 'verification'} onClick={() => setTab('verification')}>
-                        Verifications
+                        Requests
                         {overview?.counts?.pendingVerifications ? (
                             <span className="ml-1.5 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black">
                                 {overview.counts.pendingVerifications}
@@ -187,12 +195,13 @@ export default function AdminDashboardPage() {
             </div>
 
             {error && (
-                <div className="mb-6 p-3 bg-red-50 dark:bg-red-500/5 border border-red-200/50 rounded-xl flex items-center gap-2 text-red-600 dark:text-red-400 text-xs font-bold animate-in fade-in slide-in-from-top-2">
-                    <AlertCircle className="w-4 h-4" />
+                <div className="mb-6 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200/50 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400 text-xs font-bold transition-all">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}
                 </div>
             )}
 
+            {/* Content Section */}
             {tab === 'overview' ? (
                 <OverviewPanel 
                     loading={loading} 
@@ -200,83 +209,130 @@ export default function AdminDashboardPage() {
                     recentVerifications={recentVerifications} 
                     recentNotifications={recentNotifications}
                     onVerify={handleVerification}
-                    onDeleteNotification={(id) => deleteRow(id, 'notifications')}
+                    onDeleteNotification={(id: string) => deleteRow(id, 'notifications')}
                 />
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-w-full overflow-hidden">
                     {tab === 'users' && (
-                        <div className="flex items-center gap-2 bg-white dark:bg-slate-900/50 p-1.5 rounded-xl border border-slate-200 dark:border-white/5">
+                        <div className="flex items-center gap-2 bg-white dark:bg-slate-900/50 p-1.5 rounded-xl border border-slate-200 dark:border-white/5 max-w-md">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <input
                                     value={q}
                                     onChange={(e) => setQ(e.target.value)}
-                                    placeholder="Search users..."
-                                    className="w-full bg-transparent pl-9 pr-4 py-2 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-medium text-sm"
+                                    placeholder="Find users..."
+                                    className="w-full bg-transparent pl-9 pr-4 py-2 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none font-bold text-xs"
                                 />
                             </div>
                             <button
                                 onClick={() => { setPage(1); fetchList(); }}
-                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all font-bold text-xs shadow-lg shadow-blue-500/10"
+                                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-all font-black text-[10px] uppercase"
                             >
-                                Search
+                                GO
                             </button>
                         </div>
                     )}
 
+                    {/* Compact Container for Tables/Lists */}
                     <div className="bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-320px)] no-scrollbar">
-                            <table className="w-full text-[12px] text-left">
-                                <thead className="bg-slate-50/50 dark:bg-white/5 text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-white/5 sticky top-0 z-10 backdrop-blur-md">
-                                    <tr>
-                                        {getColumns(tab).map((c) => (
-                                            <th key={c} className="py-3 px-5 font-bold uppercase tracking-wider text-[10px]">{c}</th>
-                                        ))}
-                                        <th className="py-3 px-5 font-bold uppercase tracking-wider text-[10px] text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                                    {loading ? (
+                        {tab === 'notifications' ? (
+                            /* Vertical List View for Logs to avoid horizontal scroll */
+                            <div className="divide-y divide-slate-50 dark:divide-white/5 overflow-y-auto max-h-[calc(100vh-300px)] no-scrollbar bg-white dark:bg-[#0b1120]">
+                                {loading ? (
+                                    <div className="py-20 text-center"><Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto" /></div>
+                                ) : rows.length === 0 ? (
+                                    <div className="py-20 text-center font-bold text-slate-400">No logs found</div>
+                                ) : (
+                                    rows.map(n => (
+                                        <div key={n.id} className="p-4 flex items-start gap-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+                                                <Bell className="w-5 h-5 text-blue-500" />
+                                            </div>
+                                            <div className="flex-1 min-w-0 pt-0.5">
+                                                <div className="flex items-center justify-between gap-4 mb-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{n.type}</span>
+                                                        <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase">{new Date(n.createdAt).toLocaleString()}</span>
+                                                    </div>
+                                                    <button onClick={() => deleteRow(n.id)} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                                <div className="text-[13px] text-slate-800 dark:text-slate-200 font-semibold mb-2 leading-relaxed">{n.message}</div>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200/50 dark:border-white/5">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase">FROM</span>
+                                                        <span className="text-[11px] font-bold">@{n.fromUsername}</span>
+                                                    </div>
+                                                    <ArrowUpRight className="w-3 h-3 text-slate-300" />
+                                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200/50 dark:border-white/5">
+                                                        <span className="text-[9px] font-black text-slate-400 uppercase">TO</span>
+                                                        <span className="text-[11px] font-bold">@{n.toUsername}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        ) : (
+                            /* Regular Table View for Users/Verifications */
+                            <div className="overflow-x-auto no-scrollbar max-h-[calc(100vh-300px)]">
+                                <table className="w-full text-[12px] text-left">
+                                    <thead className="bg-slate-50/50 dark:bg-white/5 text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-white/5 sticky top-0 z-10 backdrop-blur-md">
                                         <tr>
-                                            <td className="py-20 text-center" colSpan={10}>
-                                                <Loader2 className="w-6 h-6 animate-spin text-blue-500 mx-auto" />
-                                            </td>
+                                            {getColumns(tab).map((c) => (
+                                                <th key={c} className="py-3 px-5 font-black uppercase tracking-wider text-[10px]">{c}</th>
+                                            ))}
+                                            <th className="py-3 px-5 font-black uppercase tracking-wider text-[10px] text-right">Actions</th>
                                         </tr>
-                                    ) : rows.length === 0 ? (
-                                        <tr>
-                                            <td className="py-20 text-center text-slate-400 font-bold" colSpan={10}>No data found</td>
-                                        </tr>
-                                    ) : (
-                                        rows.map((r) => (
-                                            <tr key={r.id} className="text-slate-700 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
-                                                {renderCells(tab, r).map((cell, idx) => (
-                                                    <td key={idx} className="py-3 px-5 align-middle">{cell}</td>
-                                                ))}
-                                                <td className="py-3 px-5 text-right whitespace-nowrap">
-                                                    {tab === 'verification' ? (
-                                                        <div className="flex items-center justify-end gap-1.5">
-                                                            <button onClick={() => handleVerification(r.id, 'approved')} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[10px] font-bold">Approve</button>
-                                                            <button onClick={() => handleVerification(r.id, 'rejected')} className="h-7 px-3 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 text-[10px] font-bold">Reject</button>
-                                                        </div>
-                                                    ) : (
-                                                        <button onClick={() => deleteRow(r.id)} className="h-7 px-3 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-red-500 text-[10px] font-bold">Delete</button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                        {loading ? (
+                                            <tr><td className="py-20 text-center" colSpan={10}><Loader2 className="w-6 h-6 animate-spin text-blue-500 mx-auto" /></td></tr>
+                                        ) : rows.length === 0 ? (
+                                            <tr><td className="py-20 text-center text-slate-400 font-bold" colSpan={10}>No entries found</td></tr>
+                                        ) : (
+                                            rows.map((r) => (
+                                                <tr key={r.id} className="text-slate-700 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                                                    {renderCells(tab, r).map((cell, idx) => (
+                                                        <td key={idx} className="py-3 px-5 align-middle">{cell}</td>
+                                                    ))}
+                                                    <td className="py-3 px-5 text-right whitespace-nowrap">
+                                                        {tab === 'verification' ? (
+                                                            <div className="flex items-center justify-end gap-1.5">
+                                                                <button onClick={() => handleVerification(r.id, 'approved')} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[10px] font-black uppercase shadow-sm">Approve</button>
+                                                                <button onClick={() => handleVerification(r.id, 'rejected')} className="h-7 px-3 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 text-[10px] font-black uppercase">Dismiss</button>
+                                                            </div>
+                                                        ) : (
+                                                            <button onClick={() => deleteRow(r.id)} className="h-7 px-3 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase">Remove</button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
 
                     {/* Pagination - Compact */}
                     <div className="flex justify-between items-center px-1">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{total} entries</div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{total.toLocaleString()} total objects</div>
                         <div className="flex items-center gap-1.5">
-                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 disabled:opacity-20"><ChevronLeft className="w-4 h-4" /></button>
+                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 disabled:opacity-20 transition-all hover:bg-slate-50"><ChevronLeft className="w-4 h-4" /></button>
                             <div className="h-8 px-3 flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-[11px] font-black">{page} <span className="mx-1 opacity-20">/</span> {totalPages}</div>
-                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 disabled:opacity-20"><ChevronRight className="w-4 h-4" /></button>
+                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 disabled:opacity-20 transition-all hover:bg-slate-50"><ChevronRight className="w-4 h-4" /></button>
+                            
+                            <select
+                                value={limit}
+                                onChange={(e) => setLimit(parseInt(e.target.value, 10))}
+                                className="h-8 px-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg text-[10px] font-black outline-none appearance-none pr-6 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:14px_14px] bg-[right_4px_center] bg-no-repeat"
+                            >
+                                {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -301,110 +357,120 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
 
 function OverviewPanel({ loading, overview, recentVerifications, recentNotifications, onVerify, onDeleteNotification }: any) {
     if (loading && !overview) {
-        return <div className="grid grid-cols-2 md:grid-cols-6 gap-3"><div className="h-20 bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl col-span-full"></div></div>;
+        return (
+            <div className="space-y-6">
+                <div className="grid grid-cols-2 lg:grid-cols-6 gap-3"><div className="h-20 bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl col-span-full"></div></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div className="h-64 bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl"></div>
+                    <div className="h-64 bg-slate-100 dark:bg-white/5 animate-pulse rounded-2xl"></div>
+                </div>
+            </div>
+        );
     }
 
     if (!overview) return null;
 
     const stats = [
-        { label: 'Users', value: overview.counts.users, icon: Users, color: 'text-blue-500' },
-        { label: 'Posts', value: overview.counts.posts, icon: FileText, color: 'text-indigo-500' },
-        { label: 'Comments', value: overview.counts.comments, icon: MessageCircle, color: 'text-emerald-500' },
-        { label: 'Stories', value: overview.counts.stories, icon: Zap, color: 'text-amber-500' },
-        { label: 'Msgs', value: overview.counts.messages, icon: Mail, color: 'text-rose-500' },
-        { label: 'Logs', value: overview.counts.notifications, icon: Bell, color: 'text-violet-500' },
+        { label: 'Users', value: overview.counts.users, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+        { label: 'Posts', value: overview.counts.posts, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+        { label: 'Comm', value: overview.counts.comments, icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+        { label: 'Stories', value: overview.counts.stories, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { label: 'Inbox', value: overview.counts.messages, icon: Mail, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { label: 'Events', value: overview.counts.notifications, icon: Bell, color: 'text-violet-500', bg: 'bg-violet-500/10' },
     ];
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Horizontal Compact Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Horizontal Compact Stats - Smaller Height */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {stats.map((s) => (
-                    <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl p-4 shadow-sm hover:border-blue-500/20 transition-all flex flex-col justify-between">
-                        <div className="flex items-center justify-between mb-2">
-                            <s.icon className={`w-4 h-4 ${s.color}`} />
+                    <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl p-4 flex flex-col justify-center gap-1 hover:shadow-md transition-all group">
+                        <div className="flex items-center justify-between">
+                            <s.icon className={`w-3.5 h-3.5 ${s.color}`} />
+                            <ArrowUpRight className="w-2.5 h-2.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <div>
-                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</div>
-                            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{s.value.toLocaleString()}</div>
-                        </div>
+                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mt-1">{s.label}</div>
+                        <div className="text-xl font-black text-slate-900 dark:text-white leading-none mt-0.5">{s.value.toLocaleString()}</div>
                     </div>
                 ))}
             </div>
 
-            {/* Dashboard 2-Column Section */}
+            {/* Live Dashboard Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                {/* Recent Verifications */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col max-h-[500px]">
-                    <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
+                {/* 1. Pending Verifications */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-[400px]">
+                    <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-white/[0.02]">
                         <div className="flex items-center gap-2">
-                            <UserCheck className="w-4 h-4 text-emerald-500" />
-                            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Pending Verifications</h3>
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <h3 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.15em]">Live Verifications</h3>
                         </div>
                         {overview.counts.pendingVerifications > 0 && (
-                            <span className="text-[10px] font-black text-red-500">{overview.counts.pendingVerifications} New</span>
+                            <span className="text-[9px] font-black px-2 py-0.5 bg-red-500 text-white rounded-full uppercase">{overview.counts.pendingVerifications} Pending</span>
                         )}
                     </div>
-                    <div className="overflow-y-auto no-scrollbar p-2 space-y-2">
+                    <div className="overflow-y-auto no-scrollbar p-3 space-y-3">
                         {recentVerifications.length === 0 ? (
-                            <div className="py-10 text-center text-slate-400 text-xs font-bold">No pending requests</div>
+                            <div className="py-20 text-center"><Info className="w-8 h-8 text-slate-100 mx-auto mb-2" /><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No Active requests</p></div>
                         ) : (
                             recentVerifications.map((r: any) => (
-                                <div key={r.id} className="p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 border border-slate-200/50">
-                                                {r.avatarUrl && <img src={fixUrl(r.avatarUrl)} className="w-full h-full object-cover" />}
+                                <div key={r.id} className="p-3 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all">
+                                    <div className="flex items-center justify-between gap-3 mb-2">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-slate-200/50 shrink-0">
+                                                {r.avatarUrl ? <img src={fixUrl(r.avatarUrl)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-[10px]">{r.username[0]}</div>}
                                             </div>
-                                            <div>
-                                                <div className="text-[11px] font-black text-slate-900 dark:text-white whitespace-nowrap">@{r.username}</div>
-                                                <div className="text-[9px] text-slate-400 font-bold">{new Date(r.createdAt).toLocaleDateString()}</div>
+                                            <div className="min-w-0">
+                                                <div className="text-[12px] font-black text-slate-900 dark:text-white truncate">@{r.username}</div>
+                                                <div className="text-[9px] text-slate-400 font-bold uppercase">{new Date(r.createdAt).toLocaleDateString()}</div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <button onClick={() => onVerify(r.id, 'approved')} className="h-6 px-2.5 rounded-lg bg-emerald-500 text-white text-[9px] font-black">Approve</button>
-                                            <button onClick={() => onVerify(r.id, 'rejected')} className="h-6 px-2.5 rounded-lg bg-white dark:bg-white/5 text-slate-500 text-[9px] font-black">Reject</button>
+                                        <div className="flex items-center gap-1.5">
+                                            <button onClick={() => onVerify(r.id, 'approved')} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase shadow-sm">Allow</button>
+                                            <button onClick={() => onVerify(r.id, 'rejected')} className="h-7 px-3 rounded-lg bg-white dark:bg-white/10 text-slate-400 text-[9px] font-black uppercase">Deny</button>
                                         </div>
                                     </div>
-                                    <div className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 italic opacity-80">"{r.reason}"</div>
+                                    <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-normal italic line-clamp-2 px-1">"{r.reason}"</div>
                                 </div>
                             ))
                         )}
                     </div>
                 </div>
 
-                {/* Recent Notifications / Logs */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col max-h-[500px]">
-                    <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
+                {/* 2. System Logs / Notifications */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-[400px]">
+                    <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-white/[0.02]">
                         <div className="flex items-center gap-2">
-                            <Bell className="w-4 h-4 text-blue-500" />
-                            <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">System Logs</h3>
+                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            <h3 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.15em]">Recent Activity</h3>
                         </div>
+                        <Bell className="w-3.5 h-3.5 text-slate-300" />
                     </div>
-                    <div className="overflow-y-auto no-scrollbar p-0 divide-y divide-slate-100 dark:divide-white/5">
+                    <div className="overflow-y-auto no-scrollbar p-0 divide-y divide-slate-100/50 dark:divide-white/5">
                         {recentNotifications.length === 0 ? (
-                            <div className="py-10 text-center text-slate-400 text-xs font-bold">No logs found</div>
+                            <div className="py-20 text-center text-slate-300 font-bold text-xs uppercase tracking-widest">Logs clear</div>
                         ) : (
                             recentNotifications.map((n: any) => (
-                                <div key={n.id} className="p-3 hover:bg-slate-50 dark:hover:bg-white/[0.02] flex items-start gap-3 group">
-                                    <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-                                        <Clock className="w-3 h-3 text-blue-500" />
+                                <div key={n.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] flex items-start gap-3 group transition-colors">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-500/5 flex items-center justify-center shrink-0 mt-0.5 border border-blue-500/10">
+                                        <Clock className="w-3.5 h-3.5 text-blue-500/70" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-0.5">
-                                            <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">{n.type}</span>
-                                            <span className="text-[9px] text-slate-400 font-bold">{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest">{n.type}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[9px] text-slate-400 font-bold">{new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <button onClick={() => onDeleteNotification(n.id)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all p-1">
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-normal mb-1">{n.message}</div>
-                                        <div className="text-[9px] text-slate-400 flex items-center gap-1.5 font-bold">
-                                            <span>From @{n.fromUsername}</span>
-                                            <span className="opacity-30">→</span>
-                                            <span>To @{n.toUsername}</span>
+                                        <div className="text-[12px] text-slate-700 dark:text-slate-300 font-bold leading-tight mb-1.5">{n.message}</div>
+                                        <div className="flex items-center gap-2 text-[9px] font-bold">
+                                            <span className="text-slate-400">@{n.fromUsername}</span>
+                                            <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                                            <span className="text-slate-500/70">To @{n.toUsername}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => onDeleteNotification(n.id)} className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition-all">
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
                                 </div>
                             ))
                         )}
@@ -417,50 +483,39 @@ function OverviewPanel({ loading, overview, recentVerifications, recentNotificat
 
 function getColumns(tab: Tab) {
     switch (tab) {
-        case 'users': return ['ID', 'Identity', 'Email', 'Joined'];
-        case 'verification': return ['Account', 'Name', 'Reason', 'Status', 'Date'];
-        case 'notifications': return ['ID', 'Type', 'Target', 'Origin', 'Status', 'Message', 'Date'];
+        case 'users': return ['UUID-ID', 'User Handle', 'Email Contact', 'Join Date'];
+        case 'verification': return ['Account', 'Legal Name', 'Reasoning', 'Status', 'Modified At'];
         default: return [];
     }
 }
 
 function renderCells(tab: Tab, r: any) {
-    const timeClass = "font-black text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-tight";
+    const timeClass = "font-black text-[9px] text-slate-400 uppercase tracking-tighter";
     switch (tab) {
         case 'users':
             return [
-                <span key="id" className="font-mono text-[10px] opacity-40">{r.id.slice(-8)}</span>,
+                <span key="id" className="font-mono text-[10px] opacity-30 tracking-tight">{r.id}</span>,
                 <div key="user" className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-black text-[9px]">
                         {r.username[0].toUpperCase()}
                     </div>
                     <span className="font-bold text-slate-900 dark:text-white">@{r.username}</span>
                 </div>,
-                <span key="email" className="font-bold text-slate-500">{r.email}</span>,
+                <span key="email" className="font-bold text-slate-600 dark:text-slate-400">{r.email}</span>,
                 <span key="date" className={timeClass}>{new Date(r.createdAt).toLocaleDateString()}</span>
             ];
         case 'verification':
             return [
                 <div className="flex items-center gap-2" key="user">
-                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 border border-slate-200/50">
-                        {r.avatarUrl && <img src={fixUrl(r.avatarUrl)} className="w-full h-full object-cover" />}
+                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 border border-slate-200/50 shrink-0">
+                        {r.avatarUrl ? <img src={fixUrl(r.avatarUrl)} className="w-full h-full object-cover" /> : null}
                     </div>
                     <span className="font-black text-[12px]">@{r.username}</span>
                 </div>,
-                <span key="name" className="font-bold">{r.displayName || '-'}</span>,
-                <div key="reason" className="max-w-[150px] italic text-slate-500 text-[10px] line-clamp-1">"{r.reason}"</div>,
-                <span key="status" className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>{r.status}</span>,
+                <span key="name" className="font-black text-slate-900 dark:text-white">{r.displayName || '-'}</span>,
+                <div key="reason" className="max-w-[120px] font-medium text-slate-500 text-[10px] line-clamp-1 italic">"{r.reason}"</div>,
+                <span key="status" className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{r.status}</span>,
                 <span key="date" className={timeClass}>{new Date(r.createdAt).toLocaleDateString()}</span>
-            ];
-        case 'notifications':
-            return [
-                <span key="id" className="font-mono text-[9px] opacity-30">{r.id.slice(-6)}</span>,
-                <span key="type" className="font-black uppercase text-[9px] tracking-widest text-blue-500">{r.type}</span>,
-                <span key="to" className="font-bold">@{r.toUsername}</span>,
-                <span key="from" className="font-bold">@{r.fromUsername}</span>,
-                <span key="read" className={`text-[9px] font-black uppercase ${r.read ? 'text-slate-300' : 'text-blue-500'}`}>{r.read ? 'Read' : 'New'}</span>,
-                <div key="msg" className="max-w-[150px] truncate opacity-80 text-[11px]">"{r.message}"</div>,
-                <span key="date" className={timeClass}>{new Date(r.createdAt).toLocaleDateString()}</span>,
             ];
         default: return [];
     }
