@@ -163,7 +163,7 @@ export default function NotificationDropdown() {
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0 pt-0.5">
-                                                <p className="text-[13px] text-slate-800 dark:text-slate-200 leading-relaxed">
+                                                <div className="text-[13px] text-slate-800 dark:text-slate-200 leading-relaxed">
                                                     <span className="inline-flex items-center gap-1 font-bold dark:text-white">
                                                         {notification.from.displayName || notification.from.username}
                                                         {notification.from.isVerified && (
@@ -173,7 +173,7 @@ export default function NotificationDropdown() {
                                                         )}
                                                     </span>
                                                     <span className="ml-1 opacity-90">{notification.message}</span>
-                                                </p>
+                                                </div>
                                                 <p className="text-[11px] text-slate-500 dark:text-slate-500 font-medium mt-1">
                                                     {formatTimeRelative(notification.createdAt)}
                                                 </p>
