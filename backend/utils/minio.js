@@ -16,13 +16,9 @@ const s3Client = process.env.R2_ACCESS_KEY_ID ? new S3Client({
 
 const initBucket = async () => {
     if (!s3Client) {
-        const uploadBase = path.join(__dirname, '..', 'uploads');
-        if (!fs.existsSync(uploadBase)) {
-            fs.mkdirSync(uploadBase, { recursive: true });
-        }
-        console.log('Local File Storage Service Initialized at /uploads (R2 not configured)');
+        console.warn('⚠️ WARNING: Cloudflare R2 is NOT configured. Media uploads will fail.');
     } else {
-        console.log('Cloudflare R2 Storage Service Initialized');
+        console.log('✅ Cloudflare R2 Storage Service Initialized');
     }
 };
 
@@ -51,7 +47,7 @@ const uploadFile = async (fileBuffer, originalName, mimeType, userId = 'guest', 
         };
         const mappedArea = areaMap[usageArea] || (usageArea.charAt(0).toUpperCase() + usageArea.slice(1));
 
-        // Use R2 if configured
+        // Use R2 (Required)
         if (s3Client) {
             const key = `${mappedArea}/${username}/${filename}`;
             const bucketName = process.env.R2_BUCKET_NAME || 'mrohaung-media';
@@ -68,22 +64,8 @@ const uploadFile = async (fileBuffer, originalName, mimeType, userId = 'guest', 
             
             return { fileName: filename, url };
         } else {
-            // Fallback to local storage
-            const relativePath = path.join('uploads', username, mappedArea);
-            const uploadDir = path.join(__dirname, '..', relativePath);
-
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-
-            const filePath = path.join(uploadDir, filename);
-            fs.writeFileSync(filePath, fileBuffer);
-
-            let baseUrl = process.env.BASE_URL || 'https://mrohaung.com';
-            baseUrl = baseUrl.replace(/\/$/, '');
-            const url = `${baseUrl}/${relativePath.replace(/\\/g, '/')}/${filename}`;
-
-            return { fileName: filename, url };
+            console.error('❌ R2 Client not initialized. Cannot upload file.');
+            throw new Error('Cloud storage not configured. Please contact administrator.');
         }
     } catch (err) {
         console.error('Error during file upload:', err);
