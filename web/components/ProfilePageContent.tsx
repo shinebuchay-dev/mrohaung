@@ -471,28 +471,28 @@ export default function ProfilePageContent() {
                             </div>
                         )}
                     </div>
-                </div>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-1 border-b border-slate-100 dark:border-white/5 mt-0 px-4">
-                {[
-                    { id: 'posts', label: 'Timeline' },
-                    { id: 'shorts', label: 'Shorts' },
-                    { id: 'friends', label: 'Friends' },
-                    { id: 'about', label: 'About' }
-                ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-all ${activeTab === tab.id
-                            ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                            : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                            }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+                {/* Tabs (Integrated) */}
+                    <div className="flex items-center gap-1 border-t border-slate-50 dark:border-white/5 mt-4 px-1 overflow-x-auto no-scrollbar">
+                        {[
+                            { id: 'posts', label: 'Timeline' },
+                            { id: 'shorts', label: 'Shorts' },
+                            { id: 'friends', label: 'Friends' },
+                            { id: 'about', label: 'About' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id as any)}
+                                className={`px-4 py-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap uppercase tracking-widest text-[11px] ${activeTab === tab.id
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             {/* Tab Content */}
@@ -535,7 +535,7 @@ export default function ProfilePageContent() {
                                     </div>
                                     <p className="text-sm font-semibold text-slate-500">No posts yet</p>
                                     <p className="text-xs text-slate-400 mt-1">
-                                        {isOwnProfile ? "Share something!" : `${user.username} hasn't posted yet.`}
+                                        {isOwnProfile ? "Share something!" : `${user?.username} hasn't posted yet.`}
                                     </p>
                                 </div>
                             )}
@@ -573,7 +573,7 @@ export default function ProfilePageContent() {
                                     </div>
                                     <p className="text-sm font-semibold text-slate-500">No shorts yet</p>
                                     <p className="text-xs text-slate-400 mt-1">
-                                        {isOwnProfile ? "Upload short videos to see them here!" : `${user.username} hasn't uploaded any shorts yet.`}
+                                        {isOwnProfile ? "Upload short videos to see them here!" : `${user?.username} hasn't uploaded any shorts yet.`}
                                     </p>
                                 </div>
                             )}
@@ -621,7 +621,7 @@ export default function ProfilePageContent() {
                                 <div>
                                     <p className="text-xs text-slate-400">Joined</p>
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                                        {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                        {user && new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                                     </p>
                                 </div>
                             </div>
@@ -630,7 +630,7 @@ export default function ProfilePageContent() {
                                     <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
                                     <div>
                                         <p className="text-xs text-slate-400">Email</p>
-                                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user.email}</p>
+                                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">{user?.email}</p>
                                     </div>
                                 </div>
                             )}
@@ -638,18 +638,18 @@ export default function ProfilePageContent() {
                                 <Star className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                 <div>
                                     <p className="text-xs text-slate-400">Reputation</p>
-                                    <p className="text-sm font-bold text-amber-500">{(user.reputation || 0).toLocaleString()} points</p>
+                                    <p className="text-sm font-bold text-amber-500">{(user?.reputation || 0).toLocaleString()} points</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 py-2.5">
-                                <div className={`flex-shrink-0 flex items-center justify-center rounded-full w-[17px] h-[17px] mt-0.5 ${user.isVerified ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
-                                    {user.isVerified && <Check className="w-[10.5px] h-[10.5px] text-white" strokeWidth={6} />}
-                                    {!user.isVerified && <X className="w-3 h-3 text-slate-400" />}
+                                <div className={`flex-shrink-0 flex items-center justify-center rounded-full w-[17px] h-[17px] mt-0.5 ${user?.isVerified ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                                    {user?.isVerified && <Check className="w-[10.5px] h-[10.5px] text-white" strokeWidth={6} />}
+                                    {!user?.isVerified && <X className="w-3 h-3 text-slate-400" />}
                                 </div>
                                 <div>
                                     <p className="text-xs text-slate-400">Status</p>
-                                    <p className={`text-sm font-semibold ${user.isVerified ? 'text-amber-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
-                                        {user.isVerified ? 'Verified Account' : 'Standard Account'}
+                                    <p className={`text-sm font-semibold ${user?.isVerified ? 'text-amber-500 font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        {user?.isVerified ? 'Verified Account' : 'Standard Account'}
                                     </p>
                                 </div>
                             </div>
