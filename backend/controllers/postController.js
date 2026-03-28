@@ -183,27 +183,52 @@ exports.getFeed = async (req, res) => {
             suggestedLimit, suggestedOffset
         ]);
 
-        // Combine
-        let allPosts = [...friendPosts, ...suggestedPosts];
-        allPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        // Fetch Short Videos for feed
+        const [shortVideos] = await pool.query(
+            `SELECT 
+                sv.id, sv.title as content, sv.videoUrl, sv.thumbnailUrl as imageUrl, 
+                sv.createdAt, sv.authorId,
+                u.username, u.avatarUrl, u.displayName, u.isVerified,
+                (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                ${currentUserId ? 'IF((SELECT 1 FROM ShortVideoLike WHERE videoId = sv.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'},
+                'short' as feedType
+             FROM ShortVideo sv
+             JOIN User u ON sv.authorId = u.id
+             WHERE 
+             NOT EXISTS (
+                SELECT 1 FROM BlockedUser 
+                WHERE (blockerId = ? AND blockedId = sv.authorId)
+                OR (blockerId = sv.authorId AND blockedId = ?)
+             )
+             ORDER BY sv.createdAt DESC
+             LIMIT 5`,
+            currentUserId ? [currentUserId, currentUserId, currentUserId] : [currentUserId, currentUserId]
+        );
 
-        const formattedPosts = allPosts.map(post => {
+        // Combine all
+        let allItems = [...friendPosts, ...suggestedPosts, ...shortVideos];
+        allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const formattedPosts = allItems.map(item => {
+            const isShort = item.feedType === 'short';
             const formatted = {
-                ...post,
+                ...item,
+                isShort,
                 author: {
-                    id: post.authorId,
-                    username: post.username,
-                    displayName: post.displayName,
-                    avatarUrl: post.avatarUrl,
-                    isVerified: !!post.isVerified
+                    id: item.authorId,
+                    username: item.username,
+                    displayName: item.displayName,
+                    avatarUrl: item.avatarUrl,
+                    isVerified: !!item.isVerified
                 },
-                isLiked: !!post.isLiked,
-                userReaction: post.userReaction || null,
+                isLiked: !!item.isLiked,
+                userReaction: item.userReaction || null,
                 _count: {
-                    likes: parseInt(post.likeCount || 0),
-                    comments: parseInt(post.commentCount || 0)
+                    likes: parseInt(item.likeCount || 0),
+                    comments: parseInt(item.commentCount || 0)
                 },
-                feedType: post.feedType
+                feedType: item.feedType
             };
             delete formatted.username;
             delete formatted.displayName;
@@ -272,21 +297,49 @@ exports.getPostsByUser = async (req, res) => {
             currentUserId || null, currentUserId || null
         ]);
 
-        const formattedPosts = posts.map(post => {
+        // Fetch Short Videos for this user
+        const [shortVideos] = await pool.execute(
+            `SELECT 
+                sv.id, sv.title as content, sv.videoUrl, sv.thumbnailUrl as imageUrl, 
+                sv.createdAt, sv.authorId,
+                u.username, u.avatarUrl, u.displayName, u.isVerified,
+                (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                ${currentUserId ? 'IF((SELECT 1 FROM ShortVideoLike WHERE videoId = sv.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'},
+                'short' as feedType
+             FROM ShortVideo sv
+             JOIN User u ON sv.authorId = u.id
+             WHERE sv.authorId = ?
+             AND NOT EXISTS (
+                SELECT 1 FROM BlockedUser 
+                WHERE (blockerId = ? AND blockedId = sv.authorId)
+                OR (blockerId = sv.authorId AND blockedId = ?)
+             )
+             ORDER BY sv.createdAt DESC`,
+            currentUserId ? [currentUserId, targetUserId, currentUserId, currentUserId] : [targetUserId, currentUserId, currentUserId]
+        );
+
+        // Combine all items
+        let allItems = [...posts, ...shortVideos];
+        allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        const formattedPosts = allItems.map(item => {
+            const isShort = item.feedType === 'short';
             const formatted = {
-                ...post,
+                ...item,
+                isShort,
                 author: {
-                    id: post.authorId,
-                    username: post.username,
-                    displayName: post.displayName,
-                    avatarUrl: post.avatarUrl,
-                    isVerified: !!post.isVerified
+                    id: item.authorId,
+                    username: item.username,
+                    displayName: item.displayName,
+                    avatarUrl: item.avatarUrl,
+                    isVerified: !!item.isVerified
                 },
-                isLiked: !!post.isLiked,
-                userReaction: post.userReaction || null,
+                isLiked: !!item.isLiked,
+                userReaction: item.userReaction || null,
                 _count: {
-                    likes: parseInt(post.likeCount || 0),
-                    comments: parseInt(post.commentCount || 0)
+                    likes: parseInt(item.likeCount || 0),
+                    comments: parseInt(item.commentCount || 0)
                 }
             };
             delete formatted.username;

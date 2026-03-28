@@ -38,8 +38,10 @@ interface Post {
     id: string;
     content: string;
     imageUrl?: string;
+    videoUrl?: string;
+    isShort?: boolean;
     createdAt: string;
-    author: { id: string; username: string; displayName?: string; avatarUrl?: string; };
+    author: { id: string; username: string; displayName?: string; avatarUrl?: string; isVerified?: boolean; };
     _count: { likes: number; comments: number; };
 }
 
@@ -522,9 +524,13 @@ export default function ProfilePageContent() {
                                         setShowPostModal(true);
                                         window.history.replaceState(null, '', `?post=${post.id}`);
                                     }}
-                                    onClick={() => { 
-                                        setSelectedPost(post); 
-                                        setShowPostModal(true); 
+                                    onClick={() => {
+                                        if (post.isShort) {
+                                            router.push(`/short-video/${post.id}`);
+                                            return;
+                                        }
+                                        setSelectedPost(post);
+                                        setShowPostModal(true);
                                         window.history.replaceState(null, '', `?post=${post.id}`);
                                     }}
                                 />

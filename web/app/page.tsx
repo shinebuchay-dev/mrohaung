@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useInView } from 'react-intersection-observer';
 import { ShieldAlert, CheckCircle2 } from 'lucide-react';
 import CreatePost from '@/components/CreatePost';
@@ -18,6 +19,7 @@ import { useSocket } from '@/lib/socket';
 import { Suspense } from 'react';
 
 function FeedContent() {
+  const router = useRouter();
   const { user: currentUser } = useAuth();
   const { socket } = useSocket();
   const [posts, setPosts] = useState<any[]>([]);
@@ -178,7 +180,6 @@ function FeedContent() {
       )}
 
       {currentUser && <StoriesBar />}
-      {currentUser && <ShortsShelf />}
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
         <section className="min-w-0">
@@ -240,6 +241,10 @@ function FeedContent() {
                         window.history.replaceState(null, '', `?post=${post.id}`);
                       }}
                       onClick={() => {
+                        if (post.isShort) {
+                          router.push(`/short-video/${post.id}`);
+                          return;
+                        }
                         setSelectedPost(post);
                         setInitialCommentId(null);
                         setShowPostModal(true);

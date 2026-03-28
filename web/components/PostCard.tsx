@@ -1,7 +1,7 @@
 'use client';
 
 import ReactionPicker from './ReactionPicker';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star, Check, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
@@ -325,8 +325,24 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                         </div>
                     )}
 
-                    {/* Image */}
-                    {post.imageUrl && (
+                    {/* Image or Video */}
+                    {post.isShort ? (
+                        <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-black relative aspect-[9/16] max-h-[500px] w-fit mx-auto">
+                            <video
+                                src={fixUrl(post.videoUrl)}
+                                className="w-full h-full object-cover"
+                                muted
+                                autoPlay
+                                loop
+                                playsInline
+                            />
+                            {/* Short Badge */}
+                            <div className="absolute top-3 right-3 px-2 py-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/10 flex items-center gap-1.5">
+                                <Play className="w-3 h-3 text-white fill-white" />
+                                <span className="text-[10px] text-white font-bold tracking-wider uppercase">Short</span>
+                            </div>
+                        </div>
+                    ) : post.imageUrl && (
                         <div className="mb-3 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-900">
                             <img
                                 src={fixUrl(post.imageUrl)}
