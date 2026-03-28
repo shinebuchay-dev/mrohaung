@@ -7,7 +7,6 @@ import {
     Users, 
     FileText, 
     MessageCircle, 
-    Zap, 
     Mail, 
     Bell, 
     CheckCircle2, 
@@ -24,7 +23,9 @@ import {
     ArrowUpRight,
     Info,
     MailCheck,
-    Check
+    Check,
+    Sparkles,
+    Zap
 } from 'lucide-react';
 
 type Tab = 'overview' | 'users' | 'notifications' | 'verification';
@@ -372,9 +373,10 @@ function OverviewPanel({ loading, overview, recentVerifications, recentNotificat
 
     const stats = [
         { label: 'Users', value: overview.counts.users, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+        { label: 'Active', value: overview.counts.activeToday, icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10 shadow-orange-500/10' },
         { label: 'Posts', value: overview.counts.posts, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
         { label: 'Comm', value: overview.counts.comments, icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-        { label: 'Stories', value: overview.counts.stories, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { label: 'Stories', value: overview.counts.stories, icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         { label: 'Inbox', value: overview.counts.messages, icon: Mail, color: 'text-rose-500', bg: 'bg-rose-500/10' },
         { label: 'Events', value: overview.counts.notifications, icon: Bell, color: 'text-violet-500', bg: 'bg-violet-500/10' },
     ];
@@ -382,16 +384,16 @@ function OverviewPanel({ loading, overview, recentVerifications, recentNotificat
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Horizontal Compact Stats - Vertical Info + Right Value */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
                 {stats.map((s) => (
                     <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl p-3 flex items-center justify-between hover:border-blue-500/30 transition-all group shadow-sm">
-                        <div className="flex flex-col gap-1.5">
-                            <div className={`w-7 h-7 ${s.bg} rounded-lg flex items-center justify-center ${s.color}`}>
+                        <div className="flex flex-col gap-1.5 min-w-0">
+                            <div className={`w-7 h-7 ${s.bg} rounded-lg flex items-center justify-center ${s.color} transition-transform group-hover:scale-110`}>
                                 <s.icon className="w-3.5 h-3.5" />
                             </div>
-                            <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">{s.label}</div>
+                            <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none truncate">{s.label}</div>
                         </div>
-                        <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums">{s.value.toLocaleString()}</div>
+                        <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums pl-2 shrink-0">{s.value.toLocaleString()}</div>
                     </div>
                 ))}
             </div>

@@ -19,6 +19,21 @@ exports.getOverview = async (req, res) => {
         const [[notificationRow]] = await pool.execute('SELECT COUNT(*) as count FROM Notification');
         const [[pendingVerificationsRow]] = await pool.execute('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"');
 
+        // Total users active in last 24h (distinct creators of posts, stories, messages, comments, or likes)
+        const [[activeTodayRow]] = await pool.execute(`
+            SELECT COUNT(DISTINCT userId) as count FROM (
+                SELECT authorId as userId FROM Post WHERE createdAt > NOW() - INTERVAL 1 DAY
+                UNION ALL
+                SELECT userId FROM Story WHERE createdAt > NOW() - INTERVAL 1 DAY
+                UNION ALL
+                SELECT senderId as userId FROM Message WHERE createdAt > NOW() - INTERVAL 1 DAY
+                UNION ALL
+                SELECT userId FROM Comment WHERE createdAt > NOW() - INTERVAL 1 DAY
+                UNION ALL
+                SELECT userId FROM ShortVideo WHERE createdAt > NOW() - INTERVAL 1 DAY
+            ) as ActiveUsers
+        `);
+
         res.json({
             counts: {
                 users: parseInt(userRow.count || 0),
@@ -27,7 +42,8 @@ exports.getOverview = async (req, res) => {
                 stories: parseInt(storyRow.count || 0),
                 messages: parseInt(messageRow.count || 0),
                 notifications: parseInt(notificationRow.count || 0),
-                pendingVerifications: parseInt(pendingVerificationsRow.count || 0)
+                pendingVerifications: parseInt(pendingVerificationsRow.count || 0),
+                activeToday: parseInt(activeTodayRow.count || 0)
             }
         });
     } catch (error) {
