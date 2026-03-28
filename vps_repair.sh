@@ -66,8 +66,8 @@ ADMIN_USER_IDS="2f572063-e0e6-4e55-afc0-33ea5bcdcf46"
 BASE_URL="https://mrohaung.com"
 
 # Cloudflare R2 Config
-R2_ACCESS_KEY_ID=placeholder_access_key
-R2_SECRET_ACCESS_KEY=placeholder_secret_key
+R2_ACCESS_KEY_ID=daa6f6e87b3efd516461f5dfe8a10f8e
+R2_SECRET_ACCESS_KEY=8624e67d60e48dff85da5145d69e3766d6b114ff386c2220dc211418d6ba908a
 R2_BUCKET_NAME=mrohaung-media
 R2_ENDPOINT=https://e85cc92c864ecfc6c14a199e00057ad5.r2.cloudflarestorage.com
 R2_PUBLIC_URL=https://media.mrohaung.com
