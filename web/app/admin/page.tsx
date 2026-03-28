@@ -39,7 +39,9 @@ type Overview = {
         messages: number;
         notifications: number;
         pendingVerifications?: number;
+        activeToday: number;
     };
+    recentReports?: any[];
 };
 
 export default function AdminDashboardPage() {
@@ -48,7 +50,7 @@ export default function AdminDashboardPage() {
     const [error, setError] = useState<string>('');
     const [overview, setOverview] = useState<Overview | null>(null);
     const [rows, setRows] = useState<any[]>([]);
-    const [recentVerifications, setRecentVerifications] = useState<any[]>([]);
+    const [recentReports, setRecentReports] = useState<any[]>([]);
     const [recentNotifications, setRecentNotifications] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
@@ -61,13 +63,12 @@ export default function AdminDashboardPage() {
 
     const fetchOverviewData = async () => {
         try {
-            const [oRes, vRes, nRes] = await Promise.all([
+            const [oRes, nRes] = await Promise.all([
                 api.get('/admin/overview'),
-                api.get('/admin/verification-requests', { params: { page: 1, limit: 5 } }),
                 api.get('/admin/notifications', { params: { page: 1, limit: 12 } })
             ]);
             setOverview(oRes.data);
-            setRecentVerifications(vRes.data.requests || []);
+            setRecentReports(oRes.data.recentReports || []);
             setRecentNotifications(nRes.data.notifications || []);
         } catch (e: any) {
             console.error('Overview Fetch Error:', e);
@@ -207,7 +208,7 @@ export default function AdminDashboardPage() {
                 <OverviewPanel 
                     loading={loading} 
                     overview={overview} 
-                    recentVerifications={recentVerifications} 
+                    recentReports={recentReports} 
                     recentNotifications={recentNotifications}
                     onVerify={handleVerification}
                     onDeleteNotification={(id: string) => deleteRow(id, 'notifications')}
@@ -356,7 +357,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     );
 }
 
-function OverviewPanel({ loading, overview, recentVerifications, recentNotifications, onVerify, onDeleteNotification }: any) {
+function OverviewPanel({ loading, overview, recentReports, recentNotifications, onVerify, onDeleteNotification }: any) {
     if (loading && !overview) {
         return (
             <div className="space-y-6">
@@ -400,39 +401,39 @@ function OverviewPanel({ loading, overview, recentVerifications, recentNotificat
 
             {/* Live Dashboard Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                {/* 1. Pending Verifications */}
+                {/* 1. Recent Reports */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col min-h-[400px]">
                     <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-white dark:bg-white/[0.02]">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <h3 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.15em]">Live Verifications</h3>
+                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            <h3 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.15em]">Recent Reports</h3>
                         </div>
-                        {overview.counts.pendingVerifications > 0 && (
-                            <span className="text-[9px] font-black px-2 py-0.5 bg-red-500 text-white rounded-full uppercase">{overview.counts.pendingVerifications} Pending</span>
-                        )}
+                        <AlertCircle className="w-3.5 h-3.5 text-red-500" />
                     </div>
                     <div className="overflow-y-auto no-scrollbar p-3 space-y-3">
-                        {recentVerifications.length === 0 ? (
-                            <div className="py-20 text-center"><Info className="w-8 h-8 text-slate-100 mx-auto mb-2" /><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No Active requests</p></div>
+                        {recentReports.length === 0 ? (
+                            <div className="py-20 text-center"><AlertCircle className="w-8 h-8 text-slate-100 mx-auto mb-2" /><p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">No Active Reports</p></div>
                         ) : (
-                            recentVerifications.map((r: any) => (
-                                <div key={r.id} className="p-3 bg-slate-50 dark:bg-white/[0.03] rounded-2xl border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all">
+                            recentReports.map((r: any) => (
+                                <div key={r.id} className="p-3 bg-red-50/30 dark:bg-red-500/5 rounded-2xl border border-transparent hover:border-red-200 dark:hover:border-red-500/20 transition-all">
                                     <div className="flex items-center justify-between gap-3 mb-2">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-slate-200/50 shrink-0">
-                                                {r.avatarUrl ? <img src={fixUrl(r.avatarUrl)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-[10px]">{r.username[0]}</div>}
+                                                {r.reporterAvatar ? <img src={fixUrl(r.reporterAvatar)} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-[10px] bg-slate-200">{r.reporterUsername[0]}</div>}
                                             </div>
                                             <div className="min-w-0">
-                                                <div className="text-[12px] font-black text-slate-900 dark:text-white truncate">@{r.username}</div>
-                                                <div className="text-[9px] text-slate-400 font-bold uppercase">{new Date(r.createdAt).toLocaleDateString()}</div>
+                                                <div className="text-[11px] font-black text-slate-900 dark:text-white truncate">Reporter: @{r.reporterUsername}</div>
+                                                <div className="text-[9px] text-slate-400 font-bold uppercase">{new Date(r.createdAt).toLocaleString()}</div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <button onClick={() => onVerify(r.id, 'approved')} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase shadow-sm">Allow</button>
-                                            <button onClick={() => onVerify(r.id, 'rejected')} className="h-7 px-3 rounded-lg bg-white dark:bg-white/10 text-slate-400 text-[9px] font-black uppercase">Deny</button>
+                                        <div className="px-2 py-0.5 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[8px] font-black uppercase rounded-full">
+                                            {r.status}
                                         </div>
                                     </div>
-                                    <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-normal italic line-clamp-2 px-1">"{r.reason}"</div>
+                                    <div className="px-1 space-y-1">
+                                        <div className="text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">{r.reason}</div>
+                                        {r.details && <div className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight line-clamp-2">"{r.details}"</div>}
+                                    </div>
                                 </div>
                             ))
                         )}

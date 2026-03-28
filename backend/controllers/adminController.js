@@ -52,8 +52,22 @@ exports.getOverview = async (req, res) => {
             `);
             activeToday = parseInt(rows[0]?.count || 0);
         } catch (e) {
-            console.error('Active Users Query Failed:', e.message);
-            activeToday = 0;
+            console.error('Active User Query Failed:', e.message);
+        }
+
+        // Fetch recent reports (limit 10)
+        let recentReports = [];
+        try {
+            const [reportRows] = await pool.execute(`
+                SELECT r.*, u.username as reporterUsername, u.avatarUrl as reporterAvatar 
+                FROM Report r 
+                JOIN User u ON r.reporterId = u.id 
+                ORDER BY r.createdAt DESC 
+                LIMIT 10
+            `);
+            recentReports = reportRows;
+        } catch (e) {
+            console.error('Recent Reports Query Failed:', e.message);
         }
 
         res.json({
@@ -66,7 +80,8 @@ exports.getOverview = async (req, res) => {
                 notifications,
                 pendingVerifications,
                 activeToday
-            }
+            },
+            recentReports
         });
     } catch (error) {
         console.error('Fatal Overview Error:', error);
