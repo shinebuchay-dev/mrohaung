@@ -344,51 +344,52 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 className="bg-white dark:bg-[#0b1120] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
             >
                 {/* Mobile Sticky Header */}
-                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#0b1120] px-4 h-[44px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
-                    <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">Post</h2>
-                    <button
-                        onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
-                    >
-                        <X className="w-4 h-4" />
+                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#0b1120] px-4 h-[56px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
+                        <h2 className="text-[14px] font-black tracking-tight text-slate-900 dark:text-white truncate max-w-[150px]">Post</h2>
+                    </div>
+                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {/* Post Header (Author Info) - Sticky */}
-                    <div className="sticky top-0 z-[40] bg-white dark:bg-[#0b1120] px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-white/5">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                    {/* Post Header (Author Info) */}
+                    <div className="px-5 pt-5 pb-4 flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0 group" onClick={onClose}>
-                                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#334155] bg-cover bg-center ring-2 ring-blue-500/20 group-hover:ring-blue-500/40 transition-all duration-300" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
-                                <div className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#1e293b]" />
+                            <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0" onClick={onClose}>
+                                <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }}>
+                                    {!post.author.avatarUrl && <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">{(post.author.displayName || post.author.username)?.[0]?.toUpperCase()}</div>}
+                                </div>
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-[#0b1120]" />
                             </Link>
-                            <div className="flex flex-col justify-center">
-                                <div className="flex items-center gap-1">
-                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-bold text-[15px] hover:underline decoration-blue-500/50 underline-offset-2 leading-tight" onClick={onClose}>
+                            <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[15px] hover:underline" onClick={onClose}>
                                         {post.author.displayName || post.author.username}
                                     </Link>
                                     {post.author.isVerified && (
-                                        <div className="flex-shrink-0 ml-[2px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1.5px]">
+                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
                                             <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-[#64748b] mt-0.5">
-                                    <Clock className="w-3 h-3" />
+                                <div className="flex items-center gap-2 text-[12px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
                                     <p>{formatTimeRelative(post.createdAt)}</p>
-                                    <span className="w-1 h-1 rounded-full bg-[#334155]" />
-                                    <span className="text-blue-500/80">Public</span>
+                                    <span className="w-0.5 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                                    <span className="text-blue-500 opacity-80 uppercase tracking-widest text-[9px]">Public</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 -mt-1">
                             {/* Menu Dropdown */}
                             <div className="relative">
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
-                                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${showMenu ? 'bg-slate-200 dark:bg-[#334155] text-slate-900 dark:text-white' : 'hover:bg-slate-100 dark:hover:bg-[#334155]/50 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                                    className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
                                 >
                                     <MoreHorizontal className="w-5 h-5" />
                                 </button>
@@ -396,38 +397,23 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                     {showMenu && (
                                         <>
                                             <motion.div
-                                                initial={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                className="absolute right-0 mt-1 w-48 bg-white dark:bg-[#0b1120] backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl overflow-hidden z-[110]"
+                                                initial={{ opacity: 0, scale: 0.95, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                                className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-[110] p-1.5"
                                             >
-                                                <div className="py-1">
-                                                    {isOwnPost ? (
-                                                        <>
-                                                            <button
-                                                                onClick={() => { setShowMenu(false); setIsEditing(true); }}
-                                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white transition-colors text-sm font-bold group"
-                                                            >
-                                                                <Edit2 className="w-4 h-4 text-blue-400" />
-                                                                Edit Post
-                                                            </button>
-                                                            <button
-                                                                onClick={() => { setShowMenu(false); handleDelete(); }}
-                                                                className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-500/10 text-red-500 transition-colors text-sm font-medium group"
-                                                            >
-                                                                <div className="w-4 h-4 flex items-center justify-center">
-                                                                    <Trash2 className="w-4 h-4 text-red-400" />
-                                                                </div>
-                                                                Delete Post
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-yellow-500/10 text-yellow-500 transition-colors text-sm font-medium group">
-                                                            <Flag className="w-4 h-4" />
-                                                            Report Post
+                                                {isOwnPost ? (
+                                                    <>
+                                                        <button onClick={() => { setShowMenu(false); setIsEditing(true); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg transition-all">
+                                                            <Edit2 className="w-4 h-4 text-slate-400" /> Edit Post
                                                         </button>
-                                                    )}
-                                                </div>
+                                                        <button onClick={() => { setShowMenu(false); handleDelete(); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 text-sm font-bold rounded-lg transition-all">
+                                                            <Trash2 className="w-4 h-4" /> Delete Post
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 text-sm font-bold rounded-lg transition-all">
+                                                        <Flag className="w-4 h-4" /> Report Post
+                                                    </button>
+                                                )}
                                             </motion.div>
                                             <div className="fixed inset-0 z-[105]" onClick={() => setShowMenu(false)} />
                                         </>
@@ -436,127 +422,108 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                             </div>
 
                             {/* Desktop Close Button */}
-                            <button
-                                onClick={onClose}
-                                className="hidden sm:flex w-8 h-8 items-center justify-center rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
-                            >
-                                <X className="w-4 h-4" />
+                            <button onClick={onClose} className="hidden sm:flex p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                     </div>
 
                     {/* Post Body & Details */}
-                    <div className="px-4 pt-3 pb-0">
-                        {/* Body */}
-                        <div className={isEditing ? "mb-1" : "mb-3"}>
+                    <div className="px-5 pb-4">
+                        <div className={isEditing ? "mb-2" : "mb-4"}>
                             {isEditing ? (
-                                <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <textarea ref={editTextareaRef} value={editContent} onChange={(e) => setEditContent(e.target.value)} className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none py-1 text-[15px] leading-relaxed overflow-y-auto [&::-webkit-scrollbar]:hidden" style={{ minHeight: EDIT_TEXTAREA_MIN_HEIGHT, maxHeight: EDIT_TEXTAREA_MAX_HEIGHT }} rows={1} placeholder="Edit your post..." autoFocus maxLength={65000} />
+                                <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 border border-slate-100 dark:border-white/5 animate-in fade-in duration-300">
+                                    <textarea 
+                                        ref={editTextareaRef} 
+                                        value={editContent} 
+                                        onChange={(e) => setEditContent(e.target.value)} 
+                                        className="w-full bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 resize-none text-[15px] leading-relaxed" 
+                                        style={{ minHeight: EDIT_TEXTAREA_MIN_HEIGHT, maxHeight: EDIT_TEXTAREA_MAX_HEIGHT }} 
+                                        rows={2} 
+                                        placeholder="Edit your post..." 
+                                        autoFocus 
+                                    />
+                                    <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                                        <button onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} className="px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">Cancel</button>
+                                        <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()} className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg shadow-sm disabled:opacity-50">{saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save'}</button>
+                                    </div>
                                 </div>
                             ) : (
-                                <>{post.content && <p className="text-slate-800 dark:text-slate-100 text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>}</>
+                                <>{post.content && <p className="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed whitespace-pre-wrap">{post.content}</p>}</>
                             )}
                         </div>
-                        {post.imageUrl && <div className="rounded-lg overflow-hidden bg-black mb-3 border border-slate-200 dark:border-[#334155]/50"><img src={fixUrl(post.imageUrl)} alt="Post" className="w-full h-auto max-h-[400px] object-contain mx-auto" /></div>}
 
-                        {isEditing && (
-                            <div className="flex justify-center gap-3 py-4 border-t border-slate-200 dark:border-[#334155]/40 mt-2">
-                                <button onClick={() => { setIsEditing(false); setEditContent(post.content || ''); }} className="px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl min-w-[120px]">Cancel</button>
-                                <button onClick={handleSaveEdit} disabled={saving || !editContent.trim()} className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-sm font-bold text-white rounded-xl transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 min-w-[160px]">{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> <span>Save Changes</span></>}</button>
+                        {post.imageUrl && (
+                            <div className="rounded-2xl overflow-hidden bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-white/5 mb-4 max-h-[500px]">
+                                <img src={fixUrl(post.imageUrl)} alt="Post" className="w-full h-full object-contain mx-auto" />
                             </div>
                         )}
+
                         {!isEditing && (
-                            <div className="px-4 h-[50px] flex items-center justify-between border-t border-slate-200 dark:border-[#334155]/30">
-                                <div className="flex items-center gap-3">
-                                    <div
-                                        className="relative"
-                                        onMouseEnter={() => setShowReactions(true)}
-                                        onMouseLeave={() => setShowReactions(false)}
-                                    >
-                                        <AnimatePresence>
-                                            {showReactions && (
-                                                <ReactionPicker
-                                                    onSelect={handleReaction}
-                                                    onClose={() => setShowReactions(false)}
-                                                />
-                                            )}
-                                        </AnimatePresence>
-                                        <motion.button
-                                            whileTap={{ scale: 0.9 }}
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <div className="relative" onMouseEnter={() => setShowReactions(true)} onMouseLeave={() => setShowReactions(false)}>
+                                        <AnimatePresence>{showReactions && <ReactionPicker onSelect={handleReaction} onClose={() => setShowReactions(false)} />}</AnimatePresence>
+                                        <button 
                                             onClick={() => handleReaction(reactionType || 'like')}
-                                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors group/like ${getReactionStyle(reactionType).color} hover:bg-slate-50 dark:hover:bg-slate-800/50 relative z-10 translate-y-[1px]`}
+                                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all hover:bg-slate-50 dark:hover:bg-white/5 ${getReactionStyle(reactionType).color}`}
                                         >
-                                            <div className={`p-0.5 rounded-full transition-colors ${reactionType ? '' : 'group-hover/like:bg-red-50 dark:group-hover/like:bg-red-500/10'}`}>
-                                                {getReactionStyle(reactionType).icon}
-                                            </div>
-                                            <span className={`text-[13px] font-medium ${reactionType ? '' : 'text-slate-500 dark:text-slate-400'}`}>
-                                                {reactionType ? getReactionStyle(reactionType).label : 'Like'}
-                                            </span>
-                                            {likeCount > 0 && (
-                                                <span className="text-[13px] font-medium opacity-60 ml-0.5">{likeCount}</span>
-                                            )}
-                                        </motion.button>
+                                            {getReactionStyle(reactionType).icon}
+                                            <span className="text-[13px] font-black uppercase tracking-wider">{reactionType ? getReactionStyle(reactionType).label : 'Like'}</span>
+                                            {likeCount > 0 && <span className="text-[13px] font-black opacity-40">{likeCount}</span>}
+                                        </button>
                                     </div>
-                                    <div className="flex items-center gap-1.5 group/comment translate-y-[1px]">
-                                        <div className="p-2 rounded-full group-hover/comment:bg-blue-500/10 transition-colors"><MessageCircle className="w-4 h-4 text-slate-500 dark:text-[#64748b] group-hover/comment:text-blue-500 transition-colors" /></div>
-                                        <span className="text-xs font-bold text-slate-500 dark:text-[#64748b] group-hover/comment:text-blue-500 transition-colors">{comments.length}</span>
+                                    <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-400 dark:text-slate-500">
+                                        <MessageCircle className="w-4 h-4" />
+                                        <span className="text-[13px] font-black">{comments.length}</span>
                                     </div>
                                 </div>
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                                <button
                                     onClick={() => {
                                         const url = `${window.location.origin}/profile/${post.author.username}/${post.id}`;
                                         if (navigator.share) {
-                                            navigator.share({
-                                                title: `Post by ${post.author.displayName || post.author.username}`,
-                                                text: post.content,
-                                                url: url
-                                            }).catch(console.error);
+                                            navigator.share({ title: `Post by ${post.author.displayName || post.author.username}`, text: post.content, url }).catch(console.error);
                                         } else {
                                             navigator.clipboard.writeText(url);
-                                            alert('Link copied to clipboard!');
+                                            alert('Link copied!');
                                         }
                                     }}
-                                    className="p-2 rounded-full hover:bg-white/5 transition-colors text-slate-500 dark:text-[#64748b] hover:text-white group/share translate-y-[1px]"
+                                    className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                 >
                                     <Share2 className="w-4 h-4" />
-                                </motion.button>
+                                </button>
                             </div>
                         )}
                     </div>
 
                     {/* Comments */}
-                    <div className="border-t border-slate-100 dark:border-white/5 px-4 py-2">
-                        <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                            <div className="p-4">
-                                <CommentSection
-                                    comments={comments}
-                                    currentUserId={currentUserId}
-                                    postId={post.id}
-                                    onDelete={(id) => setComments(prev => prev.filter(c => c.id !== id))}
-                                    onUpdate={(id, content) => setComments(prev => prev.map(c => c.id === id ? { ...c, content } : c))}
-                                />
-                            </div>
+                    <div className="border-t border-slate-50 dark:border-white/5 bg-slate-50/30 dark:bg-white/[0.01]">
+                        <div className="px-5 py-6">
+                            <CommentSection
+                                comments={comments}
+                                currentUserId={currentUserId}
+                                postId={post.id}
+                                onDelete={(id) => setComments(prev => prev.filter(c => c.id !== id))}
+                                onUpdate={(id, content) => setComments(prev => prev.map(c => c.id === id ? { ...c, content } : c))}
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="flex-none px-4 py-3 bg-white dark:bg-[#0b1120] border-t border-slate-100 dark:border-white/5 z-10 w-full">
+                <div className="px-5 py-4 bg-white dark:bg-[#0b1120] border-t border-slate-50 dark:border-white/5">
                     {currentUserId ? (
-                        <form onSubmit={handleSubmitComment} className="flex gap-2 items-end w-full max-w-4xl mx-auto">
-                            {/* Left: Input Area */}
-                            <div className="flex-1 bg-slate-100/50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-2xl px-3.5 py-2.5 min-h-[46px] flex items-center border border-slate-200 dark:border-white/5 focus-within:border-blue-500/30 focus-within:bg-white dark:focus-within:bg-white/[0.08] transition-all duration-300">
+                        <form onSubmit={handleSubmitComment} className="flex gap-3 items-end">
+                            <div className="flex-1 bg-slate-50 dark:bg-white/[0.03] rounded-2xl px-4 py-2.5 flex items-center border border-slate-100 dark:border-white/5 focus-within:bg-white dark:focus-within:bg-white/[0.06] transition-all">
                                 {selectedSticker ? (
-                                    <div className="flex items-center gap-2 bg-white dark:bg-[#0b1120] px-3 py-1 rounded-xl border border-slate-200 dark:border-[#334155] w-fit animate-in fade-in zoom-in-95">
+                                    <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/5">
                                         <img src={fixUrl(selectedSticker)} alt="Selected" className="w-8 h-8 object-contain" />
-                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full text-slate-500"><X className="w-3 h-3" /></button>
+                                        <button type="button" onClick={() => setSelectedSticker(null)} className="p-1 text-slate-400"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : audioBlob ? (
-                                    <div className="flex items-center gap-2 bg-blue-500/10 px-3 py-1.5 rounded-full border border-blue-500/20 w-fit animate-in fade-in slide-in-from-left-2">
-                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                                        <span className="text-[11px] text-blue-500 font-bold uppercase tracking-wider">Voice Ready</span>
-                                        <button type="button" onClick={() => setAudioBlob(null)} className="p-1 hover:bg-blue-500/10 rounded-full text-blue-500"><X className="w-3 h-3" /></button>
+                                    <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full">
+                                        <span className="text-[11px] text-blue-500 font-black uppercase tracking-widest">Audio Ready</span>
+                                        <button type="button" onClick={() => setAudioBlob(null)} className="p-1 text-blue-500"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : (
                                     <textarea
@@ -569,63 +536,32 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                                 el.style.height = '24px';
                                                 const newHeight = Math.min(el.scrollHeight, 120);
                                                 el.style.height = (newHeight > 24 ? newHeight : 24) + 'px';
-                                                el.style.overflowY = el.scrollHeight > 120 ? 'auto' : 'hidden';
                                             }
                                         }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSubmitComment(e);
-                                            }
-                                        }}
-                                        placeholder="Write a comment..."
+                                        placeholder="Add a comment..."
                                         rows={1}
-                                        className="w-full bg-transparent border-none outline-none text-[15px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden min-h-[24px] py-0 break-words whitespace-pre-wrap"
-                                        style={{ height: 'auto' }}
-                                        maxLength={10000}
+                                        className="w-full bg-transparent border-none outline-none text-[15px] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 resize-none overflow-hidden"
                                     />
                                 )}
                             </div>
 
-                            {/* Right: Actions */}
-                            <div className="flex items-center gap-0.5 shrink-0 pb-1">
+                            <div className="flex items-center gap-1 pb-1">
                                 {!audioBlob && !selectedSticker && (
                                     <>
-                                        <div className="relative">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowStickers(!showStickers)}
-                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 rounded-full transition-all"
-                                            >
-                                                <Smile className="w-5 h-5" />
-                                            </button>
-                                            <AnimatePresence>
-                                                {showStickers && (
-                                                    <div className="absolute bottom-full right-0 mb-4 z-50">
-                                                        <StickerPicker
-                                                            onSelect={(url) => setSelectedSticker(url)}
-                                                            onClose={() => setShowStickers(false)}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </AnimatePresence>
-                                        </div>
-                                        <VoiceRecorder onRecordingComplete={(blob) => setAudioBlob(blob)} onCancel={() => setAudioBlob(null)} />
+                                        <button type="button" onClick={() => setShowStickers(!showStickers)} className="p-2 text-slate-400 hover:text-blue-500 transition-colors relative">
+                                            <Smile className="w-5 h-5" />
+                                            <AnimatePresence>{showStickers && <div className="absolute bottom-full right-0 mb-4 z-50"><StickerPicker onSelect={url => setSelectedSticker(url)} onClose={() => setShowStickers(false)} /></div>}</AnimatePresence>
+                                        </button>
+                                        <VoiceRecorder onRecordingComplete={blob => setAudioBlob(blob)} onCancel={() => setAudioBlob(null)} />
                                     </>
                                 )}
-                                <button
-                                    type="submit"
-                                    disabled={submitting || (!commentText.trim() && !audioBlob && !selectedSticker)}
-                                    className="p-2.5 text-blue-500 disabled:text-slate-300 dark:disabled:text-slate-700 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-full transition-all active:scale-90 flex-shrink-0"
-                                >
+                                <button type="submit" disabled={submitting || (!commentText.trim() && !audioBlob && !selectedSticker)} className="p-2.5 text-blue-500 disabled:text-slate-300 transition-all active:scale-90">
                                     {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                                 </button>
                             </div>
                         </form>
                     ) : (
-                        <div className="flex items-center justify-center py-3 px-4 bg-slate-50 dark:bg-white/[0.02] rounded-2xl border border-slate-200 dark:border-white/5">
-                            <p className="text-[13px] text-slate-500 dark:text-slate-400 font-medium tracking-tight">Login to join the conversation</p>
-                        </div>
+                        <div className="text-center py-2"><p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Login to comment</p></div>
                     )}
                 </div>
             </div>

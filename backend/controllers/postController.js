@@ -404,7 +404,7 @@ exports.addComment = async (req, res) => {
         }
 
         const [comments] = await pool.execute(
-            `SELECT c.*, u.username, u.avatarUrl, u.displayName 
+            `SELECT c.*, u.username, u.avatarUrl, u.displayName, u.isVerified 
              FROM Comment c 
              JOIN User u ON c.userId = u.id 
              WHERE c.id = ?`,
@@ -413,13 +413,16 @@ exports.addComment = async (req, res) => {
 
         const comment = comments[0];
         comment.user = {
+            id: comment.userId,
             username: comment.username,
             displayName: comment.displayName,
-            avatarUrl: comment.avatarUrl
+            avatarUrl: comment.avatarUrl,
+            isVerified: !!comment.isVerified
         };
         delete comment.username;
         delete comment.displayName;
         delete comment.avatarUrl;
+        delete comment.isVerified;
 
         // Emit real-time event
         const io = req.app.get('io');

@@ -149,35 +149,27 @@ function CommentItem({ comment, allComments, currentUserId, depth = 0, onDelete,
 
     return (
         <div id={`comment-${comment.id}`} className={`flex flex-col w-full gap-2 ${depth > 0 ? 'mt-3' : ''} transition-colors duration-1000 rounded-2xl`}>
-            <div className="flex items-start gap-2 relative group">
+            <div className="flex items-start gap-3 relative group">
                 <Link href={`/profile/${comment.user?.username}`} className="flex-shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[1px]">
-                        <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-[#1e293b]">
-                            {comment.user?.avatarUrl ? (
-                                <img
-                                    src={fixUrl(comment.user.avatarUrl)}
-                                    alt={comment.user?.username}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white">
-                                    {(comment.user?.displayName || comment.user?.username)?.[0]?.toUpperCase()}
-                                </div>
-                            )}
-                        </div>
+                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center border border-slate-200 dark:border-white/5" style={{ backgroundImage: comment.user?.avatarUrl ? `url(${fixUrl(comment.user.avatarUrl)})` : undefined }}>
+                        {!comment.user?.avatarUrl && (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400">
+                                {(comment.user?.displayName || comment.user?.username)?.[0]?.toUpperCase()}
+                            </div>
+                        )}
                     </div>
                 </Link>
 
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col gap-1">
                         <div className="w-full min-w-0 relative group/bubble">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <Link href={`/profile/${comment.user?.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline leading-tight">
+                            <div className="flex items-center gap-1.5 mb-0.5 mt-0.5">
+                                <Link href={`/profile/${comment.user?.username}`} className="text-[13px] font-black text-slate-900 dark:text-white hover:underline leading-tight">
                                     {comment.user?.displayName || comment.user?.username}
                                 </Link>
                                 {comment.user?.isVerified && (
-                                    <div className="flex-shrink-0 ml-[1px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1.5px]">
-                                        <Check className="w-[5.5px] h-[5.5px] text-white" strokeWidth={6} />
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
+                                        <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                     </div>
                                 )}
 
