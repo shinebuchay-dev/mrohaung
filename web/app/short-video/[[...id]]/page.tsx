@@ -696,7 +696,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
 
                     {/* File picker */}
                     <div>
-                        <input type="file" id="video-upload" accept="video/mp4,video/mov,video/webm" className="hidden" onChange={handleFileChange} disabled={loading} />
+                        <input type="file" id="video-upload" accept="video/mp4,video/quicktime,video/x-quicktime,video/mov,video/webm,.mov" className="hidden" onChange={handleFileChange} disabled={loading} />
                         <label 
                             htmlFor="video-upload"
                             className="flex flex-col items-center justify-center w-full py-10 cursor-pointer rounded-xl border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-all"
