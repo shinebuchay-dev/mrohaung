@@ -4,8 +4,8 @@ const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const dotenv = require('dotenv');
 const pool = require('../utils/prisma');
 
-// Load environment variables
-dotenv.config();
+// Load environment variables with absolute path to backend/.env
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const R2_CONFIG = {
     region: 'auto',
