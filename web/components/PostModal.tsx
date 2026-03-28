@@ -343,90 +343,77 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 aria-label="Post details"
                 className="bg-white dark:bg-[#0b1120] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
             >
-                {/* Mobile Sticky Header */}
-                <div className="sm:hidden sticky top-0 z-[50] bg-white dark:bg-[#0b1120] px-4 h-[56px] flex items-center justify-between border-b border-slate-100 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }} />
-                        <h2 className="text-[14px] font-black tracking-tight text-slate-900 dark:text-white truncate max-w-[150px]">Post</h2>
+                {/* Unified Sticky Header */}
+                <div className="sticky top-0 z-[100] flex items-center justify-between px-5 py-4 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-xl border-b border-slate-50 dark:border-white/5">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0" onClick={onClose}>
+                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }}>
+                                {!post.author.avatarUrl && <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">{(post.author.displayName || post.author.username)?.[0]?.toUpperCase()}</div>}
+                            </div>
+                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-[#0b1120]" />
+                        </Link>
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-[4px] flex-wrap">
+                                <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[14px] hover:underline underline-offset-2" onClick={onClose}>
+                                    {post.author.displayName || post.author.username}
+                                </Link>
+                                {post.author.isVerified && (
+                                    <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
+                                        <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
+                                <p>{formatTimeRelative(post.createdAt)}</p>
+                                <span className="w-0.5 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                                <span className="text-blue-500/80 uppercase tracking-widest text-[8px]">Public</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
-                    </button>
+
+                    <div className="flex items-center gap-1">
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowMenu(!showMenu)}
+                                className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                            >
+                                <MoreHorizontal className="w-5 h-5" />
+                            </button>
+                            <AnimatePresence>
+                                {showMenu && (
+                                    <>
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -5 }}
+                                            className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-[110] p-1.5"
+                                        >
+                                            {isOwnPost ? (
+                                                <>
+                                                    <button onClick={() => { setShowMenu(false); setIsEditing(true); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg transition-all">
+                                                        <Edit2 className="w-4 h-4 text-slate-400" /> Edit Post
+                                                    </button>
+                                                    <button onClick={() => { setShowMenu(false); handleDelete(); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 text-sm font-bold rounded-lg transition-all">
+                                                        <Trash2 className="w-4 h-4" /> Delete Post
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 text-sm font-bold rounded-lg transition-all">
+                                                    <Flag className="w-4 h-4" /> Report Post
+                                                </button>
+                                            )}
+                                        </motion.div>
+                                        <div className="fixed inset-0 z-[105]" onClick={() => setShowMenu(false)} />
+                                    </>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                        <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-full transition-all">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
-                    {/* Post Header (Author Info) */}
-                    <div className="px-5 pt-5 pb-4 flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                            <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0" onClick={onClose}>
-                                <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }}>
-                                    {!post.author.avatarUrl && <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">{(post.author.displayName || post.author.username)?.[0]?.toUpperCase()}</div>}
-                                </div>
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-[#0b1120]" />
-                            </Link>
-                            <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-[4px] flex-wrap">
-                                    <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[15px] hover:underline underline-offset-2" onClick={onClose}>
-                                        {post.author.displayName || post.author.username}
-                                    </Link>
-                                    {post.author.isVerified && (
-                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
-                                            <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex items-center gap-2 text-[12px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">
-                                    <p>{formatTimeRelative(post.createdAt)}</p>
-                                    <span className="w-0.5 h-0.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-                                    <span className="text-blue-500 opacity-80 uppercase tracking-widest text-[9px]">Public</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-1 -mt-1">
-                            {/* Menu Dropdown */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowMenu(!showMenu)}
-                                    className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
-                                >
-                                    <MoreHorizontal className="w-5 h-5" />
-                                </button>
-                                <AnimatePresence>
-                                    {showMenu && (
-                                        <>
-                                            <motion.div
-                                                initial={{ opacity: 0, scale: 0.95, y: -5 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -5 }}
-                                                className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-[110] p-1.5"
-                                            >
-                                                {isOwnPost ? (
-                                                    <>
-                                                        <button onClick={() => { setShowMenu(false); setIsEditing(true); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-200 text-sm font-bold rounded-lg transition-all">
-                                                            <Edit2 className="w-4 h-4 text-slate-400" /> Edit Post
-                                                        </button>
-                                                        <button onClick={() => { setShowMenu(false); handleDelete(); }} className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 text-sm font-bold rounded-lg transition-all">
-                                                            <Trash2 className="w-4 h-4" /> Delete Post
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <button className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 text-sm font-bold rounded-lg transition-all">
-                                                        <Flag className="w-4 h-4" /> Report Post
-                                                    </button>
-                                                )}
-                                            </motion.div>
-                                            <div className="fixed inset-0 z-[105]" onClick={() => setShowMenu(false)} />
-                                        </>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            {/* Desktop Close Button */}
-                            <button onClick={onClose} className="hidden sm:flex p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
+                <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pt-6">
 
                     {/* Post Body & Details */}
                     <div className="px-5 pb-4">
