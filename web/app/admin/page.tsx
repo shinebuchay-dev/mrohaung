@@ -378,7 +378,7 @@ function OverviewPanel({ loading, overview, recentReports, recentNotifications, 
         { label: 'Posts', value: overview.counts.posts, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
         { label: 'Comm', value: overview.counts.comments, icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         { label: 'Stories', value: overview.counts.stories, icon: Sparkles, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        { label: 'Inbox', value: overview.counts.messages, icon: Mail, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { label: 'Inbox', value: overview.counts.conversations, icon: Mail, color: 'text-rose-500', bg: 'bg-rose-500/10' },
         { label: 'Events', value: overview.counts.notifications, icon: Bell, color: 'text-violet-500', bg: 'bg-violet-500/10' },
     ];
 

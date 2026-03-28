@@ -23,15 +23,16 @@ exports.getOverview = async (req, res) => {
 
         // Fetch counts for all main tables safely
         const [
-            users, posts, comments, stories, messages, notifications, pendingVerifications
+            users, posts, comments, stories, conversations, notifications, pendingVerifications, pendingReports
         ] = await Promise.all([
             fetchCount('SELECT COUNT(*) as count FROM User'),
             fetchCount('SELECT COUNT(*) as count FROM Post'),
             fetchCount('SELECT COUNT(*) as count FROM Comment'),
             fetchCount('SELECT COUNT(*) as count FROM Story'),
-            fetchCount('SELECT COUNT(*) as count FROM Message'),
+            fetchCount('SELECT COUNT(DISTINCT conversationId) as count FROM Message'),
             fetchCount('SELECT COUNT(*) as count FROM Notification'),
-            fetchCount('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"')
+            fetchCount('SELECT COUNT(*) as count FROM VerificationRequest WHERE status = "pending"'),
+            fetchCount('SELECT COUNT(*) as count FROM Report WHERE status = "pending"')
         ]);
 
         // Active today query is complex, wrap separately
@@ -48,6 +49,10 @@ exports.getOverview = async (req, res) => {
                     SELECT userId FROM Comment WHERE createdAt > NOW() - INTERVAL 1 DAY
                     UNION ALL
                     SELECT authorId as userId FROM ShortVideo WHERE createdAt > NOW() - INTERVAL 1 DAY
+                    UNION ALL
+                    SELECT userId FROM \`Like\` WHERE id IS NOT NULL -- Likes don't always have createdAt, use ID presence
+                    UNION ALL
+                    SELECT userId FROM StoryView WHERE viewedAt > NOW() - INTERVAL 1 DAY
                 ) as ActiveUsers
             `);
             activeToday = parseInt(rows[0]?.count || 0);
@@ -76,9 +81,10 @@ exports.getOverview = async (req, res) => {
                 posts,
                 comments,
                 stories,
-                messages,
+                conversations,
                 notifications,
                 pendingVerifications,
+                pendingReports,
                 activeToday
             },
             recentReports
@@ -88,7 +94,7 @@ exports.getOverview = async (req, res) => {
         // Last line of defense: Return zeros instead of 500
         res.json({
             counts: {
-                users: 0, posts: 0, comments: 0, stories: 0, messages: 0, notifications: 0, pendingVerifications: 0, activeToday: 0
+                users: 0, posts: 0, comments: 0, stories: 0, conversations: 0, notifications: 0, pendingVerifications: 0, pendingReports: 0, activeToday: 0
             }
         });
     }
