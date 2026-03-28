@@ -1,11 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const dotenv = require('dotenv');
-const pool = require('../utils/prisma');
 
-// Load environment variables with absolute path to backend/.env
+// Load environment variables IMMEDIATELY before other local requires
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const pool = require('../utils/prisma');
 
 const R2_CONFIG = {
     region: 'auto',
