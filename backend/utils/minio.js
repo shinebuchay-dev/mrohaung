@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const pool = require('./prisma');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 // Cloudflare R2 Client Initialization
 const s3Client = process.env.R2_ACCESS_KEY_ID ? new S3Client({
@@ -76,4 +76,31 @@ const uploadFile = async (fileBuffer, originalName, mimeType, userId = 'guest', 
     }
 };
 
-module.exports = { initBucket, uploadFile, minioClient: s3Client, bucketName: process.env.R2_BUCKET_NAME };
+
+// Delete a file from R2 by its public URL
+const deleteFile = async (publicUrl) => {
+    if (!s3Client) {
+        console.warn('⚠️ R2 not configured, skipping file deletion.');
+        return;
+    }
+    try {
+        const base = R2_PUBLIC_BASE.replace(/\/$/, '');
+        // Extract the key: everything after the base URL
+        const key = publicUrl.replace(`${base}/`, '');
+        if (!key || key === publicUrl) {
+            console.warn('⚠️ Could not extract R2 key from URL:', publicUrl);
+            return;
+        }
+        const bucketName = process.env.R2_BUCKET_NAME || 'mrohaung-media';
+        await s3Client.send(new DeleteObjectCommand({
+            Bucket: bucketName,
+            Key: key,
+        }));
+        console.log(`[R2] Deleted: ${key}`);
+    } catch (err) {
+        // Log but don't throw — DB record deletion should still proceed
+        console.error('[R2] Failed to delete file:', err.message);
+    }
+};
+
+module.exports = { initBucket, uploadFile, deleteFile, minioClient: s3Client, bucketName: process.env.R2_BUCKET_NAME };

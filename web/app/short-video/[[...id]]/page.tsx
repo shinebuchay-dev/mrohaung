@@ -47,6 +47,10 @@ export default function ShortVideoPage() {
     // Modals
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [commentVideoId, setCommentVideoId] = useState<string | null>(null);
+    const [showOptions, setShowOptions] = useState(false);
+
+    const activeVideo = videos.find(v => v.id === activeVideoId) || null;
+    const isOwner = user && activeVideo && (user.id === activeVideo.author.id || user.username === activeVideo.author.username);
 
     useEffect(() => {
         fetchFeed();
@@ -125,27 +129,74 @@ export default function ShortVideoPage() {
             {/* MAIN VIDEO AREA */}
             <div className="flex-1 min-w-0 relative h-full flex justify-center overflow-visible">
 
-                {/* DYNAMIC LEFT ACTION COLUMN (Arrows + Upload) */}
-                <div className="hidden lg:flex flex-col gap-4 absolute bottom-6 z-50 pointer-events-auto items-center"
+                {/* DYNAMIC LEFT ACTION COLUMN: ... options at top, Upload + Arrows at bottom */}
+                <div className="hidden lg:flex flex-col items-center absolute inset-y-0 z-50 pointer-events-auto justify-between pb-6"
                      style={{ left: "calc(50% - ((100vh - 96px) * 9 / 32) - 64px)" }}>
-                    
-                    {/* Add NEW Floating Upload Button HERE directly above the UP arrow */}
-                    {user && (
-                        <button
-                            onClick={() => setIsUploadOpen(true)}
-                            className="w-10 h-10 mb-4 bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-blue-500 hover:scale-110 active:scale-95 shadow-sm border border-blue-500/30"
-                            title="Upload Short Video"
-                        >
-                            <Plus className="w-5 h-5 stroke-[2.5]" />
-                        </button>
-                    )}
 
-                    <button onClick={handleScrollUp} className="w-10 h-10 bg-black/5 hover:bg-black/10 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-slate-500 dark:text-slate-400 hover:text-blue-500 shadow-sm border border-slate-200/30 dark:border-white/5">
-                        <ChevronUp className="w-5 h-5 stroke-[2.5]" />
-                    </button>
-                    <button onClick={handleScrollDown} className="w-10 h-10 bg-black/5 hover:bg-black/10 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-slate-500 dark:text-slate-400 hover:text-blue-500 shadow-sm border border-slate-200/30 dark:border-white/5">
-                        <ChevronDown className="w-5 h-5 stroke-[2.5]" />
-                    </button>
+                    {/* ⋯ Options button — top of column, same size as arrows */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowOptions(v => !v)}
+                            className="w-10 h-10 bg-black/5 hover:bg-black/10 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-slate-500 dark:text-slate-400 hover:text-blue-500 shadow-sm border border-slate-200/30 dark:border-white/5"
+                            title="Options"
+                        >
+                            <MoreVertical className="w-5 h-5 stroke-[2]" />
+                        </button>
+                        <AnimatePresence>
+                            {showOptions && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.92, y: -4 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.92, y: -4 }}
+                                    transition={{ duration: 0.12 }}
+                                    className="absolute left-0 top-12 w-44 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-white/10 overflow-hidden z-50"
+                                >
+                                    {isOwner && activeVideo && (
+                                        <button
+                                            onClick={async () => {
+                                                if (!confirm('Delete this short video?')) return;
+                                                try {
+                                                    await api.delete(`/short-videos/${activeVideo.id}`);
+                                                    window.location.reload();
+                                                } catch { alert('Failed to delete.'); }
+                                                setShowOptions(false);
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete Video
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => { alert('Report feature coming soon.'); setShowOptions(false); }}
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                                    >
+                                        <Flag className="w-4 h-4" />
+                                        Report
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Arrows + Upload at bottom */}
+                    <div className="flex flex-col items-center gap-4">
+                        {user && (
+                            <button
+                                onClick={() => setIsUploadOpen(true)}
+                                className="w-10 h-10 bg-blue-500/10 hover:bg-blue-500/20 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-blue-500 hover:scale-110 active:scale-95 shadow-sm border border-blue-500/30"
+                                title="Upload Short Video"
+                            >
+                                <Plus className="w-5 h-5 stroke-[2.5]" />
+                            </button>
+                        )}
+                        <button onClick={handleScrollUp} className="w-10 h-10 bg-black/5 hover:bg-black/10 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-slate-500 dark:text-slate-400 hover:text-blue-500 shadow-sm border border-slate-200/30 dark:border-white/5">
+                            <ChevronUp className="w-5 h-5 stroke-[2.5]" />
+                        </button>
+                        <button onClick={handleScrollDown} className="w-10 h-10 bg-black/5 hover:bg-black/10 dark:bg-slate-800/50 dark:hover:bg-slate-700/50 backdrop-blur-md rounded-full flex items-center justify-center transition-all text-slate-500 dark:text-slate-400 hover:text-blue-500 shadow-sm border border-slate-200/30 dark:border-white/5">
+                            <ChevronDown className="w-5 h-5 stroke-[2.5]" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* FEED CONTAINER (100% height, full width container but items inside will size themselves) */}
@@ -247,9 +298,6 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [likeData, setLikeData] = useState({ isLiked: video.isLiked, count: video.likeCount });
-    const [showOptions, setShowOptions] = useState(false);
-    const { user, requireAuth } = useAuth();
-    const isOwner = user?.id === video.author.id || user?.username === video.author.username;
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -334,56 +382,6 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
         // The outer snap container is exactly 100% height of the scroll port. No padding so it's a perfect fit.
         <div ref={containerRef} className="h-full w-full snap-start snap-always relative flex items-center justify-center p-0">
 
-            {/* ⋯ Top-left options button — outside the video, left side */}
-            <div className="hidden md:block absolute z-30"
-                 style={{ left: 'calc(50% - ((100vh - 96px) * 9 / 32) - 52px)', top: '24px' }}>
-                <div className="relative">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); setShowOptions(v => !v); }}
-                        className="w-9 h-9 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 dark:bg-white/5 dark:hover:bg-white/10 backdrop-blur-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200/30 dark:border-white/10"
-                        title="Options"
-                    >
-                        <MoreVertical className="w-4 h-4" />
-                    </button>
-                    {/* Dropdown */}
-                    <AnimatePresence>
-                        {showOptions && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.92, y: -4 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.92, y: -4 }}
-                                transition={{ duration: 0.12 }}
-                                className="absolute left-0 top-11 w-44 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-white/10 overflow-hidden z-50"
-                            >
-                                {isOwner && (
-                                    <button
-                                        onClick={async (e) => {
-                                            e.stopPropagation();
-                                            if (!confirm('Delete this short video?')) return;
-                                            try {
-                                                await api.delete(`/short-videos/${video.id}`);
-                                                window.location.reload();
-                                            } catch { alert('Failed to delete.'); }
-                                            setShowOptions(false);
-                                        }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete Video
-                                    </button>
-                                )}
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); alert('Report feature coming soon.'); setShowOptions(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
-                                >
-                                    <Flag className="w-4 h-4" />
-                                    Report
-                                </button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
 
             {/* Strict 9:16 aspect ratio layout scaling correctly with height */}
             <div className="relative w-full h-full md:w-auto md:aspect-[9/16]">
@@ -617,10 +615,27 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const MAX_DURATION_SECONDS = 120; // 2 minutes
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            setFile(e.target.files[0]);
-        }
+        const selected = e.target.files?.[0];
+        if (!selected) return;
+
+        // Check duration using a temporary video element
+        const tempVideo = document.createElement('video');
+        tempVideo.preload = 'metadata';
+        tempVideo.src = URL.createObjectURL(selected);
+        tempVideo.onloadedmetadata = () => {
+            URL.revokeObjectURL(tempVideo.src);
+            if (tempVideo.duration > MAX_DURATION_SECONDS) {
+                setError(`Video is too long (${Math.round(tempVideo.duration)}s). Maximum is 2 minutes (120s).`);
+                setFile(null);
+                e.target.value = '';
+            } else {
+                setError('');
+                setFile(selected);
+            }
+        };
     };
 
     const handleUpload = async () => {
@@ -648,86 +663,100 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={!loading ? onClose : undefined}
-                className="absolute inset-0 bg-white/80 dark:bg-[#0f172a]/90 backdrop-blur-xl"
+                className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
             />
 
             <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
-                animate={{ opacity: 1, y: 0 }} 
-                exit={{ opacity: 0, y: 20 }}
-                className="relative w-full h-full md:h-auto max-w-lg bg-transparent flex flex-col p-6 md:p-8"
+                initial={{ opacity: 0, y: 20, scale: 0.97 }} 
+                animate={{ opacity: 1, y: 0, scale: 1 }} 
+                exit={{ opacity: 0, y: 20, scale: 0.97 }}
+                className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col p-6 md:p-8 max-h-[90vh] overflow-y-auto"
             >
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">New Video</h2>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">New Short Video</h2>
                     <button 
                         onClick={onClose} 
                         disabled={loading}
-                        className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="flex-1 space-y-8 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-24 md:pb-0">
+                <div className="space-y-6">
                     {error && (
-                        <p className="text-red-500 font-bold text-sm bg-transparent">{error}</p>
+                        <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+                            <p className="text-red-500 font-semibold text-sm">{error}</p>
+                        </div>
                     )}
 
+                    {/* File picker */}
                     <div>
                         <input type="file" id="video-upload" accept="video/mp4,video/mov,video/webm" className="hidden" onChange={handleFileChange} disabled={loading} />
                         <label 
                             htmlFor="video-upload"
-                            className="flex flex-col items-center justify-center w-full py-12 cursor-pointer transition-all hover:opacity-70"
+                            className="flex flex-col items-center justify-center w-full py-10 cursor-pointer rounded-xl border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-all"
                         >
                             {file ? (
                                 <div className="text-center">
                                     <Play className="w-10 h-10 fill-blue-500 text-blue-500 mx-auto mb-2" />
-                                    <p className="text-slate-800 dark:text-white font-bold text-lg">{file.name}</p>
+                                    <p className="text-slate-800 dark:text-white font-bold text-base px-4 line-clamp-1">{file.name}</p>
+                                    <p className="text-slate-400 text-xs mt-1">Click to change</p>
                                 </div>
                             ) : (
                                 <div className="text-center">
                                     <UploadCloud className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                                    <p className="text-slate-400 dark:text-slate-500 font-bold text-lg">Select video</p>
+                                    <p className="text-slate-500 dark:text-slate-400 font-semibold text-base">Select video</p>
+                                    <p className="text-slate-400 dark:text-slate-600 text-xs mt-1">MP4, MOV, WebM · max 2 minutes</p>
                                 </div>
                             )}
                         </label>
                     </div>
 
-                    <div className="space-y-6">
-                        <div>
-                            <input
-                                type="text"
-                                placeholder="Title"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                disabled={loading}
-                                className="w-full bg-transparent border-none outline-none text-2xl font-bold text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-700 focus:ring-0 p-0 disabled:opacity-50"
-                            />
-                        </div>
-                        <div>
-                            <textarea
-                                placeholder="Description (Optional)"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                disabled={loading}
-                                rows={2}
-                                className="w-full bg-transparent border-none outline-none text-base font-medium text-slate-600 dark:text-slate-400 placeholder-slate-300 dark:placeholder-slate-700 focus:ring-0 p-0 disabled:opacity-50 resize-none"
-                            />
-                        </div>
+                    {/* Title */}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Title <span className="text-red-400">*</span></label>
+                        <input
+                            type="text"
+                            placeholder="Give your video a title..."
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            disabled={loading}
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-base font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50"
+                        />
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Description <span className="text-slate-300">(Optional)</span></label>
+                        <textarea
+                            placeholder="Add a description..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            disabled={loading}
+                            rows={3}
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-medium text-slate-600 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all disabled:opacity-50 resize-none"
+                        />
                     </div>
                 </div>
 
-                <div className="mt-auto pt-6">
+                {/* Submit */}
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5">
                     <button
                         onClick={handleUpload}
                         disabled={loading || !file || !title.trim()}
-                        className="w-full text-center text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 disabled:text-slate-300 dark:disabled:text-slate-700 font-black text-lg transition-colors py-4 uppercase tracking-widest disabled:cursor-not-allowed"
+                        className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 dark:disabled:bg-white/5 text-white disabled:text-slate-400 dark:disabled:text-slate-600 font-bold text-sm py-3.5 rounded-xl transition-all disabled:cursor-not-allowed tracking-wide"
                     >
-                        {loading ? 'Publishing...' : 'Publish'}
+                        {loading ? (
+                            <span className="flex items-center justify-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Publishing...
+                            </span>
+                        ) : 'Publish Video'}
                     </button>
                 </div>
             </motion.div>

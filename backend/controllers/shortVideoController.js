@@ -1,5 +1,5 @@
 const pool = require('../utils/prisma');
-const { uploadFile } = require('../utils/minio');
+const { uploadFile, deleteFile } = require('../utils/minio');
 const { v4: uuidv4 } = require('uuid');
 
 // ── GET /api/short-videos/feed ──────────────────────────────────────────────
@@ -236,11 +236,17 @@ exports.deleteVideo = async (req, res) => {
         const userId = req.userId;
 
         const [[video]] = await pool.execute(
-            'SELECT authorId FROM ShortVideo WHERE id = ?', [id]
+            'SELECT authorId, videoUrl FROM ShortVideo WHERE id = ?', [id]
         );
         if (!video) return res.status(404).json({ message: 'Video not found' });
         if (video.authorId !== userId) return res.status(403).json({ message: 'Forbidden' });
 
+        // Delete video file from Cloudflare R2 (non-blocking — DB deletion proceeds even if R2 fails)
+        if (video.videoUrl) {
+            await deleteFile(video.videoUrl);
+        }
+
+        // Delete from DB
         await pool.execute('DELETE FROM ShortVideoLike WHERE videoId = ?', [id]);
         await pool.execute('DELETE FROM ShortVideoComment WHERE videoId = ?', [id]);
         await pool.execute('DELETE FROM ShortVideo WHERE id = ?', [id]);
