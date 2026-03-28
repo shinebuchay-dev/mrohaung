@@ -8,7 +8,7 @@ import {
     Image as ImageIcon, MoreVertical, MessageCircle,
     Star, Check, X, ShieldAlert,
     Share2, Mail, Edit2, Clock, Camera,
-    Phone, Video
+    Phone, Video, Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
@@ -50,10 +50,11 @@ export default function ProfilePageContent() {
 
     const [user, setUser] = useState<User | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
+    const [shortVideos, setShortVideos] = useState<any[]>([]);
     const [friends, setFriends] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isOwnProfile, setIsOwnProfile] = useState(false);
-    const [activeTab, setActiveTab] = useState<'posts' | 'friends' | 'about'>('posts');
+    const [activeTab, setActiveTab] = useState<'posts' | 'friends' | 'about' | 'shorts'>('posts');
     const [showEditModal, setShowEditModal] = useState(false);
     const [friendStatus, setFriendStatus] = useState<'none' | 'pending' | 'incoming' | 'friends'>('none');
     const [friendRequestId, setFriendRequestId] = useState<string>('');
@@ -144,14 +145,19 @@ export default function ProfilePageContent() {
                 }
             }
             if (!slug) slug = currentUser?.username;
+            
+            // Clean slug of @ prefix if present
+            if (slug && slug.startsWith('@')) slug = slug.substring(1);
             if (!slug) { setLoading(false); return; }
             setIsOwnProfile(slug === currentUser?.username);
-            const [profileRes, postsRes] = await Promise.all([
+            const [profileRes, postsRes, shortsRes] = await Promise.all([
                 api.get(`/profile/${slug}`),
-                api.get(`/posts/user/${slug}`)
+                api.get(`/posts/user/${slug}`),
+                api.get(`/short-videos/user/${slug}`).catch(() => ({ data: { videos: [] } }))
             ]);
             setUser(profileRes.data);
             setPosts(postsRes.data);
+            setShortVideos(shortsRes.data.videos || []);
 
             if (urlPostId) {
                 try {
@@ -472,6 +478,7 @@ export default function ProfilePageContent() {
             <div className="flex items-center gap-1 border-b border-slate-100 dark:border-white/5 mt-0 px-4">
                 {[
                     { id: 'posts', label: 'Timeline' },
+                    { id: 'shorts', label: 'Shorts' },
                     { id: 'friends', label: 'Friends' },
                     { id: 'about', label: 'About' }
                 ].map(tab => (
@@ -529,6 +536,44 @@ export default function ProfilePageContent() {
                                     <p className="text-sm font-semibold text-slate-500">No posts yet</p>
                                     <p className="text-xs text-slate-400 mt-1">
                                         {isOwnProfile ? "Share something!" : `${user.username} hasn't posted yet.`}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Shorts */}
+                    {activeTab === 'shorts' && (
+                        <div className="mt-4">
+                            {shortVideos.length > 0 ? (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {shortVideos.map(video => (
+                                        <Link 
+                                            key={video.id} 
+                                            href={`/short-video/${video.id}`}
+                                            className="group relative aspect-[9/16] bg-slate-900 rounded-xl overflow-hidden block"
+                                        >
+                                            <video 
+                                                src={fixUrl(video.videoUrl)} 
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                                            />
+                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 flex items-end">
+                                                <div className="flex items-center gap-1.5 text-white">
+                                                    <Play className="w-4 h-4 fill-white" />
+                                                    <span className="text-xs font-bold">{video.views || 0}</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="py-16 text-center">
+                                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <Video className="w-5 h-5 text-slate-400" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-500">No shorts yet</p>
+                                    <p className="text-xs text-slate-400 mt-1">
+                                        {isOwnProfile ? "Upload short videos to see them here!" : `${user.username} hasn't uploaded any shorts yet.`}
                                     </p>
                                 </div>
                             )}

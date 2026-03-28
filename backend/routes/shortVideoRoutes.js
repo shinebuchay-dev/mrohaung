@@ -20,14 +20,21 @@ const upload = multer({
 // Feed (public with optional auth)
 router.get('/feed', optionalAuth, ctrl.getFeed);
 
+// User videos (public with optional auth) — MUST be before /:id to avoid wildcard capture
+router.get('/user/:username', optionalAuth, ctrl.getUserVideos);
+
+// Single video — generic wildcard, must come after all specific routes
+router.get('/:id', optionalAuth, ctrl.getOne);
+
 // Upload
 router.post('/', authMiddleware, upload.single('video'), ctrl.upload);
 
-// Single video
-router.get('/:id', optionalAuth, ctrl.getOne);
-
 // Like / Unlike
 router.post('/:id/like', authMiddleware, ctrl.toggleLike);
+
+// Comments
+router.get('/:id/comments', optionalAuth, ctrl.getComments);
+router.post('/:id/comments', authMiddleware, ctrl.addComment);
 
 // Delete
 router.delete('/:id', authMiddleware, ctrl.deleteVideo);

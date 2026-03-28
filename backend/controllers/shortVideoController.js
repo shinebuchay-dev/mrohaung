@@ -15,17 +15,15 @@ exports.getFeed = async (req, res) => {
                 sv.id, sv.title, sv.description, sv.videoUrl, sv.thumbnailUrl,
                 sv.duration, sv.views, sv.createdAt,
                 u.id as authorId, u.username, u.displayName, u.avatarUrl, u.isVerified,
-                COUNT(DISTINCT svl.id) as likeCount,
-                ${userId ? 'MAX(CASE WHEN svl2.userId = ? THEN 1 ELSE 0 END) as isLiked' : '0 as isLiked'}
+                (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                ${userId ? 'IF((SELECT 1 FROM ShortVideoLike WHERE videoId = sv.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'}
              FROM ShortVideo sv
              JOIN User u ON sv.authorId = u.id
-             LEFT JOIN ShortVideoLike svl ON sv.id = svl.videoId
-             ${userId ? 'LEFT JOIN ShortVideoLike svl2 ON sv.id = svl2.videoId AND svl2.userId = ?' : ''}
-             GROUP BY sv.id
              ORDER BY sv.createdAt DESC
              LIMIT ? OFFSET ?`,
             userId
-                ? [userId, userId, limit, offset]
+                ? [userId, limit, offset]
                 : [limit, offset]
         );
 
@@ -37,6 +35,7 @@ exports.getFeed = async (req, res) => {
             videos: videos.map(v => ({
                 ...v,
                 likeCount: parseInt(v.likeCount || 0),
+                commentCount: parseInt(v.commentCount || 0),
                 isLiked: !!v.isLiked,
                 author: {
                     id: v.authorId,
@@ -56,6 +55,62 @@ exports.getFeed = async (req, res) => {
     }
 };
 
+// ── GET /api/short-videos/user/:username ────────────────────────────────────
+exports.getUserVideos = async (req, res) => {
+    try {
+        let { username } = req.params;
+        const page   = Math.max(1, parseInt(req.query.page)  || 1);
+        const limit  = Math.min(50, parseInt(req.query.limit) || 12);
+        const offset = (page - 1) * limit;
+        const userId = req.userId || null;
+
+        // Handle @ prefix if present
+        if (username.startsWith('@')) username = username.substring(1);
+
+        const [[targetUser]] = await pool.execute('SELECT id FROM User WHERE username = ?', [username]);
+        if (!targetUser) return res.status(404).json({ message: 'User not found' });
+
+        const [videos] = await pool.query(
+            `SELECT
+                sv.id, sv.title, sv.description, sv.videoUrl, sv.thumbnailUrl,
+                sv.duration, sv.views, sv.createdAt,
+                u.id as authorId, u.username, u.displayName, u.avatarUrl, u.isVerified,
+                (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                ${userId ? 'IF((SELECT 1 FROM ShortVideoLike WHERE videoId = sv.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'}
+             FROM ShortVideo sv
+             JOIN User u ON sv.authorId = u.id
+             WHERE sv.authorId = ?
+             ORDER BY sv.createdAt DESC
+             LIMIT ? OFFSET ?`,
+            userId
+                ? [userId, targetUser.id, limit, offset]
+                : [targetUser.id, limit, offset]
+        );
+
+        res.json({
+            videos: videos.map(v => ({
+                ...v,
+                likeCount: parseInt(v.likeCount || 0),
+                commentCount: parseInt(v.commentCount || 0),
+                isLiked: !!v.isLiked,
+                author: {
+                    id: v.authorId,
+                    username: v.username,
+                    displayName: v.displayName,
+                    avatarUrl: v.avatarUrl,
+                    isVerified: !!v.isVerified
+                }
+            })),
+            page,
+            limit
+        });
+    } catch (err) {
+        console.error('[ShortVideo] getUserVideos error:', err);
+        res.status(500).json({ message: 'Failed to load user videos' });
+    }
+};
+
 // ── GET /api/short-videos/:id ────────────────────────────────────────────────
 exports.getOne = async (req, res) => {
     try {
@@ -67,13 +122,13 @@ exports.getOne = async (req, res) => {
                 sv.id, sv.title, sv.description, sv.videoUrl, sv.thumbnailUrl,
                 sv.duration, sv.views, sv.createdAt,
                 u.id as authorId, u.username, u.displayName, u.avatarUrl, u.isVerified,
-                COUNT(DISTINCT svl.id) as likeCount
+                (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                ${userId ? 'IF((SELECT 1 FROM ShortVideoLike WHERE videoId = sv.id AND userId = ? LIMIT 1), 1, 0) as isLiked' : '0 as isLiked'}
              FROM ShortVideo sv
              JOIN User u ON sv.authorId = u.id
-             LEFT JOIN ShortVideoLike svl ON sv.id = svl.videoId
-             WHERE sv.id = ?
-             GROUP BY sv.id`,
-            [id]
+             WHERE sv.id = ?`,
+            userId ? [userId, id] : [id]
         );
 
         if (!video) return res.status(404).json({ message: 'Video not found' });
@@ -83,18 +138,11 @@ exports.getOne = async (req, res) => {
             'UPDATE ShortVideo SET views = views + 1 WHERE id = ?', [id]
         );
 
-        let isLiked = false;
-        if (userId) {
-            const [[like]] = await pool.execute(
-                'SELECT 1 FROM ShortVideoLike WHERE videoId = ? AND userId = ?', [id, userId]
-            );
-            isLiked = !!like;
-        }
-
         res.json({
             ...video,
             likeCount: parseInt(video.likeCount || 0),
-            isLiked,
+            commentCount: parseInt(video.commentCount || 0),
+            isLiked: !!video.isLiked,
             author: {
                 id: video.authorId,
                 username: video.username,
@@ -194,11 +242,63 @@ exports.deleteVideo = async (req, res) => {
         if (video.authorId !== userId) return res.status(403).json({ message: 'Forbidden' });
 
         await pool.execute('DELETE FROM ShortVideoLike WHERE videoId = ?', [id]);
+        await pool.execute('DELETE FROM ShortVideoComment WHERE videoId = ?', [id]);
         await pool.execute('DELETE FROM ShortVideo WHERE id = ?', [id]);
 
         res.json({ success: true });
     } catch (err) {
         console.error('[ShortVideo] deleteVideo error:', err);
         res.status(500).json({ message: 'Failed to delete video' });
+    }
+};
+
+// ── GET /api/short-videos/:id/comments ──────────────────────────────────────
+exports.getComments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [comments] = await pool.query(
+            `SELECT svc.*, u.username, u.displayName, u.avatarUrl
+             FROM ShortVideoComment svc
+             JOIN User u ON svc.userId = u.id
+             WHERE svc.videoId = ?
+             ORDER BY svc.createdAt DESC`,
+            [id]
+        );
+        res.json(comments);
+    } catch (err) {
+        console.error('[ShortVideo] getComments error:', err);
+        res.status(500).json({ message: 'Failed to load comments' });
+    }
+};
+
+// ── POST /api/short-videos/:id/comments ─────────────────────────────────────
+exports.addComment = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+        const { content } = req.body;
+
+        if (!content || !content.trim()) {
+            return res.status(400).json({ message: 'Comment content is required' });
+        }
+
+        const commentId = uuidv4();
+        await pool.execute(
+            'INSERT INTO ShortVideoComment (id, videoId, userId, content) VALUES (?, ?, ?, ?)',
+            [commentId, id, userId, content.trim()]
+        );
+
+        const [[comment]] = await pool.execute(
+            `SELECT svc.*, u.username, u.displayName, u.avatarUrl
+             FROM ShortVideoComment svc
+             JOIN User u ON svc.userId = u.id
+             WHERE svc.id = ?`,
+            [commentId]
+        );
+
+        res.status(201).json(comment);
+    } catch (err) {
+        console.error('[ShortVideo] addComment error:', err);
+        res.status(500).json({ message: 'Failed to add comment' });
     }
 };

@@ -70,7 +70,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         const checkDeepLink = async () => {
             const pathParts = pathname?.split('/').filter(Boolean) || [];
-            const reserved = ['login', 'register', 'admin', 'friends', 'messages', 'settings', 'terms', 'privacy', 'profile', 'api', '_next'];
+            const reserved = ['login', 'register', 'admin', 'friends', 'messages', 'settings', 'terms', 'privacy', 'profile', 'api', '_next', 'short-video', 'short-videos'];
 
             // Pattern: /username/postId
             if (pathParts.length === 2 && !reserved.includes(pathParts[0])) {
@@ -104,7 +104,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             const items = [
                 { href: '/', label: 'News', icon: Home },
-                { href: '/short-video', label: 'Short Video', icon: Play, protected: true },
+                { href: '/short-video', label: 'Short Video', icon: Play, protected: false },
                 { href: '/friends', label: 'Friends', icon: Users, protected: true },
             ];
 
