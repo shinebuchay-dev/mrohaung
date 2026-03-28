@@ -10,6 +10,7 @@ import PostModal from '@/components/PostModal';
 import StoriesBar from '@/components/StoriesBar';
 import FriendSuggestions from '@/components/FriendSuggestions';
 import SearchBar from '@/components/SearchBar';
+import ShortsShelf from '@/components/ShortsShelf';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { useSocket } from '@/lib/socket';
@@ -177,6 +178,7 @@ function FeedContent() {
       )}
 
       {currentUser && <StoriesBar />}
+      {currentUser && <ShortsShelf />}
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
         <section className="min-w-0">
