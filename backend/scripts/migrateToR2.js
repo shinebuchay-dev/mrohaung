@@ -101,14 +101,15 @@ async function updateDatabaseUrls(oldPart, newUrl) {
     await pool.execute('UPDATE User SET avatarUrl = ? WHERE avatarUrl LIKE ?', [newUrl, oldLikeMatch]);
     await pool.execute('UPDATE User SET coverUrl = ? WHERE coverUrl LIKE ?', [newUrl, oldLikeMatch]);
     
-    // Update Comment images
-    await pool.execute('UPDATE Comment SET imageUrl = ? WHERE imageUrl LIKE ?', [newUrl, oldLikeMatch]);
+    // Update Comment media (audio/stickers)
+    await pool.execute('UPDATE Comment SET audioUrl = ? WHERE audioUrl LIKE ?', [newUrl, oldLikeMatch]);
+    await pool.execute('UPDATE Comment SET stickerUrl = ? WHERE stickerUrl LIKE ?', [newUrl, oldLikeMatch]);
     
-    // Update Story images/videos
-    await pool.execute('UPDATE Story SET url = ? WHERE url LIKE ?', [newUrl, oldLikeMatch]);
+    // Update Story media (mediaUrl)
+    await pool.execute('UPDATE Story SET mediaUrl = ? WHERE mediaUrl LIKE ?', [newUrl, oldLikeMatch]);
 
-    // Update Message attachments
-    await pool.execute('UPDATE Message SET attachmentUrl = ? WHERE attachmentUrl LIKE ?', [newUrl, oldLikeMatch]);
+    // Update Message attachments (imageUrl)
+    await pool.execute('UPDATE Message SET imageUrl = ? WHERE imageUrl LIKE ?', [newUrl, oldLikeMatch]);
 }
 
 function getMimeType(filename) {
