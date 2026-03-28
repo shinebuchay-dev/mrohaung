@@ -346,7 +346,7 @@ exports.handleVerificationAction = async (req, res) => {
         // Send notification
         const io = req.app.get('io');
         const msg = action === 'approved' 
-            ? 'Your verification request has been approved! You now have a blue badge.' 
+            ? 'Your verification request has been approved! You now have a Royal Gold badge.' 
             : 'Your verification request has been rejected.';
         
         await sendNotification(io, request.userId, {

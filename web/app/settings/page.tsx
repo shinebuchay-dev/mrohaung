@@ -297,13 +297,13 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             ) : verificationStatus?.isVerified ? (
-                                <div className="bg-green-50 dark:bg-green-500/10 p-5 rounded-2xl border border-green-100 dark:border-green-500/20 flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/20">
+                                <div className="bg-amber-50 dark:bg-amber-500/10 p-5 rounded-2xl border border-amber-100 dark:border-amber-500/20 flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-amber-500/20">
                                         <Check className="w-7 h-7 font-black" />
                                     </div>
                                     <div>
-                                        <p className="font-black text-green-700 dark:text-green-400 text-lg">Account Verified</p>
-                                        <p className="text-sm text-green-600 dark:text-green-500 mt-0.5 font-medium">Your account has been successfully verified. You now have a blue badge on your profile.</p>
+                                        <p className="font-black text-amber-700 dark:text-amber-400 text-lg">Account Verified</p>
+                                        <p className="text-sm text-amber-600 dark:text-amber-500 mt-0.5 font-medium">Your account has been successfully verified. You now have a Royal Gold badge on your profile.</p>
                                     </div>
                                 </div>
                             ) : verificationStatus?.request?.status === 'rejected' ? (
@@ -355,9 +355,9 @@ export default function SettingsPage() {
                                 </div>
                             ) : (
                                 <div>
-                                    <p className="font-bold text-slate-900 dark:text-white mb-1">Apply for Blue Badge</p>
+                                    <p className="font-bold text-slate-900 dark:text-white mb-1">Apply for Royal Gold Badge</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                                        Verified accounts have a blue badge next to their names to show that the account is the authentic presence of the public figure, celebrity, or brand it represents.
+                                        Verified accounts have a Royal Gold badge next to their names to show that the account is the authentic presence of the public figure, celebrity, or brand it represents.
                                     </p>
                                     <button
                                         onClick={() => setShowVerifyForm(true)}
