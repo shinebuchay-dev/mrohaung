@@ -381,15 +381,15 @@ function OverviewPanel({ loading, overview, recentVerifications, recentNotificat
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Horizontal Compact Stats - High Density */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+            {/* Horizontal Compact Stats - Vertical Info + Right Value */}
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
                 {stats.map((s) => (
                     <div key={s.label} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 rounded-2xl p-3 flex items-center justify-between hover:border-blue-500/30 transition-all group shadow-sm">
-                        <div className="flex items-center gap-2.5">
-                            <div className={`w-8 h-8 ${s.bg} rounded-xl flex items-center justify-center ${s.color} shrink-0`}>
-                                <s.icon className="w-4 h-4" />
+                        <div className="flex flex-col gap-1.5">
+                            <div className={`w-7 h-7 ${s.bg} rounded-lg flex items-center justify-center ${s.color}`}>
+                                <s.icon className="w-3.5 h-3.5" />
                             </div>
-                            <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">{s.label}</div>
+                            <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">{s.label}</div>
                         </div>
                         <div className="text-lg font-black text-slate-900 dark:text-white tabular-nums">{s.value.toLocaleString()}</div>
                     </div>
