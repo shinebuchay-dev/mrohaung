@@ -40,14 +40,17 @@ exports.apply = async (req, res) => {
         }
 
         const id = uuidv4();
+        const smtpPassword = crypto.randomBytes(10).toString('base64').replace(/[+/=]/g, '').substring(0, 14) + '!1';
+        const notes = 'Auto-approved by system. Admin must create this mailbox in Hostinger with the generated password.';
+
         await pool.execute(
-            'INSERT INTO EmailApplication (id, userId, emailPrefix, fullEmail, status) VALUES (?, ?, ?, ?, ?)',
-            [id, userId, emailPrefix, fullEmail, 'pending']
+            'INSERT INTO EmailApplication (id, userId, emailPrefix, fullEmail, status, smtpPassword, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [id, userId, emailPrefix, fullEmail, 'approved', smtpPassword, notes]
         );
 
         res.status(201).json({
             success: true,
-            application: { id, emailPrefix, fullEmail, status: 'pending' }
+            application: { id, emailPrefix, fullEmail, status: 'approved', smtpPassword, notes }
         });
     } catch (err) {
         console.error('[EmailApp] apply error:', err);

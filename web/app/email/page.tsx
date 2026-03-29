@@ -100,14 +100,14 @@ export default function EmailPage() {
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white mb-1">Get your own @mrohaung.com email</p>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                                            Apply for a personal <span className="font-bold text-indigo-500">you@mrohaung.com</span> email address.
-                                            After admin approval, you will receive SMTP credentials to use with any mail client (Outlook, Gmail app, Apple Mail, etc.)
+                                            Create your personal <span className="font-bold text-indigo-500">you@mrohaung.com</span> email address.
+                                            You will instantly receive SMTP credentials to use with any mail client (Outlook, Gmail app, Apple Mail, etc.) once created.
                                         </p>
                                         <button
                                             onClick={() => setShowEmailForm(true)}
                                             className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                                         >
-                                            <AtSign className="w-4 h-4" /> Apply for Email
+                                            <AtSign className="w-4 h-4" /> Create Email
                                         </button>
                                     </div>
                                 )}
@@ -139,7 +139,7 @@ export default function EmailPage() {
                                                 disabled={emailApplying}
                                                 className="flex-1 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all active:scale-95"
                                             >
-                                                {emailApplying ? 'Submitting...' : 'Submit Application'}
+                                                {emailApplying ? 'Creating...' : 'Create Email'}
                                             </button>
                                             <button
                                                 onClick={() => { setShowEmailForm(false); setEmailError(''); }}
