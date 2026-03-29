@@ -339,25 +339,7 @@ exports.getSent = async (req, res) => {
     }
 };
 
-// ── GET /api/email-applications/admin/overview ───────────────────────────
-exports.adminOverview = async (req, res) => {
-    try {
-        // Only admin can see this (assuming req.userRole or similar, but for now we check if user is admin)
-        const [[user]] = await pool.execute('SELECT role FROM User WHERE id = ?', [req.userId]);
-        if (user?.role !== 'admin') return res.status(403).json({ message: 'Admin only.' });
 
-        const [apps] = await pool.execute(`
-            SELECT ea.*, u.displayName, u.username as ownerUsername 
-            FROM EmailApplication ea
-            JOIN User u ON ea.userId = u.id
-            ORDER BY ea.createdAt DESC
-        `);
-        res.json({ applications: apps });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Error fetching admin overview' });
-    }
-};
 
 // ── GET /api/email-applications/folder/:folderName ────────────────────────
 exports.getFolderEmails = async (req, res) => {
@@ -466,5 +448,25 @@ exports.webhookReceive = async (req, res) => {
     } catch (err) {
         console.error('[Webhook] Error:', err);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// ── GET /api/email-applications/admin/overview ───────────────────────────
+exports.adminOverview = async (req, res) => {
+    try {
+        // Only admin can see this (checking ADMIN_USER_IDS)
+        const admins = (process.env.ADMIN_USER_IDS || '').split(',').map(s => s.trim().replace(/['"]/g, ''));
+        if (!admins.includes(req.userId)) return res.status(403).json({ message: 'Admin only.' });
+
+        const [apps] = await pool.execute(`
+            SELECT ea.*, u.displayName, u.username as ownerUsername 
+            FROM EmailApplication ea
+            JOIN User u ON ea.userId = u.id
+            ORDER BY ea.createdAt DESC
+        `);
+        res.json({ applications: apps });
+    } catch (err) {
+        console.error('[AdminOverview] Error:', err);
+        res.status(500).json({ message: 'Error fetching admin overview' });
     }
 };
