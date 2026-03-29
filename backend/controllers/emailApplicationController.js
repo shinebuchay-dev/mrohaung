@@ -7,47 +7,51 @@ const DOMAIN = process.env.EMAIL_DOMAIN || 'mrohaung.com';
 
 // ── POST /api/email-applications ────────────────────────────────────────
 // Apply for a @mrohaung.com email
-exports.apply = async (req, res) => {
-    try {
-        const userId = req.userId;
-        const { emailPrefix } = req.body;
+    exports.apply = async (req, res) => {
+        try {
+            const userId = req.userId;
+            const { emailPrefix, password } = req.body;
 
-        if (!emailPrefix || !/^[a-z0-9._-]{3,32}$/.test(emailPrefix)) {
-            return res.status(400).json({
-                message: 'Email prefix must be 3-32 characters and only contain a-z, 0-9, dots, dashes, underscores.'
-            });
-        }
+            if (!emailPrefix || !/^[a-z0-9._-]{3,32}$/.test(emailPrefix)) {
+                return res.status(400).json({
+                    message: 'Email prefix must be 3-32 characters and only contain a-z, 0-9, dots, dashes, underscores.'
+                });
+            }
+            if (!password || password.length < 6) {
+                return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
+            }
 
-        // Check if user already has an application
-        const [[existing]] = await pool.execute(
-            'SELECT id, status FROM EmailApplication WHERE userId = ?',
-            [userId]
-        );
-        if (existing) {
-            return res.status(409).json({
-                message: 'You already have an email application.',
-                application: existing
-            });
-        }
+            // Check if user already has an application
+            const [[existing]] = await pool.execute(
+                'SELECT id, status FROM EmailApplication WHERE userId = ?',
+                [userId]
+            );
+            if (existing) {
+                return res.status(409).json({
+                    message: 'You already have an email application.',
+                    application: existing
+                });
+            }
 
-        // Check if the email prefix is taken
-        const fullEmail = `${emailPrefix}@${DOMAIN}`;
-        const [[taken]] = await pool.execute(
-            'SELECT id FROM EmailApplication WHERE fullEmail = ?',
-            [fullEmail]
-        );
-        if (taken) {
-            return res.status(409).json({ message: 'This email address is already taken. Please choose another.' });
-        }
+            // Check if the email prefix is taken
+            const fullEmail = `${emailPrefix}@${DOMAIN}`;
+            const [[taken]] = await pool.execute(
+                'SELECT id FROM EmailApplication WHERE fullEmail = ?',
+                [fullEmail]
+            );
+            if (taken) {
+                return res.status(409).json({ message: 'This email address is already taken. Please choose another.' });
+            }
 
-        const id = uuidv4();
-        const smtpPassword = crypto.randomBytes(10).toString('base64').replace(/[+/=]/g, '').substring(0, 14) + '!1';
-        const notes = 'Auto-approved by system. Admin must create this mailbox in Hostinger with the generated password.';
+            const id = uuidv4();
+            // User's requested password is saved here
+            const smtpPassword = password;
+            const notes = 'Auto-activated for Native Webmail System.';
 
-        await pool.execute(
-            'INSERT INTO EmailApplication (id, userId, emailPrefix, fullEmail, status, smtpPassword, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [id, userId, emailPrefix, fullEmail, 'approved', smtpPassword, notes]
-        );
+            await pool.execute(
+                'INSERT INTO EmailApplication (id, userId, emailPrefix, fullEmail, status, smtpPassword, notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [id, userId, emailPrefix, fullEmail, 'approved', smtpPassword, notes]
+            );
 
         res.status(201).json({
             success: true,
@@ -211,34 +215,88 @@ exports.sendEmail = async (req, res) => {
             return res.status(403).json({ message: 'Your email application is not approved yet.' });
         }
 
-        // Connect to Hostinger Webmail/SMTP with the user's exact credentials
-        const transporter = nodemailer.createTransport({
-            host: 'smtp.hostinger.com',
-            port: 465,
-            secure: true,
-            auth: {
-                user: app.fullEmail,
-                pass: app.smtpPassword
-            }
-        });
+        // Instead of connecting to Hostinger with the user's password, 
+        // we will use the admin support@mrohaung.com to relay it, OR just save it internally.
+        // Actually, if it's sent to another @mrohaung.com user, we just INSERT it into their inbox!
 
-        const mailOptions = {
-            from: `"${app.displayName}" <${app.fullEmail}>`,
-            to: to,
-            subject: subject,
-            text: message
-        };
+        if (to.endsWith(`@${DOMAIN}`)) {
+            // Internal Delivery
+            const msgId = uuidv4();
+            await pool.execute(`
+                INSERT INTO EmailMessage (id, ownerEmail, folder, fromAddress, toAddress, subject, bodyText, bodyHtml)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `, [msgId, to, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
+        } else {
+            // External Delivery via Global Support Auth
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.hostinger.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.SMTP_USER || 'support@mrohaung.com',
+                    pass: process.env.SMTP_PASS || 'SBCsmemail1234!!' // Ensure this is correct in your vps_backend.env
+                }
+            });
 
-        // Send email
-        await transporter.sendMail(mailOptions);
+            const mailOptions = {
+                from: `"${app.displayName}" <support@mrohaung.com>`, // Hostinger requires authenticated user in From
+                replyTo: app.fullEmail,
+                to: to,
+                subject: subject,
+                text: message
+            };
+
+            await transporter.sendMail(mailOptions);
+        }
+
+        // Save a copy in "Sent" folder for the sender
+        const sentId = uuidv4();
+        await pool.execute(`
+            INSERT INTO EmailMessage (id, ownerEmail, folder, fromAddress, toAddress, subject, bodyText, bodyHtml)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [sentId, app.fullEmail, 'sent', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
 
         res.json({ success: true, message: 'Email sent successfully!' });
     } catch (err) {
         console.error('[EmailApp] sendEmail error:', err);
         const msg = err.response || err.message;
         res.status(500).json({ 
-            message: 'Failed to send email. Admin might not have created this mailbox in the Hostinger panel yet.',
+            message: 'Failed to send email. Ensure the system is configured correctly.',
             error: msg
         });
+    }
+};
+
+// ── GET /api/email-applications/inbox ───────────────────────────────────
+exports.getInbox = async (req, res) => {
+    try {
+        const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ? AND status = "approved"', [req.userId]);
+        if (!app) return res.status(403).json({ message: 'No approved email account.' });
+
+        const [emails] = await pool.execute(
+            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = "inbox" ORDER BY createdAt DESC',
+            [app.fullEmail]
+        );
+        res.json({ emails });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching inbox' });
+    }
+};
+
+// ── GET /api/email-applications/sent ────────────────────────────────────
+exports.getSent = async (req, res) => {
+    try {
+        const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ? AND status = "approved"', [req.userId]);
+        if (!app) return res.status(403).json({ message: 'No approved email account.' });
+
+        const [emails] = await pool.execute(
+            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = "sent" ORDER BY createdAt DESC',
+            [app.fullEmail]
+        );
+        res.json({ emails });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching sent items' });
     }
 };

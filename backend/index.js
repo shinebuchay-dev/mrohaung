@@ -126,3 +126,11 @@ const PORT = process.env.PORT || 5001;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 SERVER ACTIVE ON PORT ${PORT}`);
 });
+
+// Start Custom Native SMTP Server on Port 25
+try {
+  const startSMTPServer = require('./smtp_server');
+  startSMTPServer();
+} catch (err) {
+  console.error('Failed to start native SMTP server:', err);
+}

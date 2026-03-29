@@ -1,14 +1,135 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign, Send } from 'lucide-react';
+import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign, Send, Inbox, UploadCloud, RefreshCw } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import api from '@/lib/api';
+
+function NativeWebmailUI({ 
+    emailApp, copyToClipboard, copiedField, 
+    sendMessage, setSendMessage, sendSubject, setSendSubject, sendTo, setSendTo, 
+    handleSendEmail, sending, sendSuccess, sendError 
+}: any) {
+    const [activeTab, setActiveTab] = useState('inbox');
+    const [inboxMails, setInboxMails] = useState<any[]>([]);
+    const [sentMails, setSentMails] = useState<any[]>([]);
+    const [loadingMails, setLoadingMails] = useState(false);
+
+    const fetchMails = async () => {
+        setLoadingMails(true);
+        try {
+            const [inboxRes, sentRes] = await Promise.all([
+                api.get('/email-applications/inbox'),
+                api.get('/email-applications/sent')
+            ]);
+            setInboxMails(inboxRes.data.emails || []);
+            setSentMails(sentRes.data.emails || []);
+        } catch (err) {
+            console.error('Failed to load mails', err);
+        } finally {
+            setLoadingMails(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMails();
+        const interval = setInterval(fetchMails, 15000); // 15 seconds polling
+        return () => clearInterval(interval);
+    }, []);
+
+    const renderMailList = (mails: any[], emptyMsg: string) => {
+        if (loadingMails && mails.length === 0) return <div className="p-10 text-center text-slate-400">Loading...</div>;
+        if (mails.length === 0) return <div className="p-10 text-center text-slate-400 font-medium">{emptyMsg}</div>;
+        return (
+            <div className="divide-y divide-slate-100 dark:divide-white/5">
+                {mails.map(m => (
+                    <div key={m.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div className="flex justify-between items-start mb-1">
+                            <p className="font-bold text-slate-900 dark:text-white text-sm">{activeTab === 'inbox' ? m.fromAddress : m.toAddress}</p>
+                            <p className="text-xs text-slate-400 font-medium">{new Date(m.createdAt).toLocaleString()}</p>
+                        </div>
+                        <p className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-1">{m.subject}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{m.bodyText}</p>
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
+    return (
+        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden flex flex-col h-[600px]">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mrohaung Webmail</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-white">{emailApp.fullEmail}</p>
+                    </div>
+                </div>
+                <button onClick={fetchMails} className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm text-slate-500 hover:text-indigo-500 transition-colors">
+                    <RefreshCw className={`w-4 h-4 ${loadingMails ? 'animate-spin' : ''}`} />
+                </button>
+            </div>
+            
+            <div className="flex border-b border-slate-100 dark:border-white/5">
+                {[
+                    { id: 'inbox', icon: Inbox, label: 'Inbox', count: inboxMails.length },
+                    { id: 'sent', icon: UploadCloud, label: 'Sent', count: sentMails.length },
+                    { id: 'compose', icon: Send, label: 'Compose' }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold transition-all ${
+                            activeTab === tab.id 
+                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/5' 
+                            : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5'
+                        }`}
+                    >
+                        <tab.icon className="w-4 h-4" /> {tab.label}
+                        {tab.count !== undefined && <span className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded-full text-slate-600 dark:text-slate-300">{tab.count}</span>}
+                    </button>
+                ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0f172a]">
+                {activeTab === 'inbox' && renderMailList(inboxMails, "No emails in your inbox yet.")}
+                {activeTab === 'sent' && renderMailList(sentMails, "No sent emails yet.")}
+                {activeTab === 'compose' && (
+                    <div className="p-5">
+                        <form onSubmit={handleSendEmail} className="space-y-4">
+                            {sendSuccess && <div className="p-3 bg-emerald-50 text-emerald-600 text-sm font-bold rounded-xl flex items-center gap-2"><Check className="w-4 h-4" /> {sendSuccess}</div>}
+                            {sendError && <div className="p-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl flex items-center gap-2"><XCircle className="w-4 h-4" /> {sendError}</div>}
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">To</label>
+                                <input value={sendTo} onChange={e => setSendTo(e.target.value)} placeholder="recipient@example.com" className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subject</label>
+                                <input value={sendSubject} onChange={e => setSendSubject(e.target.value)} placeholder="Email Subject" className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Message</label>
+                                <textarea value={sendMessage} onChange={e => setSendMessage(e.target.value)} placeholder="Write your email here..." rows={6} className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none" />
+                            </div>
+                            <button type="submit" disabled={sending} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
+                                {sending ? <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Sending...</> : <><Send className="w-4 h-4" /> Send Email</>}
+                            </button>
+                        </form>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function EmailPage() {
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [emailApp, setEmailApp] = useState<any>(null);
     const [emailPrefix, setEmailPrefix] = useState('');
+    const [emailPassword, setEmailPassword] = useState('');
     const [emailApplying, setEmailApplying] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [showEmailForm, setShowEmailForm] = useState(false);
@@ -51,9 +172,13 @@ export default function EmailPage() {
             setEmailError('3-32 character, a-z 0-9 . - _ သာ သုံးနိုင်သည်');
             return;
         }
+        if (emailPassword.length < 6) {
+            setEmailError('Password must be at least 6 characters');
+            return;
+        }
         setEmailApplying(true);
         try {
-            const res = await api.post('/email-applications', { emailPrefix });
+            const res = await api.post('/email-applications', { emailPrefix, password: emailPassword });
             setEmailApp(res.data.application);
             setShowEmailForm(false);
         } catch (err: any) {
@@ -165,6 +290,16 @@ export default function EmailPage() {
                                             {emailError && <p className="text-red-500 text-xs mt-1.5 font-medium">{emailError}</p>}
                                             <p className="text-xs text-slate-400 mt-1.5">Only a-z, 0-9, dot, dash, underscore. 3-32 characters.</p>
                                         </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Set Mailbox Password</label>
+                                            <input
+                                                type="password"
+                                                value={emailPassword}
+                                                onChange={e => setEmailPassword(e.target.value)}
+                                                placeholder="Enter a strong password"
+                                                className="w-full bg-slate-50 dark:bg-slate-800/50 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                                            />
+                                        </div>
                                         <div className="p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20 text-sm text-indigo-700 dark:text-indigo-400">
                                             Preview: <span className="font-black">{emailPrefix || 'yourname'}@mrohaung.com</span>
                                         </div>
@@ -204,111 +339,21 @@ export default function EmailPage() {
                                 )}
 
                                 {emailApp?.status === 'approved' && (
-                                    <div className="space-y-4">
-                                        <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl p-5">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                                                    <Check className="w-4 h-4 text-white" />
-                                                </div>
-                                                <p className="font-bold text-emerald-700 dark:text-emerald-400">Email Approved!</p>
-                                            </div>
-                                            <p className="text-sm text-emerald-600 dark:text-emerald-500 mb-4 leading-relaxed">
-                                                Your <span className="font-black">{emailApp.fullEmail}</span> email is ready. You can log in via Webmail using these details.
-                                            </p>
-                                            <div className="space-y-0 bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
-                                                {[
-                                                    { label: 'Email Address', value: emailApp.fullEmail, key: 'email' },
-                                                    { label: 'Password', value: emailApp.smtpPassword, key: 'pass' },
-                                                    { label: 'Webmail Link', value: 'https://mail.hostinger.com', key: 'webmail' },
-                                                ].map(row => (
-                                                    <div key={row.key} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 border-slate-100 dark:border-white/5">
-                                                        <div className="pr-4">
-                                                            <p className="text-[11px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">{row.label}</p>
-                                                            <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5 font-mono break-all">{row.value}</p>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => copyToClipboard(row.value, row.key)}
-                                                            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors shrink-0"
-                                                        >
-                                                            {copiedField === row.key ? <CheckCheck className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        {emailApp.notes && (
-                                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-white/5">
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Admin Note</p>
-                                                <p className="text-sm text-slate-600 dark:text-slate-300">{emailApp.notes}</p>
-                                            </div>
-                                        )}
-
-                                        {/* Compose Email UI inside Approved State */}
-                                        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <Send className="w-5 h-5 text-indigo-500" />
-                                                <h3 className="font-bold text-slate-900 dark:text-white">Compose Mail</h3>
-                                            </div>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                                                Send an email directly from your <span className="font-bold">@mrohaung.com</span> account without leaving the app.
-                                            </p>
-
-                                            <form onSubmit={handleSendEmail} className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-white/5">
-                                                {sendSuccess && (
-                                                    <div className="p-3 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-sm font-bold rounded-xl flex items-center gap-2">
-                                                        <Check className="w-4 h-4" /> {sendSuccess}
-                                                    </div>
-                                                )}
-                                                {sendError && (
-                                                    <div className="p-3 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 text-sm font-bold rounded-xl flex items-center gap-2">
-                                                        <XCircle className="w-4 h-4" /> {sendError}
-                                                    </div>
-                                                )}
-
-                                                <div className="space-y-1">
-                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">To</label>
-                                                    <input 
-                                                        value={sendTo} onChange={e => setSendTo(e.target.value)}
-                                                        placeholder="recipient@example.com" 
-                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subject</label>
-                                                    <input 
-                                                        value={sendSubject} onChange={e => setSendSubject(e.target.value)}
-                                                        placeholder="Email Subject" 
-                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Message</label>
-                                                    <textarea 
-                                                        value={sendMessage} onChange={e => setSendMessage(e.target.value)}
-                                                        placeholder="Write your email here..." rows={4}
-                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
-                                                    />
-                                                </div>
-                                                <div className="pt-2">
-                                                    <button 
-                                                        type="submit" disabled={sending}
-                                                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-                                                    >
-                                                        {sending ? (
-                                                            <>
-                                                                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                                                Sending...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Send className="w-4 h-4" /> Send Email
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
+                                    <NativeWebmailUI 
+                                        emailApp={emailApp} 
+                                        copyToClipboard={copyToClipboard} 
+                                        copiedField={copiedField} 
+                                        sendMessage={sendMessage}
+                                        setSendMessage={setSendMessage}
+                                        sendSubject={sendSubject}
+                                        setSendSubject={setSendSubject}
+                                        sendTo={sendTo}
+                                        setSendTo={setSendTo}
+                                        handleSendEmail={handleSendEmail}
+                                        sending={sending}
+                                        sendSuccess={sendSuccess}
+                                        sendError={sendError}
+                                    />
                                 )}
 
                                 {emailApp?.status === 'rejected' && (
