@@ -2,6 +2,7 @@ const pool = require('../utils/prisma');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const dns = require('dns').promises;
 
 const DOMAIN = process.env.EMAIL_DOMAIN || 'mrohaung.com';
 
@@ -227,20 +228,33 @@ exports.sendEmail = async (req, res) => {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [msgId, to, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
         } else {
-            // External Delivery via Global Support Auth
+            // Native Direct Delivery via MX Record Lookup (100% Free / Independent)
+            const recipientDomain = to.split('@')[1];
+            
+            let mxRecords;
+            try {
+                mxRecords = await dns.resolveMx(recipientDomain);
+            } catch (dnsErr) {
+                throw new Error(`Could not find MX records for domain ${recipientDomain}`);
+            }
+
+            if (!mxRecords || mxRecords.length === 0) {
+                throw new Error(`No mail servers found for domain ${recipientDomain}`);
+            }
+
+            // Sort by priority (lowest number = highest priority)
+            mxRecords.sort((a, b) => a.priority - b.priority);
+            const targetMX = mxRecords[0].exchange;
+
             const transporter = nodemailer.createTransport({
-                host: 'smtp.hostinger.com',
-                port: 465,
-                secure: true,
-                auth: {
-                    user: process.env.SMTP_USER || 'support@mrohaung.com',
-                    pass: process.env.SMTP_PASS || 'SBCsmemail1234!!' // Ensure this is correct in your vps_backend.env
-                }
+                host: targetMX,
+                port: 25,
+                secure: false, // opportunistic TLS
+                tls: { rejectUnauthorized: false }
             });
 
             const mailOptions = {
-                from: `"${app.displayName}" <support@mrohaung.com>`, // Hostinger requires authenticated user in From
-                replyTo: app.fullEmail,
+                from: `"${app.displayName}" <${app.fullEmail}>`,
                 to: to,
                 subject: subject,
                 text: message
