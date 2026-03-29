@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp, Play } from 'lucide-react';
+import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp, Play, Mail } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -105,6 +105,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             const items = [
                 { href: '/', label: 'News', icon: Home },
                 { href: '/short-video', label: 'Short Video', icon: Play, protected: false },
+                { href: '/email', label: 'Email', icon: Mail, protected: true },
                 { href: '/friends', label: 'Friends', icon: Users, protected: true },
             ];
 
@@ -206,7 +207,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50 transition-colors duration-300">
             <nav className="fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
-                <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between transition-all duration-300">
+                <div className="max-w-5xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between transition-all duration-300">
                     <div className="flex items-center gap-6">
                         <Link
                             href="/"
@@ -312,8 +313,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
             </nav>
 
-            <div className="max-w-5xl mx-auto px-4 pt-24 flex gap-4 lg:gap-6 transition-all duration-300">
-                <aside className="hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-24 transition-all duration-300 shrink-0">
+            <div className="max-w-5xl mx-auto px-2 sm:px-4 pt-[76px] sm:pt-20 flex gap-4 lg:gap-6 transition-all duration-300">
+                <aside className="hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-20 transition-all duration-300 shrink-0">
                     <div className="h-full flex flex-col justify-between">
                         <ul className="space-y-1">
                             {navItems.map((item: any) => {
@@ -352,9 +353,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <main className="flex-1 min-w-0">{children}</main>
             </div>
 
-            {/* Floating Chat Widget */}
+            {/* Floating Chat Widget - Hidden on Mobile */}
             {currentUser && (
-                <MessageDropdown variant="floating" />
+                <div className="hidden md:block">
+                    <MessageDropdown variant="floating" />
+                </div>
             )}
 
             {/* Global Modals */}
@@ -375,6 +378,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     currentUserId={currentUser?.id}
                 />
             )}
+
+            {/* Mobile Floating Nav - Left Aligned Vertical Stack */}
+            <div className="md:hidden fixed bottom-6 left-4 z-[110] flex flex-col gap-3">
+                {/* Message (Top) - Links to Messages Page */}
+                <Link
+                    href="/messages"
+                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/messages') 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
+                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                >
+                    <MessageCircle className="w-5 h-5" />
+                </Link>
+
+                {/* Short Video (Middle) */}
+                <Link
+                    href="/short-video"
+                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/short-video') 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
+                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                >
+                    <Play className="w-5 h-5 fill-current" />
+                </Link>
+
+                {/* Email */}
+                <Link
+                    href="/email"
+                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/email') 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
+                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                >
+                    <Mail className="w-5 h-5" />
+                </Link>
+
+                {/* News / Home (Bottom) */}
+                <Link
+                    href="/"
+                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/') 
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
+                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                >
+                    <Home className="w-5 h-5" />
+                </Link>
+            </div>
         </div>
     );
 }

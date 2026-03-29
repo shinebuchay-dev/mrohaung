@@ -183,7 +183,7 @@ function FeedContent() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
         <section className="min-w-0">
-          {currentUser && currentUser.isVerified && (
+          {currentUser && !!currentUser.isVerified && (
             <CreatePost onPostCreated={(newPost?: any) => {
               if (newPost) {
                 // Prepend logic is handled by socket, but we can do it here too for instant feedback
@@ -279,7 +279,7 @@ function FeedContent() {
         </section>
 
         <aside className="hidden xl:block">
-          <div className="sticky top-24 space-y-6">
+          <div className="sticky top-20 space-y-6">
             {currentUser && <FriendSuggestions />}
           </div>
         </aside>

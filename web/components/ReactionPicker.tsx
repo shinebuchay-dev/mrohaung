@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Laugh, ThumbsUp, Frown, Angry, Star } from 'lucide-react';
+import { Heart, Laugh, Frown, Angry, Star } from 'lucide-react';
 
 interface ReactionPickerProps {
     onSelect: (type: string) => void;
@@ -9,7 +9,6 @@ interface ReactionPickerProps {
 }
 
 const reactions = [
-    { type: 'like', icon: ThumbsUp, color: 'text-blue-500', label: 'Like' },
     { type: 'love', icon: Heart, color: 'text-red-500', label: 'Love' },
     { type: 'haha', icon: Laugh, color: 'text-yellow-500', label: 'Haha' },
     { type: 'wow', icon: Star, color: 'text-purple-500', label: 'Wow' },

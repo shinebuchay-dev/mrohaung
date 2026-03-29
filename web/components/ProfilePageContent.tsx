@@ -347,7 +347,7 @@ export default function ProfilePageContent() {
                 )}
 
                 {/* 5. Minimal Identity Section (Floating on extension) */}
-                <div className="relative pt-[120px] sm:pt-[160px] px-4 pb-6 z-10 w-full">
+                <div className="relative pt-[120px] sm:pt-[160px] px-2 sm:px-4 pb-6 z-10 w-full">
                     <div className="flex items-center gap-4 sm:gap-6 mb-5">
                         {/* Avatar (Clean White Border) */}
                         <div className="relative flex-shrink-0">
@@ -373,7 +373,7 @@ export default function ProfilePageContent() {
                                 <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     {user.displayName || user.username}
                                 </h1>
-                                {user.isVerified && (
+                                {!!user.isVerified && (
                                     <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[17px] h-[17px] mt-0.5 shadow-sm">
                                         <Check className="w-[10px] h-[10px] text-white" strokeWidth={6} />
                                     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import ReactionPicker from './ReactionPicker';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, ThumbsUp, Laugh, Frown, Angry, Star, Check, Play } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit2, Trash2, Clock, Laugh, Frown, Angry, Star, Check, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -141,8 +141,8 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             case 'wow': return { icon: <Star className="w-[18px] h-[18px] text-purple-500 fill-purple-500" />, label: 'Wow', color: 'text-purple-500' };
             case 'sad': return { icon: <Frown className="w-[18px] h-[18px] text-blue-400 fill-blue-400" />, label: 'Sad', color: 'text-blue-400' };
             case 'angry': return { icon: <Angry className="w-[18px] h-[18px] text-orange-500 fill-orange-500" />, label: 'Angry', color: 'text-orange-500' };
-            case 'like': return { icon: <ThumbsUp className="w-[18px] h-[18px] text-blue-500 fill-blue-500" />, label: 'Like', color: 'text-blue-500' };
-            default: return { icon: <ThumbsUp className="w-[18px] h-[18px]" />, label: 'Like', color: 'text-slate-400 dark:text-slate-500' };
+            case 'like': return { icon: <Heart className="w-[18px] h-[18px] text-red-500 fill-red-500" />, label: 'Love', color: 'text-red-500' };
+            default: return { icon: <Heart className="w-[18px] h-[18px]" />, label: 'Love', color: 'text-slate-400 dark:text-slate-500' };
         }
     };
 
@@ -167,7 +167,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                 const endpoint = post.isShort ? `/short-videos/${post.id}/like` : `/posts/${post.id}/like`;
                 const response = await api.post(endpoint, { type });
                 if (response.data.liked) {
-                    setReactionType(post.isShort ? 'like' : response.data.type);
+                    setReactionType(post.isShort ? 'love' : response.data.type);
                 } else {
                     setReactionType(null);
                 }
@@ -212,7 +212,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className={`relative py-3 px-4 sm:px-0 border-b border-slate-100 dark:border-white/5 cursor-pointer ${showMenu ? 'z-[50]' : 'z-0'}`}
+            className={`relative py-3 px-0 border-b border-slate-100 dark:border-white/5 cursor-pointer ${showMenu ? 'z-[50]' : 'z-0'}`}
             onClick={onClick}
         >
             <div className="flex gap-3">
@@ -251,7 +251,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             >
                                 {post.author.displayName || post.author.username}
                             </Link>
-                            {post.author.isVerified && (
+                            {!!post.author.isVerified && (
                                 <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
                                     <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                 </div>
@@ -396,17 +396,14 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                             </AnimatePresence>
                             <motion.button
                                 whileTap={{ scale: 0.9 }}
-                                onClick={(e) => { e.stopPropagation(); handleReaction(reactionType || 'like'); }}
+                                onClick={(e) => { e.stopPropagation(); handleReaction(reactionType || 'love'); }}
                                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full transition-colors group ${getReactionStyle(reactionType).color} hover:bg-slate-50 dark:hover:bg-slate-800/50`}
                             >
                                 <div className={`p-0.5 rounded-full transition-colors ${reactionType ? '' : 'group-hover:bg-red-50 dark:group-hover:bg-red-500/10'}`}>
                                     {getReactionStyle(reactionType).icon}
                                 </div>
-                                <span className={`text-[13px] font-medium ${reactionType ? '' : 'text-slate-500 dark:text-slate-400'}`}>
-                                    {reactionType ? getReactionStyle(reactionType).label : 'Like'}
-                                </span>
                                 {likeCount > 0 && (
-                                    <span className="text-[13px] font-medium opacity-60 ml-0.5">{likeCount}</span>
+                                    <span className={`text-[13px] font-medium ${reactionType ? 'opacity-100' : 'opacity-60'}`}>{likeCount}</span>
                                 )}
                             </motion.button>
                         </div>
@@ -495,7 +492,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                                 <Link href={`/profile/${rootComment.user?.username || rootComment.username}`} className="text-[13px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
                                                     {rootComment.user?.displayName || rootComment.user?.username || rootComment.displayName || rootComment.username || 'User'}
                                                 </Link>
-                                                {(rootComment.user?.isVerified || rootComment.isVerified) && (
+                                                {!!(rootComment.user?.isVerified || rootComment.isVerified) && (
                                                     <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px] drop-shadow-sm mt-[1px]">
                                                         <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
                                                     </div>
@@ -537,7 +534,7 @@ export default function PostCard({ post, isGuest = false, onDelete, onUpdate, on
                                                     <Link href={`/profile/${reply.user?.username || reply.username}`} className="text-[12px] font-bold text-slate-900 dark:text-white hover:underline block leading-tight" onClick={(e) => e.stopPropagation()}>
                                                         {reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'User'}
                                                     </Link>
-                                                    {(reply.user?.isVerified || reply.isVerified) && (
+                                                    {!!(reply.user?.isVerified || reply.isVerified) && (
                                                         <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px] drop-shadow-sm mt-[1px]">
                                                             <Check className="w-[4.5px] h-[4.5px] text-white" strokeWidth={6} />
                                                         </div>

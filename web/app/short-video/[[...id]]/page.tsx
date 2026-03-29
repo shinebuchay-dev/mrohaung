@@ -19,6 +19,7 @@ interface ShortVideo {
         username: string;
         displayName?: string;
         avatarUrl?: string;
+        isVerified?: boolean;
     };
     likeCount: number;
     commentCount: number;
@@ -446,9 +447,18 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
                                     {(video.author.displayName || video.author.username)[0].toUpperCase()}
                                 </div>
                             )}
-                            <div className="flex flex-col justify-center">
-                                <h3 className="text-white font-bold text-[15px] tracking-wide drop-shadow-md select-none leading-tight">{video.author.displayName || video.author.username}</h3>
-                                <span className="text-white/80 text-[11px] font-semibold tracking-wide drop-shadow-sm leading-tight">@{video.author.username}</span>
+                            <div className="flex flex-col justify-center min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                    <h3 className="text-white font-bold text-[15px] tracking-wide drop-shadow-md select-none leading-tight truncate">
+                                        {video.author.displayName || video.author.username}
+                                    </h3>
+                                    {video.author.isVerified && (
+                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[13px] h-[13px] mt-0.5">
+                                            <Check className="w-[7px] h-[7px] text-white" strokeWidth={6} />
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="text-white/80 text-[11px] font-semibold tracking-wide drop-shadow-sm leading-tight truncate">@{video.author.username}</span>
                             </div>
                         </div>
                         <h2 className="text-white text-sm font-semibold mb-1 line-clamp-2 drop-shadow-md">{video.title}</h2>
@@ -587,7 +597,7 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                                         <div className="flex items-center justify-between mb-0.5">
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{comment.user?.displayName || comment.user?.username || comment.displayName || comment.username || 'User'}</h4>
-                                                {(comment.user?.isVerified || comment.isVerified) && (
+                                                {!!(comment.user?.isVerified || comment.isVerified) && (
                                                     <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
                                                         <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                                     </div>
@@ -634,7 +644,7 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <h4 className="text-[12px] font-bold text-slate-800 dark:text-slate-200 truncate">{reply.user?.displayName || reply.user?.username || reply.displayName || reply.username || 'User'}</h4>
-                                                    {(reply.user?.isVerified || reply.isVerified) && (
+                                                    {!!(reply.user?.isVerified || reply.isVerified) && (
                                                         <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[9px] h-[9px]">
                                                             <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
                                                         </div>

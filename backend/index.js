@@ -60,6 +60,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const privacyRoutes = require('./routes/privacyRoutes');
 const shortVideoRoutes = require('./routes/shortVideoRoutes');
+const emailApplicationRoutes = require('./routes/emailApplicationRoutes');
 
 const authMiddleware = require('./middleware/authMiddleware');
 const multer = require('multer');
@@ -84,6 +85,7 @@ apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/reports', reportRoutes);
 apiRouter.use('/privacy', privacyRoutes);
 apiRouter.use('/short-videos', shortVideoRoutes);
+apiRouter.use('/email-applications', emailApplicationRoutes);
 
 // Mount API Router to /api
 app.use('/api', apiRouter);

@@ -344,7 +344,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 className="bg-white dark:bg-[#0b1120] sm:rounded-2xl rounded-none w-full max-w-lg h-full sm:h-auto sm:max-h-[80vh] flex flex-col overflow-hidden shadow-xl"
             >
                 {/* Unified Sticky Header */}
-                <div className="sticky top-0 z-[100] flex items-center justify-between px-5 py-4 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-xl border-b border-slate-50 dark:border-white/5">
+                <div className="sticky top-0 z-[100] flex items-center justify-between px-3 sm:px-5 py-4 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-xl border-b border-slate-50 dark:border-white/5">
                     <div className="flex items-center gap-3 min-w-0">
                         <Link href={`/profile/${post.author.username}`} className="relative flex-shrink-0" onClick={onClose}>
                             <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 bg-cover bg-center" style={{ backgroundImage: post.author.avatarUrl ? `url(${fixUrl(post.author.avatarUrl)})` : undefined }}>
@@ -357,7 +357,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                                 <Link href={`/profile/${post.author.username}`} className="text-slate-900 dark:text-white font-black text-[14px] hover:underline underline-offset-2" onClick={onClose}>
                                     {post.author.displayName || post.author.username}
                                 </Link>
-                                {post.author.isVerified && (
+                                {!!post.author.isVerified && (
                                     <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px] mt-[1px]">
                                         <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                     </div>
@@ -416,7 +416,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pt-6">
 
                     {/* Post Body & Details */}
-                    <div className="px-5 pb-4">
+                    <div className="px-3 sm:px-5 pb-4">
                         <div className="mb-4">
                             {isEditing ? (
                                 <div className="animate-in fade-in slide-in-from-top-1 duration-300">
@@ -504,7 +504,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
 
                     {/* Comments */}
                     <div className="border-t border-slate-50 dark:border-white/5 bg-slate-50/30 dark:bg-white/[0.01]">
-                        <div className="px-5 py-6">
+                        <div className="px-3 sm:px-5 py-6">
                             <CommentSection
                                 comments={comments}
                                 currentUserId={currentUserId}
@@ -517,7 +517,7 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
                 </div>
 
                 {/* Footer Input (Sticky) */}
-                <div className="px-5 py-4 bg-white dark:bg-[#0b1120] border-t border-slate-50 dark:border-white/5">
+                <div className="px-3 sm:px-5 py-4 bg-white dark:bg-[#0b1120] border-t border-slate-50 dark:border-white/5">
                     {currentUserId ? (
                         <form onSubmit={handleSubmitComment} className="flex gap-3 items-end">
                             <div className="flex-1 bg-slate-50 dark:bg-white/[0.03] rounded-2xl px-4 py-2.5 flex items-center border border-slate-100 dark:border-white/5 focus-within:bg-white dark:focus-within:bg-white/[0.06] transition-all">
@@ -574,4 +574,3 @@ export default function PostModal({ isOpen, onClose, post, onUpdate, onDelete, c
         </div >
     );
 }
-

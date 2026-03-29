@@ -166,7 +166,7 @@ export default function NotificationDropdown() {
                                                 <div className="text-[13px] text-slate-800 dark:text-slate-200 leading-relaxed">
                                                     <span className="inline-flex items-center gap-1 font-bold dark:text-white">
                                                         {notification.from.displayName || notification.from.username}
-                                                        {notification.from.isVerified && (
+                                                        {!!notification.from.isVerified && (
                                                             <div className="flex-shrink-0 ml-[2.5px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
                                                                 <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                                             </div>

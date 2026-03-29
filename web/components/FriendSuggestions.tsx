@@ -146,7 +146,7 @@ export default function FriendSuggestions() {
                                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                                             {suggestion.displayName || suggestion.username}
                                         </p>
-                                        {suggestion.isVerified && (
+                                        {!!suggestion.isVerified && (
                                             <div className="flex-shrink-0 ml-[4px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1.5px]">
                                                 <Check className="w-[5.5px] h-[5.5px] text-white" strokeWidth={5} />
                                             </div>

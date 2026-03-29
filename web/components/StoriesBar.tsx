@@ -68,7 +68,7 @@ export default function StoriesBar() {
 
     return (
         <>
-            <div className="mb-8 border-b border-slate-100 dark:border-white/5">
+            <div className="mb-4 border-b border-slate-100 dark:border-white/5">
                 <div className="flex gap-5 overflow-x-auto pb-5 scrollbar-hide px-0.5">
                     {/* Create Story Button */}
                     <button

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Play, ChevronRight } from 'lucide-react';
+import { Play, ChevronRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { fixUrl } from '@/lib/utils';
@@ -17,6 +17,7 @@ interface ShortVideo {
         username: string;
         avatarUrl?: string;
         displayName?: string;
+        isVerified?: boolean;
     };
 }
 
@@ -113,7 +114,14 @@ export default function ShortsShelf() {
                                                 </div>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-white/80 font-semibold truncate">@{video.author.username}</span>
+                                        <div className="flex items-center gap-1 min-w-0 flex-1">
+                                            <span className="text-[10px] text-white/80 font-semibold truncate">@{video.author.username}</span>
+                                            {video.author.isVerified && (
+                                                <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[10px] h-[10px]">
+                                                    <Check className="w-[5px] h-[5px] text-white" strokeWidth={6} />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 

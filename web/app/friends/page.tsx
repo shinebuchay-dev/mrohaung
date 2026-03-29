@@ -132,7 +132,7 @@ export default function FriendsPage() {
         }
     };
     return (
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto px-2 sm:px-6">
             {/* Minimal Page Header */}
             <div className="mb-8 pt-4">
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Friends</h1>

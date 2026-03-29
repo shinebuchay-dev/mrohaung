@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, User, Lock, Bell, Shield, LogOut, Trash2, ShieldCheck, Check, Loader2, X } from 'lucide-react';
+import { ArrowLeft, User, Lock, Bell, Shield, LogOut, Trash2, ShieldCheck, Check, Loader2, X, Mail, Copy, CheckCheck, Clock, XCircle, AtSign } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useTheme } from '@/lib/ThemeContext';
 import api from '@/lib/api';
@@ -19,11 +19,21 @@ export default function SettingsPage() {
     const [reason, setReason] = useState('');
     const [showVerifyForm, setShowVerifyForm] = useState(false);
 
+    // Email Application State
+    const [emailApp, setEmailApp] = useState<any>(null);
+    const [emailPrefix, setEmailPrefix] = useState('');
+    const [emailApplying, setEmailApplying] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [showEmailForm, setShowEmailForm] = useState(false);
+    const [copiedField, setCopiedField] = useState<string | null>(null);
+
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         setCurrentUser(user);
+        if (user?.username) setEmailPrefix(user.username || '');
         fetchPrivacySettings();
         fetchVerificationStatus();
+        fetchEmailApplication();
     }, []);
 
     const [isVerifying, setIsVerifying] = useState(true);
@@ -38,6 +48,50 @@ export default function SettingsPage() {
         } finally {
             setIsVerifying(false);
         }
+    };
+
+    const fetchEmailApplication = async () => {
+        try {
+            const res = await api.get('/email-applications/me');
+            setEmailApp(res.data.application);
+        } catch {
+            // not applied yet
+        }
+    };
+
+    const handleApplyEmail = async () => {
+        setEmailError('');
+        if (!emailPrefix || !/^[a-z0-9._-]{3,32}$/.test(emailPrefix)) {
+            setEmailError('3-32 character, a-z 0-9 . - _ သာ သုံးနိုင်သည်');
+            return;
+        }
+        setEmailApplying(true);
+        try {
+            const res = await api.post('/email-applications', { emailPrefix });
+            setEmailApp(res.data.application);
+            setShowEmailForm(false);
+        } catch (err: any) {
+            setEmailError(err.response?.data?.message || 'Failed to apply');
+        } finally {
+            setEmailApplying(false);
+        }
+    };
+
+    const handleCancelEmailApp = async () => {
+        if (!confirm('Cancel your email application?')) return;
+        try {
+            await api.delete('/email-applications/me');
+            setEmailApp(null);
+            setShowEmailForm(false);
+        } catch (err: any) {
+            alert(err.response?.data?.message || 'Failed to cancel');
+        }
+    };
+
+    const copyToClipboard = (text: string, field: string) => {
+        navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
     };
 
     const handleRequestVerification = async () => {
@@ -99,7 +153,6 @@ export default function SettingsPage() {
 
     const handleDeleteAccount = async () => {
         if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
-
         try {
             await api.delete('/profile');
             localStorage.removeItem('token');
@@ -114,19 +167,17 @@ export default function SettingsPage() {
     return (
         <ProtectedRoute>
             <div className="max-w-3xl mx-auto pb-20">
-                {/* Header */}
                 <div className="mb-8 mt-4 hidden md:block">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white">Settings</h1>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences</p>
                 </div>
 
                 <div className="space-y-6">
-                    {/* Account Section */}
+                    {/* Account */}
                     <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-5 border-b border-slate-100 dark:border-white/5">
                             <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                Account
+                                <User className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Account
                             </h2>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-white/5">
@@ -153,12 +204,14 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    {/* Notifications Section */}
+                    {/* ── MROHAUNG Email Application ── */}
+
+
+                    {/* Notifications */}
                     <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-5 border-b border-slate-100 dark:border-white/5">
                             <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                Notifications
+                                <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Notifications
                             </h2>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-white/5">
@@ -172,16 +225,6 @@ export default function SettingsPage() {
                                     <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
-                            <div className="px-5 py-4 flex items-center justify-between">
-                                <div>
-                                    <p className="font-bold text-slate-900 dark:text-white">Email Notifications</p>
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Receive updates via email</p>
-                                </div>
-                                <label className="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" className="sr-only peer" />
-                                    <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
                         </div>
                     </div>
 
@@ -189,8 +232,7 @@ export default function SettingsPage() {
                     <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-5 border-b border-slate-100 dark:border-white/5">
                             <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                Privacy & Security
+                                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Privacy & Security
                             </h2>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-white/5">
@@ -200,12 +242,7 @@ export default function SettingsPage() {
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Toggle application theme</p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={theme === 'dark'}
-                                        onChange={() => toggleTheme()}
-                                    />
+                                    <input type="checkbox" className="sr-only peer" checked={theme === 'dark'} onChange={() => toggleTheme()} />
                                     <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
@@ -217,12 +254,7 @@ export default function SettingsPage() {
                                     </p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        className="sr-only peer"
-                                        checked={isPrivate}
-                                        onChange={(e) => handlePrivacyToggle(e.target.checked)}
-                                    />
+                                    <input type="checkbox" className="sr-only peer" checked={isPrivate} onChange={(e) => handlePrivacyToggle(e.target.checked)} />
                                     <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
@@ -234,19 +266,12 @@ export default function SettingsPage() {
                                 {blockedUsers.length > 0 && (
                                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                                         {blockedUsers.map((user) => (
-                                            <div
-                                                key={user.id}
-                                                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl"
-                                            >
+                                            <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
                                                 <div className="flex items-center gap-3">
                                                     {user.avatarUrl ? (
-                                                        <img
-                                                            src={user.avatarUrl}
-                                                            alt={user.displayName || user.username || ''}
-                                                            className="w-10 h-10 rounded-full object-cover"
-                                                        />
+                                                        <img src={user.avatarUrl} alt={user.displayName || user.username || ''} className="w-10 h-10 rounded-full object-cover" />
                                                     ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-white flex items-center justify-center font-bold" >
+                                                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-white flex items-center justify-center font-bold">
                                                             {(user.displayName || user.username)?.[0]?.toUpperCase()}
                                                         </div>
                                                     )}
@@ -266,12 +291,11 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    {/* Verification Section */}
+                    {/* Verification */}
                     <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-5 border-b border-slate-100 dark:border-white/5">
                             <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                Verification
+                                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Verification
                             </h2>
                         </div>
                         <div className="p-5">
@@ -289,12 +313,8 @@ export default function SettingsPage() {
                                         <p className="font-bold text-blue-700 dark:text-blue-400">Verification Under Review</p>
                                     </div>
                                     <p className="text-sm text-blue-600 dark:text-blue-500 font-medium leading-relaxed">
-                                        Your request is currently being reviewed by our team. Please wait while we process your application.
+                                        Your request is currently being reviewed by our team.
                                     </p>
-                                    <div className="mt-4 pt-4 border-t border-blue-100 dark:border-blue-500/10">
-                                        <p className="text-[11px] uppercase tracking-wider font-black text-blue-400 dark:text-blue-600">Submitted Reason</p>
-                                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1 font-medium italic">"{verificationStatus.request.reason}"</p>
-                                    </div>
                                 </div>
                             ) : verificationStatus?.isVerified ? (
                                 <div className="bg-amber-50 dark:bg-amber-500/10 p-5 rounded-2xl border border-amber-100 dark:border-amber-500/20 flex items-center gap-4">
@@ -303,7 +323,7 @@ export default function SettingsPage() {
                                     </div>
                                     <div>
                                         <p className="font-black text-amber-700 dark:text-amber-400 text-lg">Account Verified</p>
-                                        <p className="text-sm text-amber-600 dark:text-amber-500 mt-0.5 font-medium">Your account has been successfully verified. You now have a Royal Gold badge on your profile.</p>
+                                        <p className="text-sm text-amber-600 dark:text-amber-500 mt-0.5 font-medium">Your account has the Royal Gold badge.</p>
                                     </div>
                                 </div>
                             ) : verificationStatus?.request?.status === 'rejected' ? (
@@ -311,18 +331,13 @@ export default function SettingsPage() {
                                     <div className="bg-red-50 dark:bg-red-500/10 p-5 rounded-2xl border border-red-100 dark:border-red-500/20">
                                         <div className="flex items-center gap-3 mb-2">
                                             <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shrink-0">
-                                                <X className="w-4 h-4 font-black" />
+                                                <X className="w-4 h-4" />
                                             </div>
                                             <p className="font-bold text-red-700 dark:text-red-400">Request Denied</p>
                                         </div>
-                                        <p className="text-sm text-red-600 dark:text-red-500 font-medium">
-                                            We're sorry, your verification request has been declined at this time. You can try submitting a new request with more information.
-                                        </p>
+                                        <p className="text-sm text-red-600 dark:text-red-500 font-medium">Your verification request has been declined.</p>
                                     </div>
-                                    <button
-                                        onClick={() => setShowVerifyForm(true)}
-                                        className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20"
-                                    >
+                                    <button onClick={() => setShowVerifyForm(true)} className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95">
                                         Apply Again
                                     </button>
                                 </div>
@@ -333,22 +348,15 @@ export default function SettingsPage() {
                                         <textarea
                                             value={reason}
                                             onChange={(e) => setReason(e.target.value)}
-                                            placeholder="Provide a detailed reason for your verification request..."
-                                            className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
+                                            placeholder="Provide a detailed reason..."
+                                            className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
                                         />
                                     </div>
                                     <div className="flex gap-3">
-                                        <button
-                                            onClick={handleRequestVerification}
-                                            disabled={requesting || reason.trim().length < 10}
-                                            className="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20"
-                                        >
+                                        <button onClick={handleRequestVerification} disabled={requesting || reason.trim().length < 10} className="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all">
                                             {requesting ? 'Submitting...' : 'Submit Application'}
                                         </button>
-                                        <button
-                                            onClick={() => setShowVerifyForm(false)}
-                                            className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl text-sm hover:bg-slate-200"
-                                        >
+                                        <button onClick={() => setShowVerifyForm(false)} className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl text-sm">
                                             Cancel
                                         </button>
                                     </div>
@@ -357,12 +365,9 @@ export default function SettingsPage() {
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white mb-1">Apply for Royal Gold Badge</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                                        Verified accounts have a Royal Gold badge next to their names to show that the account is the authentic presence of the public figure, celebrity, or brand it represents.
+                                        Verified accounts have a Royal Gold badge next to their names.
                                     </p>
-                                    <button
-                                        onClick={() => setShowVerifyForm(true)}
-                                        className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
-                                    >
+                                    <button onClick={() => setShowVerifyForm(true)} className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95">
                                         Get Started
                                     </button>
                                 </div>
@@ -374,32 +379,24 @@ export default function SettingsPage() {
                     <div className="bg-white dark:bg-[#1e293b] border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-5 border-b border-red-100 dark:border-red-500/10">
                             <h2 className="font-bold text-red-500 flex items-center gap-2">
-                                <Trash2 className="w-5 h-5" />
-                                Danger Zone
+                                <Trash2 className="w-5 h-5" /> Danger Zone
                             </h2>
                         </div>
                         <div className="divide-y divide-red-100 dark:divide-red-500/10">
-                            <button
-                                onClick={handleLogout}
-                                className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left flex items-center justify-between group"
-                            >
+                            <button onClick={handleLogout} className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left flex items-center justify-between group">
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white group-hover:text-red-500 transition-colors">Logout</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sign out of your account</p>
                                 </div>
                                 <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" />
                             </button>
-                            <button
-                                className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left group"
-                                onClick={handleDeleteAccount}
-                            >
+                            <button className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left group" onClick={handleDeleteAccount}>
                                 <p className="font-bold text-red-500 dark:text-red-400">Delete Account</p>
                                 <p className="text-sm font-medium text-red-400 dark:text-red-400/70">Permanently delete your account and data</p>
                             </button>
                         </div>
                     </div>
 
-                    {/* App Info */}
                     <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm font-medium">
                         <p>MROHAUNG Social Media v3.0.0</p>
                         <p className="mt-1">Made with ❤️ by Shine Bu Chay</p>

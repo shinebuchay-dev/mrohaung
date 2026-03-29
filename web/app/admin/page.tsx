@@ -28,7 +28,7 @@ import {
     Zap
 } from 'lucide-react';
 
-type Tab = 'overview' | 'users' | 'notifications' | 'verification';
+type Tab = 'overview' | 'users' | 'notifications' | 'verification' | 'emails';
 
 type Overview = {
     counts: {
@@ -58,6 +58,7 @@ export default function AdminDashboardPage() {
     const [q, setQ] = useState('');
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [emailNotes, setEmailNotes] = useState<Record<string, string>>({});
 
     const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
@@ -83,12 +84,14 @@ export default function AdminDashboardPage() {
             users: '/admin/users',
             notifications: '/admin/notifications',
             verification: '/admin/verification-requests',
+            emails: '/admin/email-applications',
         };
 
         const listKeyMap: Record<string, string> = {
             users: 'users',
             notifications: 'notifications',
             verification: 'requests',
+            emails: 'applications',
         };
 
         const res = await api.get(urlMap[tab as string] || '', { params });
@@ -108,6 +111,19 @@ export default function AdminDashboardPage() {
             }
         } catch (e: any) {
             setError(e?.response?.data?.message || 'Verification action failed');
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const handleEmailAction = async (id: string, action: 'approved' | 'rejected') => {
+        setProcessingId(id);
+        setError('');
+        try {
+            await api.patch(`/admin/email-applications/${id}`, { action, notes: emailNotes[id] || '' });
+            await fetchList();
+        } catch (e: any) {
+            setError(e?.response?.data?.message || 'Action failed');
         } finally {
             setProcessingId(null);
         }
@@ -193,6 +209,9 @@ export default function AdminDashboardPage() {
                         ) : null}
                     </TabButton>
                     <TabButton active={tab === 'notifications'} onClick={() => setTab('notifications')}>Logs</TabButton>
+                    <TabButton active={tab === 'emails'} onClick={() => setTab('emails')}>
+                        Emails
+                    </TabButton>
                 </div>
             </div>
 
@@ -307,6 +326,21 @@ export default function AdminDashboardPage() {
                                                                 <button onClick={() => handleVerification(r.id, 'approved')} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[10px] font-black uppercase shadow-sm">Approve</button>
                                                                 <button onClick={() => handleVerification(r.id, 'rejected')} className="h-7 px-3 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 text-[10px] font-black uppercase">Dismiss</button>
                                                             </div>
+                                                        ) : tab === 'emails' && r.status === 'pending' ? (
+                                                            <div className="flex flex-col items-end gap-1.5">
+                                                                <input
+                                                                    value={emailNotes[r.id] || ''}
+                                                                    onChange={e => setEmailNotes(prev => ({ ...prev, [r.id]: e.target.value }))}
+                                                                    placeholder="Note (optional)"
+                                                                    className="text-[10px] w-36 px-2 py-1 border border-slate-200 dark:border-white/10 rounded-lg bg-transparent focus:outline-none"
+                                                                />
+                                                                <div className="flex gap-1.5">
+                                                                    <button onClick={() => handleEmailAction(r.id, 'approved')} disabled={processingId === r.id} className="h-7 px-3 rounded-lg bg-emerald-500 text-white text-[10px] font-black uppercase shadow-sm disabled:opacity-50">Approve</button>
+                                                                    <button onClick={() => handleEmailAction(r.id, 'rejected')} disabled={processingId === r.id} className="h-7 px-3 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 text-[10px] font-black uppercase disabled:opacity-50">Reject</button>
+                                                                </div>
+                                                            </div>
+                                                        ) : tab === 'emails' ? (
+                                                            <span className={`px-2 py-1 rounded-full text-[9px] font-black uppercase ${r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{r.status}</span>
                                                         ) : (
                                                             <button onClick={() => deleteRow(r.id)} className="h-7 px-3 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase">Remove</button>
                                                         )}
@@ -489,6 +523,7 @@ function getColumns(tab: Tab) {
     switch (tab) {
         case 'users': return ['UUID-ID', 'User Handle', 'Email Contact', 'Join Date'];
         case 'verification': return ['Account', 'Legal Name', 'Reasoning', 'Status', 'Modified At'];
+        case 'emails': return ['User', 'Requested Email', 'Status', 'Applied At'];
         default: return [];
     }
 }
@@ -520,6 +555,25 @@ function renderCells(tab: Tab, r: any) {
                 <div key="reason" className="max-w-[120px] font-medium text-slate-500 text-[10px] line-clamp-1 italic">"{r.reason}"</div>,
                 <span key="status" className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider ${r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{r.status}</span>,
                 <span key="date" className={timeClass}>{new Date(r.createdAt).toLocaleDateString()}</span>
+            ];
+        case 'emails':
+            return [
+                <div key="user" className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-[9px] font-black">
+                        {r.username?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                        <p className="font-bold text-slate-900 dark:text-white text-[12px]">@{r.username}</p>
+                        <p className="text-[10px] text-slate-400">{r.displayName}</p>
+                    </div>
+                </div>,
+                <span key="email" className="font-bold text-indigo-600 dark:text-indigo-400 font-mono text-[11px]">{r.fullEmail}</span>,
+                <span key="status" className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${
+                    r.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' :
+                    r.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                    'bg-blue-500/10 text-blue-500'
+                }`}>{r.status}</span>,
+                <span key="date" className="font-black text-[9px] text-slate-400 uppercase">{new Date(r.createdAt).toLocaleDateString()}</span>
             ];
         default: return [];
     }

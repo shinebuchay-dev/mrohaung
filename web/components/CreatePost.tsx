@@ -218,7 +218,7 @@ export default function CreatePost({ onPostCreated }: CreatePostProps) {
     return (
         <>
             {/* Trigger Row - Clean Minimal */}
-            <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100 dark:border-white/5">
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-white/5">
                 {/* Avatar */}
                 <div className="w-9 h-9 rounded-full flex-shrink-0 bg-slate-200 dark:bg-slate-800 overflow-hidden">
                     {currentUser?.avatarUrl ? (

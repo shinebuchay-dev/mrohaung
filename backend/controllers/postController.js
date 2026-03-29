@@ -76,23 +76,45 @@ exports.getFeed = async (req, res) => {
 
             const [posts] = await pool.query(guestQuery, [totalLimit, offset]);
 
-            const formattedPosts = posts.map(post => {
+            // Fetch Short Videos for Guest Feed
+            const [shortVideos] = await pool.query(
+                `SELECT 
+                    sv.id, sv.title as content, sv.videoUrl, sv.thumbnailUrl as imageUrl, 
+                    sv.createdAt, sv.authorId,
+                    u.username, u.avatarUrl, u.displayName, u.isVerified,
+                    (SELECT COUNT(*) FROM ShortVideoLike WHERE videoId = sv.id) as likeCount,
+                    (SELECT COUNT(*) FROM ShortVideoComment WHERE videoId = sv.id) as commentCount,
+                    0 as isLiked,
+                    'short' as feedType
+                 FROM ShortVideo sv
+                 JOIN User u ON sv.authorId = u.id
+                 ORDER BY sv.createdAt DESC
+                 LIMIT 5`
+            );
+
+            // Combine and sort
+            let allItems = [...posts, ...shortVideos];
+            allItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            const formattedPosts = allItems.map(item => {
+                const isShort = item.feedType === 'short';
                 const formatted = {
-                    ...post,
+                    ...item,
+                    isShort,
                     author: {
-                        id: post.authorId,
-                        username: post.username,
-                        displayName: post.displayName,
-                        avatarUrl: post.avatarUrl,
-                        isVerified: !!post.isVerified
+                        id: item.authorId,
+                        username: item.username,
+                        displayName: item.displayName,
+                        avatarUrl: item.avatarUrl,
+                        isVerified: !!item.isVerified
                     },
                     isLiked: false,
                     userReaction: null,
                     _count: {
-                        likes: parseInt(post.likeCount || 0),
-                        comments: parseInt(post.commentCount || 0)
+                        likes: parseInt(item.likeCount || 0),
+                        comments: parseInt(item.commentCount || 0)
                     },
-                    feedType: 'suggested'
+                    feedType: item.feedType
                 };
                 delete formatted.username;
                 delete formatted.displayName;

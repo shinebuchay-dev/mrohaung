@@ -132,7 +132,7 @@ export default function SearchBar() {
                                                 <p className="text-slate-900 dark:text-white font-semibold truncate">
                                                     {result.title}
                                                 </p>
-                                                {result.isVerified && (
+                                                {!!result.isVerified && (
                                                     <div className="flex-shrink-0 ml-[2px] flex items-center justify-center bg-amber-500 rounded-full w-[11.5px] h-[11.5px] mt-[1px]">
                                                         <Check className="w-[6px] h-[6px] text-white" strokeWidth={6} />
                                                     </div>

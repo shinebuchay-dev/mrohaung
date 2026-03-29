@@ -30,6 +30,11 @@ router.delete('/notifications/:notificationId', adminController.deleteNotificati
 router.get('/verification-requests', adminController.listVerificationRequests);
 router.post('/verify-action', adminController.handleVerificationAction);
 
+// Email Applications
+const emailAppCtrl = require('../controllers/emailApplicationController');
+router.get('/email-applications', emailAppCtrl.adminList);
+router.patch('/email-applications/:id', emailAppCtrl.adminAction);
+
 // Notifications management is handled by separate routes if needed, 
 // for now we keep the list available in dashboard for basic admin oversight 
 // if the user didn't explicitly ask to remove it too. 
