@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign, Send, Inbox, UploadCloud, RefreshCw } from 'lucide-react';
+import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign, Send, Inbox, UploadCloud, RefreshCw, Trash, Trash2, ArrowRight } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import api from '@/lib/api';
 
-function NativeWebmailUI({ 
-    emailApp, copyToClipboard, copiedField, 
-    sendMessage, setSendMessage, sendSubject, setSendSubject, sendTo, setSendTo, 
-    handleSendEmail, sending, sendSuccess, sendError 
+function NativeWebmailUI({
+    emailApp, copyToClipboard, copiedField,
+    sendMessage, setSendMessage, sendSubject, setSendSubject, sendTo, setSendTo,
+    handleSendEmail, sending, sendSuccess, sendError
 }: any) {
     const [activeTab, setActiveTab] = useState('inbox');
     const [inboxMails, setInboxMails] = useState<any[]>([]);
@@ -17,6 +17,32 @@ function NativeWebmailUI({
     const [trashMails, setTrashMails] = useState<any[]>([]);
     const [loadingMails, setLoadingMails] = useState(false);
     const [selectedMail, setSelectedMail] = useState<any>(null);
+    const [isInlineCompose, setIsInlineCompose] = useState(false);
+    const [inlineMode, setInlineMode] = useState<'reply' | 'forward'>('reply');
+
+    const handleStartInline = (mode: 'reply' | 'forward') => {
+        if (!selectedMail) return;
+        setInlineMode(mode);
+        const originalBody = `\n\n--- ${mode === 'reply' ? 'Original' : 'Forwarded'} Message ---\nFrom: ${selectedMail.fromAddress}\nTo: ${selectedMail.toAddress}\nDate: ${new Date(selectedMail.createdAt).toLocaleString()}\n\n${selectedMail.bodyText}`;
+        setSendMessage(originalBody);
+        
+        if (mode === 'reply') {
+            setSendTo(selectedMail.fromAddress);
+            setSendSubject(`Re: ${selectedMail.subject}`);
+        } else {
+            setSendTo('');
+            setSendSubject(`Fwd: ${selectedMail.subject}`);
+        }
+        setIsInlineCompose(true);
+    };
+
+    useEffect(() => {
+        if (sendSuccess) setIsInlineCompose(false);
+    }, [sendSuccess]);
+
+    useEffect(() => {
+        setIsInlineCompose(false);
+    }, [selectedMail?.id, activeTab]);
 
     const fetchMails = async () => {
         setLoadingMails(true);
@@ -93,11 +119,10 @@ function NativeWebmailUI({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all border-b-2 -mb-px whitespace-nowrap ${
-                            activeTab === tab.id
-                            ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-                            : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
-                        }`}
+                        className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab.id
+                                ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                                : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
+                            }`}
                     >
                         <tab.icon className="w-3.5 h-3.5" />
                         {tab.label}
@@ -117,15 +142,15 @@ function NativeWebmailUI({
                         {/* Left Column: Mail List */}
                         <div className={`${selectedMail ? 'lg:col-span-2 hidden lg:block' : ''} space-y-1`}>
                             {(() => {
-                                const mails = 
-                                    activeTab === 'inbox' ? inboxMails : 
-                                    activeTab === 'sent' ? sentMails : 
-                                    activeTab === 'archived' ? archivedMails : trashMails;
+                                const mails =
+                                    activeTab === 'inbox' ? inboxMails :
+                                        activeTab === 'sent' ? sentMails :
+                                            activeTab === 'archived' ? archivedMails : trashMails;
 
-                                const emptyMsg = 
-                                    activeTab === 'inbox' ? 'Your inbox is empty.' : 
-                                    activeTab === 'sent' ? 'No sent emails yet.' : 
-                                    activeTab === 'archived' ? 'No archived emails.' : 'Trash is empty.';
+                                const emptyMsg =
+                                    activeTab === 'inbox' ? 'Your inbox is empty.' :
+                                        activeTab === 'sent' ? 'No sent emails yet.' :
+                                            activeTab === 'archived' ? 'No archived emails.' : 'Trash is empty.';
 
                                 if (loadingMails && mails.length === 0) return (
                                     <div className="flex items-center gap-2 py-8 text-slate-400 text-sm px-1">
@@ -147,20 +172,42 @@ function NativeWebmailUI({
                                             <div 
                                                 key={m.id} 
                                                 onClick={() => setSelectedMail(m)}
-                                                className={`py-3 px-3 rounded-xl transition-all cursor-pointer mb-1 border-l-4 ${
+                                                className={`py-2 px-3 rounded-xl transition-all cursor-pointer mb-1 border-l-4 group ${
                                                     selectedMail?.id === m.id
                                                     ? 'bg-indigo-50/50 dark:bg-indigo-500/5 border-indigo-500 shadow-sm'
                                                     : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'
                                                 }`}
                                             >
-                                                <div className="flex justify-between items-baseline mb-1">
-                                                    <p className={`font-bold text-sm truncate mr-2 ${selectedMail?.id === m.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-white'}`}>
-                                                        {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
-                                                    </p>
-                                                    <p className="text-[10px] text-slate-400 font-bold shrink-0">{new Date(m.createdAt).toLocaleDateString()}</p>
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1 min-w-0">
+                                                        {/* Title & Subject grouped closely */}
+                                                        <p className={`font-bold text-[13px] truncate leading-tight ${selectedMail?.id === m.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-white'}`}>
+                                                            {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
+                                                        </p>
+                                                        <p className="text-[12px] font-bold text-slate-600 dark:text-slate-300 truncate leading-tight mt-0.5">
+                                                            {m.subject}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex flex-col items-end shrink-0 ml-2">
+                                                        <p className="text-[9px] text-slate-400 font-bold mb-1">{new Date(m.createdAt).toLocaleDateString()}</p>
+                                                        {/* Quick actions under date */}
+                                                        <div className="flex gap-1.5 mt-0.5">
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleEmailAction(m.id, 'archive'); }}
+                                                                className="p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded"
+                                                            >
+                                                                <CheckCheck className="w-2.5 h-2.5 text-slate-400 hover:text-indigo-500" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleEmailAction(m.id, 'trash'); }}
+                                                                className="p-1 hover:bg-red-100 dark:hover:bg-red-500/10 rounded"
+                                                            >
+                                                                <Trash2 className="w-2.5 h-2.5 text-slate-400 hover:text-red-500" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 truncate">{m.subject}</p>
-                                                <p className="text-xs text-slate-400 line-clamp-1">{m.bodyText}</p>
+                                                <p className="text-[11px] text-slate-400 truncate mt-1">{m.bodyText}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -170,87 +217,138 @@ function NativeWebmailUI({
 
                         {/* Right Column: Mail Detail */}
                         {selectedMail && (
-                            <div className="lg:col-span-3 bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-6 animate-in slide-in-from-right-4 duration-300 overflow-hidden shadow-2xl shadow-indigo-500/5">
-                                <div className="flex items-center justify-between mb-8">
-                                    <button 
-                                        onClick={() => setSelectedMail(null)}
-                                        className="lg:hidden flex items-center gap-1 text-xs font-bold text-indigo-500 mb-4"
-                                    >
-                                        <Mail className="w-3 h-3 rotate-180" /> Back to list
-                                    </button>
-                                    <div className="flex items-center gap-2">
-                                        {activeTab === 'trash' && (
-                                            <button onClick={() => handleEmailAction(selectedMail.id, 'restore')} className="text-[10px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded">Restore</button>
-                                        )}
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded">
+                            <div className="lg:col-span-3 bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-6 shadow-2xl shadow-indigo-500/5 flex flex-col h-[520px] animate-in slide-in-from-right-4 duration-300 overflow-hidden">
+                                {/* Header: Date on left, Icons on far right */}
+                                <div className="flex items-center justify-between mb-1 shrink-0">
+                                    <div className="flex items-center gap-3">
+                                        <button 
+                                            onClick={() => setSelectedMail(null)}
+                                            className="lg:hidden flex items-center gap-1 text-xs font-bold text-indigo-500"
+                                        >
+                                            <Mail className="w-3 h-3 rotate-180" /> Back
+                                        </button>
+                                        <span className="text-[10px] font-black uppercase tracking-tight text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded">
                                             {new Date(selectedMail.createdAt).toLocaleString()}
                                         </span>
                                     </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button 
+                                            onClick={() => handleEmailAction(selectedMail.id, 'archive')}
+                                            className="p-1 hover:bg-indigo-500/10 rounded transition-colors group"
+                                            title="Archive"
+                                        >
+                                            <CheckCheck className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleEmailAction(selectedMail.id, 'trash')}
+                                            className="p-1 hover:bg-red-500/10 rounded transition-colors group"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500" />
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div>
-                                        <h1 className="text-xl font-black text-slate-900 dark:text-white mb-4 leading-tight">
-                                            {selectedMail.subject}
-                                        </h1>
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">From</p>
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{selectedMail.fromAddress}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">To</p>
-                                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{selectedMail.toAddress}</p>
+                                {/* Scrollable Message Content */}
+                                <div className="flex-1 overflow-y-auto pr-2 no-scrollbar">
+                                    <div className="space-y-2">
+                                        <div>
+                                            <h1 className="text-xl font-black text-slate-900 dark:text-white mb-1 leading-tight">
+                                                {selectedMail.subject}
+                                            </h1>
+                                            <div className="space-y-0.5">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">From</p>
+                                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{selectedMail.fromAddress}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">To</p>
+                                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{selectedMail.toAddress}</p>
+                                                </div>
                                             </div>
                                         </div>
+
+                                        <div className="h-px bg-slate-50 dark:bg-white/5" />
+
+                                        <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
+                                            {selectedMail.bodyText}
+                                        </div>
                                     </div>
+                                </div>
 
-                                    <div className="h-px bg-slate-100 dark:bg-white/5" />
-
-                                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
-                                        {selectedMail.bodyText}
-                                    </div>
-
-                                    {/* Action row */}
-                                    <div className="pt-8 flex gap-3 border-t border-slate-50 dark:border-white/5">
-                                        {activeTab !== 'compose' && activeTab !== 'trash' && (
-                                            <>
-                                                <button 
-                                                    onClick={() => {
-                                                        setSendTo(selectedMail.fromAddress);
-                                                        setSendSubject(`Re: ${selectedMail.subject}`);
-                                                        setActiveTab('compose');
-                                                    }}
-                                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
-                                                >
-                                                    <Send className="w-3.5 h-3.5" /> Reply
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleEmailAction(selectedMail.id, 'archive')}
-                                                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
-                                                >
-                                                    <CheckCheck className="w-3.5 h-3.5" /> Archive
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleEmailAction(selectedMail.id, 'trash')}
-                                                    className="px-4 py-2 bg-red-50 text-red-500 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
-                                                >
-                                                    <XCircle className="w-3.5 h-3.5" /> Delete
-                                                </button>
-                                            </>
-                                        )}
-                                        {activeTab === 'trash' && (
+                                {/* Action row — Pinned at bottom */}
+                                <div className="pt-4 flex gap-3 mt-auto shrink-0 border-t border-slate-50 dark:border-white/5 bg-white/50 dark:bg-slate-900/10 -mx-6 px-6 pb-2">
+                                    {activeTab !== 'trash' && !isInlineCompose && (
+                                        <>
+                                            <button 
+                                                onClick={() => handleStartInline('reply')}
+                                                className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                                            >
+                                                <Send className="w-3.5 h-3.5" /> Reply
+                                            </button>
+                                            <button 
+                                                onClick={() => handleStartInline('forward')}
+                                                className="px-5 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
+                                            >
+                                                <ArrowRight className="w-3.5 h-3.5" /> Forward
+                                            </button>
+                                        </>
+                                    )}
+                                    {activeTab === 'trash' && (
+                                        <>
+                                            <button onClick={() => handleEmailAction(selectedMail.id, 'restore')} className="px-5 py-2 bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg">Restore Email</button>
                                             <button 
                                                 onClick={() => {
                                                     if(confirm('Permanently delete this email?')) handleEmailAction(selectedMail.id, 'delete');
                                                 }}
-                                                className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg flex items-center gap-2"
+                                                className="px-5 py-2 bg-red-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg flex items-center gap-2"
                                             >
-                                                <XCircle className="w-3.5 h-3.5" /> Delete Permanently
+                                                <Trash2 className="w-3.5 h-3.5" /> Delete Permanently
                                             </button>
-                                        )}
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
+
+                                {/* Inline Compose Form */}
+                                {isInlineCompose && (
+                                    <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-500/20 animate-in slide-in-from-bottom-4 duration-300">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <p className="text-[10px] font-black uppercase text-indigo-500 tracking-widest flex items-center gap-2">
+                                                {inlineMode === 'reply' ? <Send className="w-3 h-3" /> : <ArrowRight className="w-3 h-3" />}
+                                                {inlineMode === 'reply' ? 'Inline Reply' : 'Inline Forward'}
+                                            </p>
+                                            <button onClick={() => setIsInlineCompose(false)} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase">Cancel</button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {inlineMode === 'forward' && (
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="To: (recipient email)"
+                                                    value={sendTo}
+                                                    onChange={(e) => setSendTo(e.target.value)}
+                                                    className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-lg px-3 py-2 text-xs font-bold focus:ring-1 focus:ring-indigo-500"
+                                                />
+                                            )}
+                                            <textarea 
+                                                autoFocus
+                                                value={sendMessage}
+                                                onChange={(e) => setSendMessage(e.target.value)}
+                                                placeholder="Write your message..."
+                                                className="w-full bg-slate-50 dark:bg-white/5 border-none rounded-xl px-4 py-3 text-xs min-h-[120px] focus:ring-1 focus:ring-indigo-500 no-scrollbar"
+                                            />
+                                            <div className="flex justify-end pt-1">
+                                                <button 
+                                                    onClick={handleSendEmail}
+                                                    disabled={sending}
+                                                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-white/10 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                                                >
+                                                    {sending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                                                    {sending ? 'Sending...' : 'Send Message'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

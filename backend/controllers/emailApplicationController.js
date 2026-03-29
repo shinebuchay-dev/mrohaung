@@ -216,20 +216,23 @@ exports.sendEmail = async (req, res) => {
             return res.status(403).json({ message: 'Your email application is not approved yet.' });
         }
 
-        // Instead of connecting to Hostinger with the user's password, 
-        // we will use the admin support@mrohaung.com to relay it, OR just save it internally.
-        // Actually, if it's sent to another @mrohaung.com user, we just INSERT it into their inbox!
+        // Sanitize recipient for internal check and MX lookup
+        const cleanTo = (str) => {
+            const match = str.match(/<([^>]+)>/);
+            return (match ? match[1] : str).trim().toLowerCase();
+        };
+        const targetEmail = cleanTo(to);
 
-        if (to.endsWith(`@${DOMAIN}`)) {
+        if (targetEmail.endsWith(`@${DOMAIN}`)) {
             // Internal Delivery — straight to DB inbox
             const msgId = uuidv4();
             await pool.execute(`
                 INSERT INTO EmailMessage (id, ownerEmail, folder, fromAddress, toAddress, subject, bodyText, bodyHtml)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `, [msgId, to, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
+            `, [msgId, targetEmail, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
         } else {
             // External Delivery — MX lookup + DKIM signing
-            const recipientDomain = to.split('@')[1];
+            const recipientDomain = targetEmail.split('@')[1];
 
             let mxRecords;
             try {
@@ -425,14 +428,14 @@ exports.webhookReceive = async (req, res) => {
             return res.status(400).json({ message: 'Missing recipient' });
         }
 
-        // Only accept emails for registered @mrohaung.com accounts
+        // Case-insensitive lookup for registered @mrohaung.com accounts
         const [[app]] = await pool.execute(
-            'SELECT fullEmail FROM EmailApplication WHERE fullEmail = ? AND status = "approved"',
+            'SELECT fullEmail FROM EmailApplication WHERE LOWER(fullEmail) = ? AND status = "approved"',
             [recipient]
         );
 
         if (!app) {
-            console.log(`[Webhook] No approved mailbox for: ${recipient}`);
+            console.log(`[Webhook] No approved mailbox for recipient: ${recipient}`);
             return res.status(404).json({ message: 'Mailbox not found' });
         }
 
