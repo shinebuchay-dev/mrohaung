@@ -334,6 +334,13 @@ exports.getSent = async (req, res) => {
 // Called by Cloudflare Email Routing Worker when an email arrives
 const WEBHOOK_SECRET = process.env.EMAIL_WEBHOOK_SECRET || 'mrohaung-cf-webhook-secret-2024';
 
+// Helper to extract clean email from strings like "Name <email@domain.com>"
+const cleanEmail = (str) => {
+    if (!str) return '';
+    const match = str.match(/<([^>]+)>/);
+    return (match ? match[1] : str).trim().toLowerCase();
+};
+
 exports.webhookReceive = async (req, res) => {
     try {
         const { secret, from, to, subject, bodyText, bodyHtml } = req.body;
@@ -344,7 +351,9 @@ exports.webhookReceive = async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const recipient = Array.isArray(to) ? to[0] : to;
+        let recipient = Array.isArray(to) ? to[0] : to;
+        recipient = cleanEmail(recipient);
+        const sender = cleanEmail(from);
 
         if (!recipient) {
             return res.status(400).json({ message: 'Missing recipient' });
@@ -353,7 +362,7 @@ exports.webhookReceive = async (req, res) => {
         // Only accept emails for registered @mrohaung.com accounts
         const [[app]] = await pool.execute(
             'SELECT fullEmail FROM EmailApplication WHERE fullEmail = ? AND status = "approved"',
-            [recipient.toLowerCase()]
+            [recipient]
         );
 
         if (!app) {
