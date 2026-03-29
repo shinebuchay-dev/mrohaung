@@ -33,7 +33,16 @@ function FeedContent() {
   const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [sentCount, setSentCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
   const deepLinkHandled = useRef(false);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -153,27 +162,25 @@ function FeedContent() {
             <p className="text-red-400/80 text-xs">Please check your email to verify your account. Unverified accounts cannot post or interact.</p>
           </div>
           <button
-            disabled={resending}
+            disabled={resending || cooldown > 0}
             onClick={async () => {
-              if (resending) return;
+              if (resending || cooldown > 0) return;
               setResending(true);
               try {
                 await api.post('/auth/resend-verification', { email: currentUser.email });
                 setSentCount(prev => prev + 1);
-                // Keep the 'Sent' state for a bit for feedback, then allow retry if needed
-                setTimeout(() => setResending(false), 2000);
+                setCooldown(30); // Start 30s cooldown
+                setResending(false);
               } catch (error) {
                 console.error('Failed to resend verification email:', error);
                 alert('Failed to send verification email. Please try again later.');
                 setResending(false);
               }
             }}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all min-w-[110px] flex items-center justify-center ${
-              resending 
-                ? 'bg-red-500/40 text-white cursor-wait opacity-80' 
-                : sentCount > 0 
-                  ? 'bg-green-500/20 text-green-500' 
-                  : 'bg-red-500/20 hover:bg-red-500/30 text-red-500 active:scale-95'
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all min-w-[125px] flex items-center justify-center ${
+              resending || cooldown > 0
+                ? 'bg-slate-500/10 text-slate-500 cursor-not-allowed' 
+                : 'bg-red-500/20 hover:bg-red-500/30 text-red-500 active:scale-95'
             }`}
           >
             {resending ? (
@@ -181,8 +188,8 @@ function FeedContent() {
                 <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Sending...
               </span>
-            ) : sentCount > 0 ? (
-              'Sent! Check Email'
+            ) : cooldown > 0 ? (
+              `Resend in ${cooldown}s`
             ) : (
               'Resend Email'
             )}
