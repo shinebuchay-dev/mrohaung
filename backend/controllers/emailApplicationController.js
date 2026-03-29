@@ -221,16 +221,16 @@ exports.sendEmail = async (req, res) => {
         // Actually, if it's sent to another @mrohaung.com user, we just INSERT it into their inbox!
 
         if (to.endsWith(`@${DOMAIN}`)) {
-            // Internal Delivery
+            // Internal Delivery — straight to DB inbox
             const msgId = uuidv4();
             await pool.execute(`
                 INSERT INTO EmailMessage (id, ownerEmail, folder, fromAddress, toAddress, subject, bodyText, bodyHtml)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [msgId, to, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
         } else {
-            // Native Direct Delivery via MX Record Lookup (100% Free / Independent)
+            // External Delivery — MX lookup + DKIM signing
             const recipientDomain = to.split('@')[1];
-            
+
             let mxRecords;
             try {
                 mxRecords = await dns.resolveMx(recipientDomain);
@@ -242,15 +242,29 @@ exports.sendEmail = async (req, res) => {
                 throw new Error(`No mail servers found for domain ${recipientDomain}`);
             }
 
-            // Sort by priority (lowest number = highest priority)
             mxRecords.sort((a, b) => a.priority - b.priority);
             const targetMX = mxRecords[0].exchange;
+
+            // Load DKIM private key if available
+            let dkimOptions;
+            try {
+                const fs = require('fs');
+                const dkimPrivateKey = fs.readFileSync('/etc/ssl/dkim/mrohaung_dkim.pem', 'utf8');
+                dkimOptions = {
+                    domainName: DOMAIN,
+                    keySelector: 'mrohaung',
+                    privateKey: dkimPrivateKey
+                };
+            } catch (e) {
+                console.warn('[DKIM] Private key not found, sending without DKIM signing');
+            }
 
             const transporter = nodemailer.createTransport({
                 host: targetMX,
                 port: 25,
-                secure: false, // opportunistic TLS
-                tls: { rejectUnauthorized: false }
+                secure: false,
+                tls: { rejectUnauthorized: false },
+                dkim: dkimOptions
             });
 
             const mailOptions = {

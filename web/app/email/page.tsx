@@ -57,23 +57,29 @@ function NativeWebmailUI({
     };
 
     return (
-        <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden flex flex-col h-[600px]">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-slate-800/50">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
-                        <Mail className="w-4 h-4 text-white" />
+        <div className="flex flex-col min-h-[580px]">
+            {/* Account Header — seamless, no card */}
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
+                        <Mail className="w-4 h-4 text-indigo-500" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Mrohaung Webmail</p>
-                        <p className="text-sm font-black text-slate-900 dark:text-white">{emailApp.fullEmail}</p>
+                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Signed in as</p>
+                        <p className="text-sm font-bold text-slate-800 dark:text-white">{emailApp.fullEmail}</p>
                     </div>
                 </div>
-                <button onClick={fetchMails} className="p-2 bg-white dark:bg-slate-700 rounded-lg shadow-sm text-slate-500 hover:text-indigo-500 transition-colors">
-                    <RefreshCw className={`w-4 h-4 ${loadingMails ? 'animate-spin' : ''}`} />
+                <button
+                    onClick={fetchMails}
+                    className="flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingMails ? 'animate-spin' : ''}`} />
+                    Refresh
                 </button>
             </div>
-            
-            <div className="flex border-b border-slate-100 dark:border-white/5">
+
+            {/* Tab Bar — minimal underline style */}
+            <div className="flex gap-6 border-b border-slate-100 dark:border-white/5 mb-4">
                 {[
                     { id: 'inbox', icon: Inbox, label: 'Inbox', count: inboxMails.length },
                     { id: 'sent', icon: UploadCloud, label: 'Sent', count: sentMails.length },
@@ -82,43 +88,107 @@ function NativeWebmailUI({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold transition-all ${
-                            activeTab === tab.id 
-                            ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 bg-indigo-50/50 dark:bg-indigo-500/5' 
-                            : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5'
+                        className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all border-b-2 -mb-px ${
+                            activeTab === tab.id
+                            ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                            : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
                         }`}
                     >
-                        <tab.icon className="w-4 h-4" /> {tab.label}
-                        {tab.count !== undefined && <span className="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded-full text-slate-600 dark:text-slate-300">{tab.count}</span>}
+                        <tab.icon className="w-3.5 h-3.5" />
+                        {tab.label}
+                        {tab.count !== undefined && tab.count > 0 && (
+                            <span className="text-[10px] bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-full font-bold">
+                                {tab.count}
+                            </span>
+                        )}
                     </button>
                 ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0f172a]">
-                {activeTab === 'inbox' && renderMailList(inboxMails, "No emails in your inbox yet.")}
-                {activeTab === 'sent' && renderMailList(sentMails, "No sent emails yet.")}
+            {/* Mail List — no card wrapper, just rows */}
+            <div className="flex-1">
+                {(activeTab === 'inbox' || activeTab === 'sent') && (() => {
+                    const mails = activeTab === 'inbox' ? inboxMails : sentMails;
+                    const emptyMsg = activeTab === 'inbox' ? 'Your inbox is empty.' : 'No sent emails yet.';
+                    if (loadingMails && mails.length === 0) return (
+                        <div className="flex items-center gap-2 py-8 text-slate-400 text-sm">
+                            <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+                            Loading...
+                        </div>
+                    );
+                    if (mails.length === 0) return (
+                        <div className="py-12 text-center">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                {activeTab === 'inbox' ? <Inbox className="w-5 h-5 text-slate-400" /> : <UploadCloud className="w-5 h-5 text-slate-400" />}
+                            </div>
+                            <p className="text-sm font-medium text-slate-400">{emptyMsg}</p>
+                        </div>
+                    );
+                    return (
+                        <div className="divide-y divide-slate-100 dark:divide-white/5">
+                            {mails.map(m => (
+                                <div key={m.id} className="py-3 hover:bg-slate-50/50 dark:hover:bg-white/2 -mx-1 px-1 rounded-lg transition-colors cursor-pointer">
+                                    <div className="flex justify-between items-baseline mb-0.5">
+                                        <p className="font-bold text-slate-800 dark:text-white text-sm truncate mr-2">
+                                            {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
+                                        </p>
+                                        <p className="text-[11px] text-slate-400 shrink-0">{new Date(m.createdAt).toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-0.5">{m.subject}</p>
+                                    <p className="text-xs text-slate-400 line-clamp-1">{m.bodyText}</p>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })()}
+
+                {/* Compose — clean form, no card background */}
                 {activeTab === 'compose' && (
-                    <div className="p-5">
-                        <form onSubmit={handleSendEmail} className="space-y-4">
-                            {sendSuccess && <div className="p-3 bg-emerald-50 text-emerald-600 text-sm font-bold rounded-xl flex items-center gap-2"><Check className="w-4 h-4" /> {sendSuccess}</div>}
-                            {sendError && <div className="p-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl flex items-center gap-2"><XCircle className="w-4 h-4" /> {sendError}</div>}
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">To</label>
-                                <input value={sendTo} onChange={e => setSendTo(e.target.value)} placeholder="recipient@example.com" className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+                    <form onSubmit={handleSendEmail} className="space-y-3">
+                        {sendSuccess && (
+                            <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 py-2">
+                                <Check className="w-4 h-4" /> {sendSuccess}
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subject</label>
-                                <input value={sendSubject} onChange={e => setSendSubject(e.target.value)} placeholder="Email Subject" className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30" />
+                        )}
+                        {sendError && (
+                            <div className="flex items-center gap-2 text-sm font-bold text-red-500 py-2">
+                                <XCircle className="w-4 h-4" /> {sendError}
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Message</label>
-                                <textarea value={sendMessage} onChange={e => setSendMessage(e.target.value)} placeholder="Write your email here..." rows={6} className="w-full bg-slate-50 dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none" />
-                            </div>
-                            <button type="submit" disabled={sending} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
-                                {sending ? <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Sending...</> : <><Send className="w-4 h-4" /> Send Email</>}
+                        )}
+                        <div>
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">To</label>
+                            <input
+                                value={sendTo} onChange={e => setSendTo(e.target.value)}
+                                placeholder="recipient@example.com"
+                                className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Subject</label>
+                            <input
+                                value={sendSubject} onChange={e => setSendSubject(e.target.value)}
+                                placeholder="Email Subject"
+                                className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Message</label>
+                            <textarea
+                                value={sendMessage} onChange={e => setSendMessage(e.target.value)}
+                                placeholder="Write your message..."
+                                rows={7}
+                                className="w-full bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none resize-none leading-relaxed"
+                            />
+                        </div>
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                type="submit" disabled={sending}
+                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                            >
+                                {sending ? <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Sending...</> : <><Send className="w-4 h-4" /> Send</>}
                             </button>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 )}
             </div>
         </div>
