@@ -314,41 +314,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="max-w-5xl mx-auto px-2 sm:px-4 pt-[76px] sm:pt-20">
-                {/* Verification Banner */}
-                {currentUser && !currentUser.isVerified && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-4 p-4 bg-indigo-500 text-white rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-indigo-500/20"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
-                                <Mail className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-black uppercase tracking-tight">Action Required: Verify your identity</p>
-                                <p className="text-xs font-medium opacity-90">Please check your email to verify your account. Unverified accounts cannot post or interact.</p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={async (e) => {
-                                const btn = e.currentTarget;
-                                btn.disabled = true;
-                                try {
-                                    await api.post('/auth/resend-verification', { email: currentUser.email });
-                                    alert('Verification email has been resent to ' + currentUser.email);
-                                } catch (err: any) {
-                                    alert(err.response?.data?.message || 'Failed to resend email');
-                                    btn.disabled = false;
-                                }
-                            }}
-                            className="px-6 py-2 bg-white text-indigo-600 font-black text-xs rounded-xl hover:bg-slate-50 transition-all whitespace-nowrap active:scale-95 disabled:opacity-50"
-                        >
-                            Resend Email
-                        </button>
-                    </motion.div>
-                )}
-
                 <div className="flex gap-4 lg:gap-6 transition-all duration-300">
                     <aside className="hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-20 transition-all duration-300 shrink-0">
                         <div className="h-full flex flex-col justify-between">
