@@ -31,6 +31,8 @@ function FeedContent() {
   const [showPostModal, setShowPostModal] = useState(false);
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
   const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [sentCount, setSentCount] = useState(0);
   const deepLinkHandled = useRef(false);
 
   const { ref, inView } = useInView({
@@ -151,18 +153,39 @@ function FeedContent() {
             <p className="text-red-400/80 text-xs">Please check your email to verify your account. Unverified accounts cannot post or interact.</p>
           </div>
           <button
+            disabled={resending}
             onClick={async () => {
+              if (resending) return;
+              setResending(true);
               try {
                 await api.post('/auth/resend-verification', { email: currentUser.email });
-                alert('Verification email sent! Please check your inbox.');
+                setSentCount(prev => prev + 1);
+                // Keep the 'Sent' state for a bit for feedback, then allow retry if needed
+                setTimeout(() => setResending(false), 2000);
               } catch (error) {
                 console.error('Failed to resend verification email:', error);
                 alert('Failed to send verification email. Please try again later.');
+                setResending(false);
               }
             }}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded-lg text-xs font-bold transition-all"
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all min-w-[110px] flex items-center justify-center ${
+              resending 
+                ? 'bg-red-500/40 text-white cursor-wait opacity-80' 
+                : sentCount > 0 
+                  ? 'bg-green-500/20 text-green-500' 
+                  : 'bg-red-500/20 hover:bg-red-500/30 text-red-500 active:scale-95'
+            }`}
           >
-            Resend Email
+            {resending ? (
+              <span className="flex items-center gap-2">
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Sending...
+              </span>
+            ) : sentCount > 0 ? (
+              'Sent! Check Email'
+            ) : (
+              'Resend Email'
+            )}
           </button>
         </div>
       )}
