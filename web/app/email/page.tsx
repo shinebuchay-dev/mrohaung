@@ -302,14 +302,40 @@ export default function EmailPage() {
         }
     };
 
+    // If approved, show seamless full webmail (no card, no header)
+    if (!loading && emailApp?.status === 'approved') {
+        return (
+            <ProtectedRoute>
+                <div className="max-w-3xl mx-auto pb-20 pt-4">
+                    <NativeWebmailUI
+                        emailApp={emailApp}
+                        copyToClipboard={copyToClipboard}
+                        copiedField={copiedField}
+                        sendMessage={sendMessage}
+                        setSendMessage={setSendMessage}
+                        sendSubject={sendSubject}
+                        setSendSubject={setSendSubject}
+                        sendTo={sendTo}
+                        setSendTo={setSendTo}
+                        handleSendEmail={handleSendEmail}
+                        sending={sending}
+                        sendSuccess={sendSuccess}
+                        sendError={sendError}
+                    />
+                </div>
+            </ProtectedRoute>
+        );
+    }
+
     return (
         <ProtectedRoute>
             <div className="max-w-3xl mx-auto pb-20">
+                {/* Page title — only show when no approved email */}
                 <div className="mb-8 mt-4 hidden md:block">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white">Email Address</h1>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Get your own unique @mrohaung.com personal email</p>
                 </div>
-                
+
                 <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
                     <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
                         <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -317,7 +343,7 @@ export default function EmailPage() {
                         </h2>
                         <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full">@mrohaung.com</span>
                     </div>
-                    
+
                     <div className="p-5">
                         {loading ? (
                             <div className="py-10 text-center flex flex-col items-center">
@@ -326,12 +352,13 @@ export default function EmailPage() {
                             </div>
                         ) : (
                             <>
+                                {/* No email yet — prompt to create */}
                                 {!emailApp && !showEmailForm && (
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white mb-1">Get your own @mrohaung.com email</p>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
                                             Create your personal <span className="font-bold text-indigo-500">you@mrohaung.com</span> email address.
-                                            You will instantly receive login details to access your new email via Webmail.
+                                            Send and receive emails directly from this app.
                                         </p>
                                         <button
                                             onClick={() => setShowEmailForm(true)}
@@ -342,6 +369,7 @@ export default function EmailPage() {
                                     </div>
                                 )}
 
+                                {/* Application form */}
                                 {!emailApp && showEmailForm && (
                                     <div className="space-y-4">
                                         <div>
@@ -391,6 +419,7 @@ export default function EmailPage() {
                                     </div>
                                 )}
 
+                                {/* Pending */}
                                 {emailApp?.status === 'pending' && (
                                     <div>
                                         <div className="bg-blue-50 dark:bg-blue-500/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-500/20 mb-4">
@@ -399,7 +428,7 @@ export default function EmailPage() {
                                                 <p className="font-bold text-blue-700 dark:text-blue-400">Application Under Review</p>
                                             </div>
                                             <p className="text-sm text-blue-600 dark:text-blue-500 font-medium tracking-tight">
-                                                Your request for <span className="font-black">{emailApp.fullEmail}</span> is being reviewed by admin.
+                                                Your request for <span className="font-black">{emailApp.fullEmail}</span> is being reviewed.
                                             </p>
                                         </div>
                                         <button onClick={handleCancelEmailApp} className="text-sm bg-red-50 text-red-500 hover:text-red-600 font-bold px-4 py-2 rounded-lg">
@@ -408,24 +437,7 @@ export default function EmailPage() {
                                     </div>
                                 )}
 
-                                {emailApp?.status === 'approved' && (
-                                    <NativeWebmailUI 
-                                        emailApp={emailApp} 
-                                        copyToClipboard={copyToClipboard} 
-                                        copiedField={copiedField} 
-                                        sendMessage={sendMessage}
-                                        setSendMessage={setSendMessage}
-                                        sendSubject={sendSubject}
-                                        setSendSubject={setSendSubject}
-                                        sendTo={sendTo}
-                                        setSendTo={setSendTo}
-                                        handleSendEmail={handleSendEmail}
-                                        sending={sending}
-                                        sendSuccess={sendSuccess}
-                                        sendError={sendError}
-                                    />
-                                )}
-
+                                {/* Rejected */}
                                 {emailApp?.status === 'rejected' && (
                                     <div className="space-y-4">
                                         <div className="bg-red-50 dark:bg-red-500/10 p-5 rounded-2xl border border-red-100 dark:border-red-500/20">
