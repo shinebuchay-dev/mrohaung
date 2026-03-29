@@ -72,35 +72,29 @@ exports.register = async (req, res) => {
             [userId, username, email, hashedPassword, displayName, dob || null, gender || null, phoneNumber || null, verificationToken, false]
         );
 
-        /* 
-        // Send verification email (DISABLED TEMPORARILY AS PER USER REQUEST)
-
+        // Send verification email
         const frontendUrl = process.env.FRONTEND_URL || 'https://mrohaung.com';
         const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
         try {
             await sendEmail({
                 email: email,
-                subject: 'Verify your MROHAUNG Account',
+                subject: 'Action Required: Verify your identity',
                 html: `
-                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                        <h2 style="color: #4f46e5;">Welcome to MROHAUNG!</h2>
-                        <p>Thank you for joining our community. To get started, please verify your email address by clicking the button below:</p>
-                        <div style="text-align: center; margin: 30px 0;">
-                            <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email Address</a>
+                    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 20px; background: white; text-align: center;">
+                        <h1 style="color: #4f46e5; font-weight: 900; margin-bottom: 20px;">MROHAUNG</h1>
+                        <h2 style="color: #1a1a1a; font-size: 20px; font-weight: 800;">Verify your identity</h2>
+                        <p style="color: #666; line-height: 1.6;">Welcome! Please check your email and click the button below to verify your account. <b>Unverified accounts cannot post or interact.</b></p>
+                        <div style="margin: 30px 0;">
+                            <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 14px 30px; text-decoration: none; border-radius: 12px; font-weight: 800; display: inline-block; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);">Confirm Email Address</a>
                         </div>
-                        <p>If the button doesn't work, copy and paste this link into your browser:</p>
-                        <p style="word-break: break-all; color: #666;">${verifyUrl}</p>
-                        <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                        <p style="font-size: 12px; color: #999;">If you didn't create an account with us, please ignore this email.</p>
+                        <p style="font-size: 12px; color: #999;">If the button doesn't work, copy-paste this link: <br> <span style="word-break: break-all; color: #888;">${verifyUrl}</span></p>
                     </div>
                 `
             });
         } catch (emailError) {
             console.error('Failed to send verification email:', emailError);
-            // We catch the error but don't fail registration, though ideally we might notify user
         }
-        */
 
 
         // Generate token for auto-login
@@ -296,13 +290,13 @@ exports.resendVerification = async (req, res) => {
 
         await sendEmail({
             email: email,
-            subject: 'Verify your MROHAUNG Account',
+            subject: 'Action Required: Verify your identity',
             html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #4f46e5;">Verify your Email</h2>
-                    <p>Click the button below to verify your email address:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify Email</a>
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 20px; background: white; text-align: center;">
+                    <h2 style="color: #1a1a1a; font-size: 20px; font-weight: 800;">Resend: Verify your identity</h2>
+                    <p style="color: #666; line-height: 1.6;">Please confirm your account to continue. Unverified accounts cannot post or interact.</p>
+                    <div style="margin: 30px 0;">
+                        <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 14px 30px; text-decoration: none; border-radius: 12px; font-weight: 800; display: inline-block; font-size: 14px;">Verify Email Now</a>
                     </div>
                 </div>
             `

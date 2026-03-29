@@ -22,6 +22,12 @@ const DOMAIN = process.env.EMAIL_DOMAIN || 'mrohaung.com';
                 return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
             }
 
+            // List of restricted prefixes
+            const restricted = ['admin', 'support', 'info', 'root', 'webmaster', 'mail', 'postmaster'];
+            if (restricted.includes(emailPrefix.toLowerCase())) {
+                return res.status(403).json({ message: 'This email prefix is restricted for system use.' });
+            }
+
             // Check if user already has an application
             const [[existing]] = await pool.execute(
                 'SELECT id, status FROM EmailApplication WHERE userId = ?',
