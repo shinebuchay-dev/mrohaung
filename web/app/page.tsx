@@ -36,6 +36,17 @@ function FeedContent() {
   const [cooldown, setCooldown] = useState(0);
   const deepLinkHandled = useRef(false);
 
+  // Check for verified=success query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'success') {
+      setShowVerificationSuccess(true);
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, []);
+
   // Cooldown timer effect
   useEffect(() => {
     if (cooldown > 0) {
@@ -151,6 +162,34 @@ function FeedContent() {
 
   return (
     <div>
+      {/* Verification Success Popup */}
+      <AnimatePresence>
+        {showVerificationSuccess && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-8 max-w-sm w-full text-center border border-slate-100 dark:border-white/10"
+            >
+              <div className="w-20 h-20 bg-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30">
+                <CheckCircle2 className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Verification Success!</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-8">
+                Email verified successfully! You can now use all features of MROHAUNG.
+              </p>
+              <button 
+                onClick={() => setShowVerificationSuccess(false)}
+                className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:opacity-90 transition-all active:scale-95"
+              >
+                Start Exploring
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Verification Banner */}
       {currentUser && !currentUser.isVerified && (
         <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">

@@ -32,6 +32,11 @@ function VerifyEmailContent() {
                 const response = await api.post('/auth/verify', { token });
                 setStatus('success');
                 setMessage(response.data.message || 'Email verified successfully!');
+                // Redirect to home after a tiny delay to show success briefly if needed, 
+                // but user wants it to appear on home, so let's go straight there.
+                setTimeout(() => {
+                    router.push('/?verified=success');
+                }, 800);
             } catch (error: any) {
                 setStatus('error');
                 setMessage(error.response?.data?.message || 'Verification failed. The link may be expired or invalid.');
@@ -39,7 +44,7 @@ function VerifyEmailContent() {
         };
 
         verifyToken();
-    }, [token]);
+    }, [token, router]);
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden">
