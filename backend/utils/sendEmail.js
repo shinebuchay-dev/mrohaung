@@ -49,12 +49,20 @@ const sendEmail = async (options) => {
         });
 
         // 4. Send
+        const msgId = `<${uuidv4()}@${DOMAIN}>`;
         const mailOptions = {
             from: `"MROHAUNG Support" <${SUPPORT_EMAIL}>`,
             to,
             subject,
-            text: text || "This is a system email from MROHAUNG.",
-            html
+            text: text || "Verification Required: Confirm your MROHAUNG identity.",
+            html,
+            headers: {
+                'Message-ID': msgId,
+                'X-Mailer': 'MrohaungMailer/1.0',
+                'X-Priority': '1 (Highest)',
+                'List-Unsubscribe': `<mailto:${SUPPORT_EMAIL}?subject=unsubscribe>`,
+                'Precedence': 'bulk'
+            }
         };
 
         await transporter.sendMail(mailOptions);
