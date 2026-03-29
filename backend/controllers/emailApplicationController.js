@@ -264,7 +264,8 @@ exports.sendEmail = async (req, res) => {
                 port: 25,
                 secure: false,
                 tls: { rejectUnauthorized: false },
-                dkim: dkimOptions
+                dkim: dkimOptions,
+                family: 4 // Force IPv4 to avoid IPv6 PTR issues with Gmail
             });
 
             const mailOptions = {
