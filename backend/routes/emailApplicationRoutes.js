@@ -3,11 +3,12 @@ const router = express.Router();
 const ctrl = require('../controllers/emailApplicationController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.post('/',          authMiddleware, ctrl.apply);
-router.get('/me',         authMiddleware, ctrl.getMyApplication);
-router.delete('/me',      authMiddleware, ctrl.cancelApplication);
-router.post('/send',      authMiddleware, ctrl.sendEmail);
-router.get('/inbox',      authMiddleware, ctrl.getInbox);
-router.get('/sent',       authMiddleware, ctrl.getSent);
+router.post('/',                  authMiddleware, ctrl.apply);
+router.get('/me',                 authMiddleware, ctrl.getMyApplication);
+router.delete('/me',              authMiddleware, ctrl.cancelApplication);
+router.post('/send',              authMiddleware, ctrl.sendEmail);
+router.get('/inbox',              authMiddleware, ctrl.getInbox);
+router.get('/sent',               authMiddleware, ctrl.getSent);
+router.post('/webhook/receive',   ctrl.webhookReceive); // Cloudflare Email Routing webhook (no auth)
 
 module.exports = router;

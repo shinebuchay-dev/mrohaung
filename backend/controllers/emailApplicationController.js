@@ -328,3 +328,58 @@ exports.getSent = async (req, res) => {
         res.status(500).json({ message: 'Error fetching sent items' });
     }
 };
+
+// ── POST /api/email-applications/webhook/receive ─────────────────────────
+// Called by Cloudflare Email Routing Worker when an email arrives
+const WEBHOOK_SECRET = process.env.EMAIL_WEBHOOK_SECRET || 'mrohaung-cf-webhook-secret-2024';
+
+exports.webhookReceive = async (req, res) => {
+    try {
+        const { secret, from, to, subject, bodyText, bodyHtml } = req.body;
+
+        // Validate shared secret
+        if (secret !== WEBHOOK_SECRET) {
+            console.warn('[Webhook] Unauthorized attempt from:', req.ip);
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const recipient = Array.isArray(to) ? to[0] : to;
+
+        if (!recipient) {
+            return res.status(400).json({ message: 'Missing recipient' });
+        }
+
+        // Only accept emails for registered @mrohaung.com accounts
+        const [[app]] = await pool.execute(
+            'SELECT fullEmail FROM EmailApplication WHERE fullEmail = ? AND status = "approved"',
+            [recipient.toLowerCase()]
+        );
+
+        if (!app) {
+            console.log(`[Webhook] No approved mailbox for: ${recipient}`);
+            return res.status(404).json({ message: 'Mailbox not found' });
+        }
+
+        const msgId = uuidv4();
+        await pool.execute(`
+            INSERT INTO EmailMessage (id, ownerEmail, folder, fromAddress, toAddress, subject, bodyText, bodyHtml)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            msgId,
+            app.fullEmail,
+            'inbox',
+            from || 'unknown@external.com',
+            app.fullEmail,
+            subject || '(No Subject)',
+            bodyText || '',
+            bodyHtml || `<p>${bodyText || ''}</p>`
+        ]);
+
+        console.log(`[Webhook] ✅ Email delivered to inbox: ${app.fullEmail} from ${from}`);
+        res.json({ success: true, message: 'Email delivered to inbox.' });
+
+    } catch (err) {
+        console.error('[Webhook] Error:', err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
