@@ -36,10 +36,25 @@ function FeedContent() {
   const [cooldown, setCooldown] = useState(0);
   const deepLinkHandled = useRef(false);
 
-  // Check for verified=success query param
+  // Check for verified=success or verifyToken query param
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('verified') === 'success') {
+    
+    if (params.get('verifyToken')) {
+      const token = params.get('verifyToken');
+      const verifyInPage = async () => {
+        try {
+          await api.post('/auth/verify', { token });
+          setShowVerificationSuccess(true);
+        } catch (err) {
+          console.error('In-page verification failed', err);
+        }
+      };
+      verifyInPage();
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    } else if (params.get('verified') === 'success') {
       setShowVerificationSuccess(true);
       // Clean up URL
       const newUrl = window.location.pathname;

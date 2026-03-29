@@ -74,7 +74,7 @@ exports.register = async (req, res) => {
 
         // Send verification email
         const frontendUrl = process.env.FRONTEND_URL || 'https://mrohaung.com';
-        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
 
         try {
             await sendEmail({
@@ -286,7 +286,7 @@ exports.resendVerification = async (req, res) => {
         }
 
         const frontendUrl = process.env.FRONTEND_URL || 'https://mrohaung.com';
-        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
 
         await sendEmail({
             email: email,
