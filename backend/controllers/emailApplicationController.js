@@ -330,6 +330,52 @@ exports.getSent = async (req, res) => {
     }
 };
 
+// ── GET /api/email-applications/folder/:folderName ────────────────────────
+exports.getFolderEmails = async (req, res) => {
+    try {
+        const { folderName } = req.params;
+        const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ? AND status = "approved"', [req.userId]);
+        if (!app) return res.status(403).json({ message: 'No approved email account.' });
+
+        const [emails] = await pool.execute(
+            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = ? ORDER BY createdAt DESC',
+            [app.fullEmail, folderName]
+        );
+        res.json({ emails });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error fetching emails' });
+    }
+};
+
+// ── POST /api/email-applications/action ──────────────────────────────────
+exports.emailAction = async (req, res) => {
+    try {
+        const { emailId, action } = req.body; // action: 'archive', 'trash', 'restore', 'delete' (permanent)
+        const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ? AND status = "approved"', [req.userId]);
+        if (!app) return res.status(403).json({ message: 'No approved email account.' });
+
+        const [[email]] = await pool.execute('SELECT folder, fromAddress FROM EmailMessage WHERE id = ? AND ownerEmail = ?', [emailId, app.fullEmail]);
+        if (!email) return res.status(404).json({ message: 'Email not found' });
+
+        if (action === 'delete') {
+            await pool.execute('DELETE FROM EmailMessage WHERE id = ?', [emailId]);
+            return res.json({ success: true, message: 'Deleted permanently' });
+        }
+
+        let newFolder = email.folder;
+        if (action === 'archive') newFolder = 'archived';
+        if (action === 'trash') newFolder = 'trash';
+        if (action === 'restore') newFolder = (email.fromAddress === app.fullEmail ? 'sent' : 'inbox');
+
+        await pool.execute('UPDATE EmailMessage SET folder = ? WHERE id = ?', [newFolder, emailId]);
+        res.json({ success: true, folder: newFolder });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error performing action' });
+    }
+};
+
 // ── POST /api/email-applications/webhook/receive ─────────────────────────
 // Called by Cloudflare Email Routing Worker when an email arrives
 const WEBHOOK_SECRET = process.env.EMAIL_WEBHOOK_SECRET || 'mrohaung-cf-webhook-secret-2024';

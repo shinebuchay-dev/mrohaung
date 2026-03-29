@@ -13,21 +13,38 @@ function NativeWebmailUI({
     const [activeTab, setActiveTab] = useState('inbox');
     const [inboxMails, setInboxMails] = useState<any[]>([]);
     const [sentMails, setSentMails] = useState<any[]>([]);
+    const [archivedMails, setArchivedMails] = useState<any[]>([]);
+    const [trashMails, setTrashMails] = useState<any[]>([]);
     const [loadingMails, setLoadingMails] = useState(false);
+    const [selectedMail, setSelectedMail] = useState<any>(null);
 
     const fetchMails = async () => {
         setLoadingMails(true);
         try {
-            const [inboxRes, sentRes] = await Promise.all([
+            const [inboxRes, sentRes, archRes, trashRes] = await Promise.all([
                 api.get('/email-applications/inbox'),
-                api.get('/email-applications/sent')
+                api.get('/email-applications/sent'),
+                api.get('/email-applications/folder/archived'),
+                api.get('/email-applications/folder/trash')
             ]);
             setInboxMails(inboxRes.data.emails || []);
             setSentMails(sentRes.data.emails || []);
+            setArchivedMails(archRes.data.emails || []);
+            setTrashMails(trashRes.data.emails || []);
         } catch (err) {
             console.error('Failed to load mails', err);
         } finally {
             setLoadingMails(false);
+        }
+    };
+
+    const handleEmailAction = async (id: string, action: string) => {
+        try {
+            await api.post('/email-applications/action', { emailId: id, action });
+            setSelectedMail(null);
+            fetchMails();
+        } catch (err) {
+            console.error('Action failed', err);
         }
     };
 
@@ -37,35 +54,21 @@ function NativeWebmailUI({
         return () => clearInterval(interval);
     }, []);
 
-    const renderMailList = (mails: any[], emptyMsg: string) => {
-        if (loadingMails && mails.length === 0) return <div className="p-10 text-center text-slate-400">Loading...</div>;
-        if (mails.length === 0) return <div className="p-10 text-center text-slate-400 font-medium">{emptyMsg}</div>;
-        return (
-            <div className="divide-y divide-slate-100 dark:divide-white/5">
-                {mails.map(m => (
-                    <div key={m.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div className="flex justify-between items-start mb-1">
-                            <p className="font-bold text-slate-900 dark:text-white text-sm">{activeTab === 'inbox' ? m.fromAddress : m.toAddress}</p>
-                            <p className="text-xs text-slate-400 font-medium">{new Date(m.createdAt).toLocaleString()}</p>
-                        </div>
-                        <p className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-1">{m.subject}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{m.bodyText}</p>
-                    </div>
-                ))}
-            </div>
-        );
-    };
+    // Deselect if tab changes
+    useEffect(() => {
+        setSelectedMail(null);
+    }, [activeTab]);
 
     return (
         <div className="flex flex-col min-h-[580px]">
             {/* Account Header — seamless, no card */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center">
                         <Mail className="w-4 h-4 text-indigo-500" />
                     </div>
                     <div>
-                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Signed in as</p>
+                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">MROHAUNG Email</p>
                         <p className="text-sm font-bold text-slate-800 dark:text-white">{emailApp.fullEmail}</p>
                     </div>
                 </div>
@@ -79,16 +82,18 @@ function NativeWebmailUI({
             </div>
 
             {/* Tab Bar — minimal underline style */}
-            <div className="flex gap-6 border-b border-slate-100 dark:border-white/5 mb-4">
+            <div className="flex gap-4 border-b border-slate-100 dark:border-white/5 mb-4 px-1 overflow-x-auto no-scrollbar">
                 {[
                     { id: 'inbox', icon: Inbox, label: 'Inbox', count: inboxMails.length },
                     { id: 'sent', icon: UploadCloud, label: 'Sent', count: sentMails.length },
+                    { id: 'archived', icon: CheckCheck, label: 'Archived', count: archivedMails.length },
+                    { id: 'trash', icon: XCircle, label: 'Trash', count: trashMails.length },
                     { id: 'compose', icon: Send, label: 'Compose' }
                 ].map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all border-b-2 -mb-px ${
+                        className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all border-b-2 -mb-px whitespace-nowrap ${
                             activeTab === tab.id
                             ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
                             : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300'
@@ -105,90 +110,201 @@ function NativeWebmailUI({
                 ))}
             </div>
 
-            {/* Mail List — no card wrapper, just rows */}
+            {/* Content Area — Dynamic Layout */}
             <div className="flex-1">
-                {(activeTab === 'inbox' || activeTab === 'sent') && (() => {
-                    const mails = activeTab === 'inbox' ? inboxMails : sentMails;
-                    const emptyMsg = activeTab === 'inbox' ? 'Your inbox is empty.' : 'No sent emails yet.';
-                    if (loadingMails && mails.length === 0) return (
-                        <div className="flex items-center gap-2 py-8 text-slate-400 text-sm">
-                            <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
-                            Loading...
-                        </div>
-                    );
-                    if (mails.length === 0) return (
-                        <div className="py-12 text-center">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                                {activeTab === 'inbox' ? <Inbox className="w-5 h-5 text-slate-400" /> : <UploadCloud className="w-5 h-5 text-slate-400" />}
-                            </div>
-                            <p className="text-sm font-medium text-slate-400">{emptyMsg}</p>
-                        </div>
-                    );
-                    return (
-                        <div className="divide-y divide-slate-100 dark:divide-white/5">
-                            {mails.map(m => (
-                                <div key={m.id} className="py-3 hover:bg-slate-50/50 dark:hover:bg-white/2 -mx-1 px-1 rounded-lg transition-colors cursor-pointer">
-                                    <div className="flex justify-between items-baseline mb-0.5">
-                                        <p className="font-bold text-slate-800 dark:text-white text-sm truncate mr-2">
-                                            {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
-                                        </p>
-                                        <p className="text-[11px] text-slate-400 shrink-0">{new Date(m.createdAt).toLocaleString('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                {['inbox', 'sent', 'archived', 'trash'].includes(activeTab) && (
+                    <div className={`grid gap-6 ${selectedMail ? 'lg:grid-cols-5' : 'grid-cols-1'}`}>
+                        {/* Left Column: Mail List */}
+                        <div className={`${selectedMail ? 'lg:col-span-2 hidden lg:block' : ''} space-y-1`}>
+                            {(() => {
+                                const mails = 
+                                    activeTab === 'inbox' ? inboxMails : 
+                                    activeTab === 'sent' ? sentMails : 
+                                    activeTab === 'archived' ? archivedMails : trashMails;
+
+                                const emptyMsg = 
+                                    activeTab === 'inbox' ? 'Your inbox is empty.' : 
+                                    activeTab === 'sent' ? 'No sent emails yet.' : 
+                                    activeTab === 'archived' ? 'No archived emails.' : 'Trash is empty.';
+
+                                if (loadingMails && mails.length === 0) return (
+                                    <div className="flex items-center gap-2 py-8 text-slate-400 text-sm px-1">
+                                        <div className="w-4 h-4 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin" />
+                                        Loading...
                                     </div>
-                                    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-0.5">{m.subject}</p>
-                                    <p className="text-xs text-slate-400 line-clamp-1">{m.bodyText}</p>
-                                </div>
-                            ))}
+                                );
+                                if (mails.length === 0) return (
+                                    <div className="py-12 text-center">
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                            {activeTab === 'inbox' ? <Inbox className="w-5 h-5 text-slate-400" /> : <UploadCloud className="w-5 h-5 text-slate-400" />}
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-400">{emptyMsg}</p>
+                                    </div>
+                                );
+                                return (
+                                    <div className="divide-y divide-slate-100 dark:divide-white/5">
+                                        {mails.map(m => (
+                                            <div 
+                                                key={m.id} 
+                                                onClick={() => setSelectedMail(m)}
+                                                className={`py-3 px-3 rounded-xl transition-all cursor-pointer mb-1 border-l-4 ${
+                                                    selectedMail?.id === m.id
+                                                    ? 'bg-indigo-50/50 dark:bg-indigo-500/5 border-indigo-500 shadow-sm'
+                                                    : 'hover:bg-slate-50 dark:hover:bg-white/5 border-transparent'
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-baseline mb-1">
+                                                    <p className={`font-bold text-sm truncate mr-2 ${selectedMail?.id === m.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-white'}`}>
+                                                        {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400 font-bold shrink-0">{new Date(m.createdAt).toLocaleDateString()}</p>
+                                                </div>
+                                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300 mb-1 truncate">{m.subject}</p>
+                                                <p className="text-xs text-slate-400 line-clamp-1">{m.bodyText}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
-                    );
-                })()}
+
+                        {/* Right Column: Mail Detail */}
+                        {selectedMail && (
+                            <div className="lg:col-span-3 bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-white/5 p-6 animate-in slide-in-from-right-4 duration-300 overflow-hidden shadow-2xl shadow-indigo-500/5">
+                                <div className="flex items-center justify-between mb-8">
+                                    <button 
+                                        onClick={() => setSelectedMail(null)}
+                                        className="lg:hidden flex items-center gap-1 text-xs font-bold text-indigo-500 mb-4"
+                                    >
+                                        <Mail className="w-3 h-3 rotate-180" /> Back to list
+                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        {activeTab === 'trash' && (
+                                            <button onClick={() => handleEmailAction(selectedMail.id, 'restore')} className="text-[10px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded">Restore</button>
+                                        )}
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded">
+                                            {new Date(selectedMail.createdAt).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div>
+                                        <h1 className="text-xl font-black text-slate-900 dark:text-white mb-4 leading-tight">
+                                            {selectedMail.subject}
+                                        </h1>
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">From</p>
+                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{selectedMail.fromAddress}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-8">To</p>
+                                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{selectedMail.toAddress}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-px bg-slate-100 dark:bg-white/5" />
+
+                                    <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">
+                                        {selectedMail.bodyText}
+                                    </div>
+
+                                    {/* Action row */}
+                                    <div className="pt-8 flex gap-3 border-t border-slate-50 dark:border-white/5">
+                                        {activeTab !== 'compose' && activeTab !== 'trash' && (
+                                            <>
+                                                <button 
+                                                    onClick={() => {
+                                                        setSendTo(selectedMail.fromAddress);
+                                                        setSendSubject(`Re: ${selectedMail.subject}`);
+                                                        setActiveTab('compose');
+                                                    }}
+                                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                                                >
+                                                    <Send className="w-3.5 h-3.5" /> Reply
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(selectedMail.id, 'archive')}
+                                                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
+                                                >
+                                                    <CheckCheck className="w-3.5 h-3.5" /> Archive
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailAction(selectedMail.id, 'trash')}
+                                                    className="px-4 py-2 bg-red-50 text-red-500 text-xs font-bold rounded-xl transition-all flex items-center gap-2"
+                                                >
+                                                    <XCircle className="w-3.5 h-3.5" /> Delete
+                                                </button>
+                                            </>
+                                        )}
+                                        {activeTab === 'trash' && (
+                                            <button 
+                                                onClick={() => {
+                                                    if(confirm('Permanently delete this email?')) handleEmailAction(selectedMail.id, 'delete');
+                                                }}
+                                                className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl transition-all shadow-lg flex items-center gap-2"
+                                            >
+                                                <XCircle className="w-3.5 h-3.5" /> Delete Permanently
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Compose — clean form, no card background */}
                 {activeTab === 'compose' && (
-                    <form onSubmit={handleSendEmail} className="space-y-3">
-                        {sendSuccess && (
-                            <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 py-2">
-                                <Check className="w-4 h-4" /> {sendSuccess}
+                    <div className="max-w-2xl">
+                        <form onSubmit={handleSendEmail} className="space-y-4 pt-2">
+                            {sendSuccess && (
+                                <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 py-2">
+                                    <Check className="w-4 h-4" /> {sendSuccess}
+                                </div>
+                            )}
+                            {sendError && (
+                                <div className="flex items-center gap-2 text-sm font-bold text-red-500 py-2">
+                                    <XCircle className="w-4 h-4" /> {sendError}
+                                </div>
+                            )}
+                            <div>
+                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">To</label>
+                                <input
+                                    value={sendTo} onChange={e => setSendTo(e.target.value)}
+                                    placeholder="recipient@example.com"
+                                    className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                                />
                             </div>
-                        )}
-                        {sendError && (
-                            <div className="flex items-center gap-2 text-sm font-bold text-red-500 py-2">
-                                <XCircle className="w-4 h-4" /> {sendError}
+                            <div>
+                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Subject</label>
+                                <input
+                                    value={sendSubject} onChange={e => setSendSubject(e.target.value)}
+                                    placeholder="Email Subject"
+                                    className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
+                                />
                             </div>
-                        )}
-                        <div>
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">To</label>
-                            <input
-                                value={sendTo} onChange={e => setSendTo(e.target.value)}
-                                placeholder="recipient@example.com"
-                                className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Subject</label>
-                            <input
-                                value={sendSubject} onChange={e => setSendSubject(e.target.value)}
-                                placeholder="Email Subject"
-                                className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 pb-2 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Message</label>
-                            <textarea
-                                value={sendMessage} onChange={e => setSendMessage(e.target.value)}
-                                placeholder="Write your message..."
-                                rows={7}
-                                className="w-full bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none resize-none leading-relaxed"
-                            />
-                        </div>
-                        <div className="pt-2 flex justify-end">
-                            <button
-                                type="submit" disabled={sending}
-                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-                            >
-                                {sending ? <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Sending...</> : <><Send className="w-4 h-4" /> Send</>}
-                            </button>
-                        </div>
-                    </form>
+                            <div>
+                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Message</label>
+                                <textarea
+                                    value={sendMessage} onChange={e => setSendMessage(e.target.value)}
+                                    placeholder="Write your message..."
+                                    rows={8}
+                                    className="w-full bg-transparent text-sm font-medium text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none resize-none leading-relaxed"
+                                />
+                            </div>
+                            <div className="pt-2 flex justify-end">
+                                <button
+                                    type="submit" disabled={sending}
+                                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                                >
+                                    {sending ? <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> Sending...</> : <><Send className="w-4 h-4" /> Send Message</>}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 )}
             </div>
         </div>
@@ -306,7 +422,7 @@ export default function EmailPage() {
     if (!loading && emailApp?.status === 'approved') {
         return (
             <ProtectedRoute>
-                <div className="max-w-3xl mx-auto pb-20 pt-4">
+                <div className="max-w-6xl mx-auto pb-20 pt-4 px-4">
                     <NativeWebmailUI
                         emailApp={emailApp}
                         copyToClipboard={copyToClipboard}
@@ -329,7 +445,7 @@ export default function EmailPage() {
 
     return (
         <ProtectedRoute>
-            <div className="max-w-3xl mx-auto pb-20">
+            <div className="max-w-3xl mx-auto pb-20 px-4">
                 {/* Page title — only show when no approved email */}
                 <div className="mb-8 mt-4 hidden md:block">
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white">Email Address</h1>

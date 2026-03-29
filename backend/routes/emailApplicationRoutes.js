@@ -9,6 +9,9 @@ router.delete('/me',              authMiddleware, ctrl.cancelApplication);
 router.post('/send',              authMiddleware, ctrl.sendEmail);
 router.get('/inbox',              authMiddleware, ctrl.getInbox);
 router.get('/sent',               authMiddleware, ctrl.getSent);
-router.post('/webhook/receive',   ctrl.webhookReceive); // Cloudflare Email Routing webhook (no auth)
+router.get('/folder/:folderName', authMiddleware, ctrl.getFolderEmails);
+router.post('/action',            authMiddleware, ctrl.emailAction);
+router.get('/admin/overview',     authMiddleware, ctrl.adminOverview);
+router.post('/webhook/receive',   ctrl.webhookReceive); 
 
 module.exports = router;
