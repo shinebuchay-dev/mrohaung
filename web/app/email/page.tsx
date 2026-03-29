@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign } from 'lucide-react';
+import { Mail, Check, Copy, CheckCheck, Clock, XCircle, AtSign, Send } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import api from '@/lib/api';
 
@@ -14,6 +14,14 @@ export default function EmailPage() {
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [copiedField, setCopiedField] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+
+    // Email Sending State
+    const [sendTo, setSendTo] = useState('');
+    const [sendSubject, setSendSubject] = useState('');
+    const [sendMessage, setSendMessage] = useState('');
+    const [sending, setSending] = useState(false);
+    const [sendSuccess, setSendSuccess] = useState('');
+    const [sendError, setSendError] = useState('');
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -72,6 +80,33 @@ export default function EmailPage() {
         setTimeout(() => setCopiedField(null), 2000);
     };
 
+    const handleSendEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSendError('');
+        setSendSuccess('');
+        if (!sendTo || !sendSubject || !sendMessage) {
+            setSendError('Please fill in all fields (To, Subject, Message)');
+            return;
+        }
+        setSending(true);
+        try {
+            await api.post('/email-applications/send', {
+                to: sendTo,
+                subject: sendSubject,
+                message: sendMessage
+            });
+            setSendSuccess('Email sent successfully!');
+            setSendTo('');
+            setSendSubject('');
+            setSendMessage('');
+            setTimeout(() => setSendSuccess(''), 5000);
+        } catch (err: any) {
+            setSendError(err.response?.data?.message || 'Failed to send email.');
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
         <ProtectedRoute>
             <div className="max-w-3xl mx-auto pb-20">
@@ -101,7 +136,7 @@ export default function EmailPage() {
                                         <p className="font-bold text-slate-900 dark:text-white mb-1">Get your own @mrohaung.com email</p>
                                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
                                             Create your personal <span className="font-bold text-indigo-500">you@mrohaung.com</span> email address.
-                                            You will instantly receive SMTP credentials to use with any mail client (Outlook, Gmail app, Apple Mail, etc.) once created.
+                                            You will instantly receive login details to access your new email via Webmail.
                                         </p>
                                         <button
                                             onClick={() => setShowEmailForm(true)}
@@ -178,16 +213,13 @@ export default function EmailPage() {
                                                 <p className="font-bold text-emerald-700 dark:text-emerald-400">Email Approved!</p>
                                             </div>
                                             <p className="text-sm text-emerald-600 dark:text-emerald-500 mb-4 leading-relaxed">
-                                                Your <span className="font-black">{emailApp.fullEmail}</span> email is ready. Use these credentials with any mail client.
+                                                Your <span className="font-black">{emailApp.fullEmail}</span> email is ready. You can log in via Webmail using these details.
                                             </p>
                                             <div className="space-y-0 bg-white dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
                                                 {[
                                                     { label: 'Email Address', value: emailApp.fullEmail, key: 'email' },
                                                     { label: 'Password', value: emailApp.smtpPassword, key: 'pass' },
-                                                    { label: 'SMTP Server', value: 'smtp.hostinger.com', key: 'smtp' },
-                                                    { label: 'SMTP Port', value: '465 (SSL)', key: 'port' },
-                                                    { label: 'IMAP Server', value: 'imap.hostinger.com', key: 'imap' },
-                                                    { label: 'IMAP Port', value: '993 (SSL)', key: 'iport' },
+                                                    { label: 'Webmail Link', value: 'https://mail.hostinger.com', key: 'webmail' },
                                                 ].map(row => (
                                                     <div key={row.key} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 border-slate-100 dark:border-white/5">
                                                         <div className="pr-4">
@@ -210,6 +242,72 @@ export default function EmailPage() {
                                                 <p className="text-sm text-slate-600 dark:text-slate-300">{emailApp.notes}</p>
                                             </div>
                                         )}
+
+                                        {/* Compose Email UI inside Approved State */}
+                                        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <Send className="w-5 h-5 text-indigo-500" />
+                                                <h3 className="font-bold text-slate-900 dark:text-white">Compose Mail</h3>
+                                            </div>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                                                Send an email directly from your <span className="font-bold">@mrohaung.com</span> account without leaving the app.
+                                            </p>
+
+                                            <form onSubmit={handleSendEmail} className="space-y-4 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-white/5">
+                                                {sendSuccess && (
+                                                    <div className="p-3 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-sm font-bold rounded-xl flex items-center gap-2">
+                                                        <Check className="w-4 h-4" /> {sendSuccess}
+                                                    </div>
+                                                )}
+                                                {sendError && (
+                                                    <div className="p-3 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 text-sm font-bold rounded-xl flex items-center gap-2">
+                                                        <XCircle className="w-4 h-4" /> {sendError}
+                                                    </div>
+                                                )}
+
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">To</label>
+                                                    <input 
+                                                        value={sendTo} onChange={e => setSendTo(e.target.value)}
+                                                        placeholder="recipient@example.com" 
+                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Subject</label>
+                                                    <input 
+                                                        value={sendSubject} onChange={e => setSendSubject(e.target.value)}
+                                                        placeholder="Email Subject" 
+                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Message</label>
+                                                    <textarea 
+                                                        value={sendMessage} onChange={e => setSendMessage(e.target.value)}
+                                                        placeholder="Write your email here..." rows={4}
+                                                        className="w-full bg-white dark:bg-slate-900 px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
+                                                    />
+                                                </div>
+                                                <div className="pt-2">
+                                                    <button 
+                                                        type="submit" disabled={sending}
+                                                        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
+                                                    >
+                                                        {sending ? (
+                                                            <>
+                                                                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                                Sending...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Send className="w-4 h-4" /> Send Email
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
                                 )}
 

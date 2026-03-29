@@ -1,6 +1,7 @@
 const pool = require('../utils/prisma');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
 const DOMAIN = process.env.EMAIL_DOMAIN || 'mrohaung.com';
 
@@ -180,5 +181,64 @@ exports.adminAction = async (req, res) => {
     } catch (err) {
         console.error('[EmailApp] adminAction error:', err);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// ── POST /api/email-applications/send ───────────────────────────────────
+// Send an email directly using the generated @mrohaung.com credentials
+exports.sendEmail = async (req, res) => {
+    try {
+        const { to, subject, message } = req.body;
+        
+        if (!to || !subject || !message) {
+            return res.status(400).json({ message: 'To, subject, and message are required.' });
+        }
+
+        // Get the user's application and displayName
+        const [apps] = await pool.execute(`
+            SELECT ea.fullEmail, ea.smtpPassword, ea.status, u.displayName
+            FROM EmailApplication ea
+            JOIN User u ON ea.userId = u.id
+            WHERE ea.userId = ?
+        `, [req.userId]);
+
+        const app = apps[0];
+
+        if (!app) {
+            return res.status(404).json({ message: 'No email application found.' });
+        }
+        if (app.status !== 'approved') {
+            return res.status(403).json({ message: 'Your email application is not approved yet.' });
+        }
+
+        // Connect to Hostinger Webmail/SMTP with the user's exact credentials
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.hostinger.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: app.fullEmail,
+                pass: app.smtpPassword
+            }
+        });
+
+        const mailOptions = {
+            from: `"${app.displayName}" <${app.fullEmail}>`,
+            to: to,
+            subject: subject,
+            text: message
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+
+        res.json({ success: true, message: 'Email sent successfully!' });
+    } catch (err) {
+        console.error('[EmailApp] sendEmail error:', err);
+        const msg = err.response || err.message;
+        res.status(500).json({ 
+            message: 'Failed to send email. Admin might not have created this mailbox in the Hostinger panel yet.',
+            error: msg
+        });
     }
 };

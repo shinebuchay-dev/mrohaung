@@ -73,12 +73,6 @@ R2_BUCKET_NAME=mrohaung-media
 R2_ENDPOINT=https://e85cc92c864ecfc6c14a199e00057ad5.r2.cloudflarestorage.com
 R2_PUBLIC_URL=https://pub-e61e1977203c41d499155e42c923617c.r2.dev
 R2_PUBLIC_DOMAIN=https://pub-e61e1977203c41d499155e42c923617c.r2.dev
-
-# SMTP Configuration
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_USER="support@mrohaung.com"
-SMTP_PASS="YOUR_SMTP_PASSWORD_HERE"
 ENVEOF
 ok "Backend .env written."
 
