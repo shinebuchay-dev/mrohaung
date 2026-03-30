@@ -17,6 +17,7 @@ interface AuthContextType {
     authModalMode: 'login' | 'register';
     modalTitle: string | null;
     requireAuth: (action: () => void, title?: string) => void;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -113,11 +114,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const refreshUser = async () => {
+        try {
+            const res = await api.get('/auth/me');
+            const latestUser = res.data;
+            setUser(latestUser);
+            localStorage.setItem('user', JSON.stringify(latestUser));
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user, token, loading, login, logout, updateUser,
             openAuthModal, closeAuthModal, isAuthModalOpen, authModalMode,
-            modalTitle, requireAuth
+            modalTitle, requireAuth, refreshUser
         }}>
             {children}
         </AuthContext.Provider>

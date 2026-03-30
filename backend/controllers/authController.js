@@ -73,8 +73,10 @@ exports.register = async (req, res) => {
         );
 
         // Send verification email
-        const frontendUrl = process.env.FRONTEND_URL || 'https://mrohaung.com';
-        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
+        const isDev = process.env.NODE_ENV === 'development';
+        const defaultFrontend = isDev ? 'http://localhost:3000' : 'https://mrohaung.com';
+        const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
+        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
         try {
             await sendEmail({
@@ -112,6 +114,7 @@ exports.register = async (req, res) => {
             success: true,
             message: 'User registered successfully.',
             token,
+            verificationUrl: isDev ? verifyUrl : undefined, // Provide link directly for developers
             user: {
                 id: userId,
                 username,
@@ -285,8 +288,10 @@ exports.resendVerification = async (req, res) => {
             );
         }
 
-        const frontendUrl = process.env.FRONTEND_URL || 'https://mrohaung.com';
-        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
+        const isDev = process.env.NODE_ENV === 'development';
+        const defaultFrontend = isDev ? 'http://localhost:3000' : 'https://mrohaung.com';
+        const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
+        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
         await sendEmail({
             email: email,

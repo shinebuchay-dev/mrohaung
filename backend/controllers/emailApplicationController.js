@@ -1,8 +1,8 @@
 const pool = require('../utils/prisma');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const dns = require('dns').promises;
+const sendEmail = require('../utils/sendEmail');
 
 const DOMAIN = process.env.EMAIL_DOMAIN || 'mrohaung.com';
 
@@ -237,54 +237,12 @@ exports.sendEmail = async (req, res) => {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `, [msgId, targetEmail, 'inbox', app.fullEmail, to, subject, message, `<p>${message}</p>`]);
         } else {
-            // External Delivery — MX lookup + DKIM signing
-            const recipientDomain = targetEmail.split('@')[1];
-
-            let mxRecords;
-            try {
-                mxRecords = await dns.resolveMx(recipientDomain);
-            } catch (dnsErr) {
-                throw new Error(`Could not find MX records for domain ${recipientDomain}`);
-            }
-
-            if (!mxRecords || mxRecords.length === 0) {
-                throw new Error(`No mail servers found for domain ${recipientDomain}`);
-            }
-
-            mxRecords.sort((a, b) => a.priority - b.priority);
-            const targetMX = mxRecords[0].exchange;
-
-            // Load DKIM private key if available
-            let dkimOptions;
-            try {
-                const fs = require('fs');
-                const dkimPrivateKey = fs.readFileSync('/etc/ssl/dkim/mrohaung_dkim.pem', 'utf8');
-                dkimOptions = {
-                    domainName: DOMAIN,
-                    keySelector: 'mrohaung',
-                    privateKey: dkimPrivateKey
-                };
-            } catch (e) {
-                console.warn('[DKIM] Private key not found, sending without DKIM signing');
-            }
-
-            const transporter = nodemailer.createTransport({
-                host: targetMX,
-                port: 25,
-                secure: false,
-                tls: { rejectUnauthorized: false },
-                dkim: dkimOptions,
-                family: 4 // Force IPv4 to avoid IPv6 PTR issues with Gmail
-            });
-
-            const mailOptions = {
-                from: `"${app.displayName}" <${app.fullEmail}>`,
-                to: to,
+            await sendEmail({
+                email: to,
                 subject: subject,
-                text: message
-            };
-
-            await transporter.sendMail(mailOptions);
+                text: message,
+                html: `<p>${message}</p>`
+            });
         }
 
         // Save a copy in "Sent" folder for the sender

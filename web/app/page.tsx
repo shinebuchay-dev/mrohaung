@@ -20,7 +20,7 @@ import { Suspense } from 'react';
 
 function FeedContent() {
   const router = useRouter();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, refreshUser } = useAuth();
   const { socket } = useSocket();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,6 +46,7 @@ function FeedContent() {
         try {
           await api.post('/auth/verify', { token });
           setShowVerificationSuccess(true);
+          await refreshUser();
         } catch (err) {
           console.error('In-page verification failed', err);
         }
@@ -56,11 +57,12 @@ function FeedContent() {
       window.history.replaceState(null, '', newUrl);
     } else if (params.get('verified') === 'success') {
       setShowVerificationSuccess(true);
+      refreshUser();
       // Clean up URL
       const newUrl = window.location.pathname;
       window.history.replaceState(null, '', newUrl);
     }
-  }, []);
+  }, [refreshUser]);
 
   // Cooldown timer effect
   useEffect(() => {
