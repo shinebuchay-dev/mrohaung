@@ -76,7 +76,7 @@ exports.register = async (req, res) => {
         const isDev = process.env.NODE_ENV === 'development';
         const defaultFrontend = isDev ? 'http://localhost:3000' : 'https://mrohaung.com';
         const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
-        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
 
         try {
             await sendEmail({
@@ -291,7 +291,7 @@ exports.resendVerification = async (req, res) => {
         const isDev = process.env.NODE_ENV === 'development';
         const defaultFrontend = isDev ? 'http://localhost:3000' : 'https://mrohaung.com';
         const frontendUrl = process.env.FRONTEND_URL || defaultFrontend;
-        const verifyUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${frontendUrl}/?verifyToken=${verificationToken}`;
 
         await sendEmail({
             email: email,
