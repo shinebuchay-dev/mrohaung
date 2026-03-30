@@ -185,7 +185,14 @@ exports.deleteAccount = async (req, res) => {
         await connection.execute('DELETE FROM BlockedUser WHERE blockerId = ? OR blockedId = ?', [userId, userId]);
         await connection.execute('DELETE FROM Report WHERE reporterId = ? OR targetUserId = ?', [userId, userId]);
         await connection.execute('DELETE FROM ShortVideoLike WHERE userId = ?', [userId]);
+        
+        // Remove Custom Email System Data (EmailMessages)
+        const [emailApps] = await connection.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ?', [userId]);
+        for (const app of emailApps) {
+            await connection.execute('DELETE FROM EmailMessage WHERE ownerEmail = ?', [app.fullEmail]);
+        }
         await connection.execute('DELETE FROM EmailApplication WHERE userId = ?', [userId]);
+        
         await connection.execute('DELETE FROM UserInterest WHERE userId = ?', [userId]);
 
         // Remove all comments made by the user, and their likes
