@@ -1,29 +1,36 @@
 node_modules/
-.env
-.env.local
+.env*
+*.env
 vps_backend.env
 .env.production
-backend/storage/
-*.db
-*.db-shm
-*.db-wal
-*.sqlite
-.next/
+.env.local
+backend/.env
+web/.env.*
 dist/
 build/
+dist_standalone/
+.next/
 .DS_Store
 uploads/
+*.log
+server_log.txt
 
 # Docker
 *.sql
 !backend/init.sql
 docker-compose.override.yml
 
-# AI Assistant
+# AI Assistant & Tooling
 .gemini/
 .agent/
 node_errors.log
 
-# Deployment Scripts with Secrets
+# Deployment Scripts
 vps_setup.sh
 vps_repair.sh
+
+# Maintenance Scripts
+check_*.js
+db_counts.js
+update_*.js
+migrate_*.js
