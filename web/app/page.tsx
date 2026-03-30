@@ -30,6 +30,8 @@ function FeedContent() {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showVerificationSuccess, setShowVerificationSuccess] = useState(false);
+  const [showVerificationError, setShowVerificationError] = useState(false);
+  const [verificationErrorMessage, setVerificationErrorMessage] = useState('');
   const [initialCommentId, setInitialCommentId] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
   const [sentCount, setSentCount] = useState(0);
@@ -47,8 +49,10 @@ function FeedContent() {
           await api.post('/auth/verify', { token });
           setShowVerificationSuccess(true);
           await refreshUser();
-        } catch (err) {
+        } catch (err: any) {
           console.error('In-page verification failed', err);
+          setVerificationErrorMessage(err?.response?.data?.message || 'Invalid or expired verification link.');
+          setShowVerificationError(true);
         }
       };
       verifyInPage();
@@ -58,6 +62,12 @@ function FeedContent() {
     } else if (params.get('verified') === 'success') {
       setShowVerificationSuccess(true);
       refreshUser();
+      // Clean up URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState(null, '', newUrl);
+    } else if (params.get('verified') === 'error') {
+      setShowVerificationError(true);
+      setVerificationErrorMessage('Invalid or expired verification link.');
       // Clean up URL
       const newUrl = window.location.pathname;
       window.history.replaceState(null, '', newUrl);
@@ -201,6 +211,32 @@ function FeedContent() {
                 className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:opacity-90 transition-all active:scale-95"
               >
                 Start Exploring
+              </button>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Verification Error Popup */}
+        {showVerificationError && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-8 max-w-sm w-full text-center border border-slate-100 dark:border-white/10"
+            >
+              <div className="w-20 h-20 bg-red-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/30">
+                <ShieldAlert className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Verification Failed</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-8">
+                {verificationErrorMessage}
+              </p>
+              <button 
+                onClick={() => setShowVerificationError(false)}
+                className="w-full py-4 bg-red-500 text-white rounded-2xl font-black text-sm uppercase tracking-wider hover:opacity-90 transition-all active:scale-95"
+              >
+                Close
               </button>
             </motion.div>
           </div>
