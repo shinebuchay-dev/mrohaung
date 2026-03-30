@@ -158,7 +158,14 @@ export default function SettingsPage() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             router.push('/login');
-        } catch (error) {
+        } catch (error: any) {
+            if (error.response?.status === 404 || error.response?.status === 401) {
+                // Already deleted or ghost session
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                router.push('/login');
+                return;
+            }
             console.error('Failed to delete account:', error);
             alert('Failed to delete account');
         }

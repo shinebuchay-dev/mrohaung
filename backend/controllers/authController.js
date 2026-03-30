@@ -233,7 +233,7 @@ exports.me = async (req, res) => {
         const user = users[0];
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(401).json({ message: 'User not found or deleted' });
         }
 
         // Determine role based on ADMIN_USER_IDS
