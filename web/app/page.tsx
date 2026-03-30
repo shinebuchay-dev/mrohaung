@@ -243,15 +243,15 @@ function FeedContent() {
         )}
       </AnimatePresence>
 
-      {/* Verification Banner */}
-      {currentUser && !currentUser.isVerified && (
+      {/* Verification Banner (Email only) */}
+      {currentUser && !currentUser.isEmailVerified && (
         <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
           <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
             <ShieldAlert className="w-5 h-5 text-red-500" />
           </div>
           <div className="flex-1">
-            <h4 className="text-white font-bold text-sm">Action Required: Verify your identity</h4>
-            <p className="text-red-400/80 text-xs">Please check your email to verify your account. Unverified accounts cannot post or interact.</p>
+            <h4 className="text-slate-900 dark:text-white font-bold text-sm">Action Required: Verify your email</h4>
+            <p className="text-slate-500 dark:text-slate-400 text-xs">Please check your email to verify your account.</p>
           </div>
           <button
             disabled={resending || cooldown > 0}
@@ -305,7 +305,7 @@ function FeedContent() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
         <section className="min-w-0">
-          {currentUser && !!currentUser.isVerified && (
+          {currentUser && (
             <CreatePost onPostCreated={(newPost?: any) => {
               if (newPost) {
                 // Prepend logic is handled by socket, but we can do it here too for instant feedback

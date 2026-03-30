@@ -1,0 +1,24 @@
+[dotenv@17.2.4] injecting env (9) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[DB] Connecting to 194.59.164.85:3306/u860480593_social_media
+🚀 SERVER ACTIVE ON PORT 3006
+📧 Mrohaung Custom SMTP Server actively listening on port 25
+POST /api/auth/login
+--- LOGIN ATTEMPT ---
+Body: { email: 'test@example.com', password: 'test' }
+Error: Access denied for user 'u860480593_social_media'@'223.207.225.112' (using password: YES)
+    at PromisePool.execute (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at exports.login (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/controllers/authController.js:168:36)
+    at Layer.handleRequest (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/lib/layer.js:152:17)
+    at /Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/index.js:295:15
+    at processParams (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/index.js:582:12)
+    at next (/Users/shinebuchay/Desktop/Shine Bu Chay Web Application/Social Media/backend/node_modules/router/index.js:291:5) {
+  code: 'ER_ACCESS_DENIED_ERROR',
+  errno: 1045,
+  sql: undefined,
+  sqlState: '28000',
+  sqlMessage: "Access denied for user 'u860480593_social_media'@'223.207.225.112' (using password: YES)"
+}

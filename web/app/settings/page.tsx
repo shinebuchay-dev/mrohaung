@@ -18,6 +18,8 @@ export default function SettingsPage() {
     const [requesting, setRequesting] = useState(false);
     const [reason, setReason] = useState('');
     const [showVerifyForm, setShowVerifyForm] = useState(false);
+    const [resending, setResending] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
 
     // Email Application State
     const [emailApp, setEmailApp] = useState<any>(null);
@@ -35,6 +37,13 @@ export default function SettingsPage() {
         fetchVerificationStatus();
         fetchEmailApplication();
     }, []);
+
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
 
     const [isVerifying, setIsVerifying] = useState(true);
 
@@ -178,6 +187,36 @@ export default function SettingsPage() {
                     <h1 className="text-3xl font-black text-slate-900 dark:text-white">Settings</h1>
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences</p>
                 </div>
+
+                {/* Email Verification Banner */}
+                {currentUser && !currentUser.isEmailVerified && (
+                    <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <Shield className="w-5 h-5 text-red-500" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="text-slate-900 dark:text-white font-bold text-sm">Verify your email</h4>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs">Please verify your email to secure your account.</p>
+                        </div>
+                        <button
+                            disabled={resending || cooldown > 0}
+                            onClick={async () => {
+                                setResending(true);
+                                try {
+                                    await api.post('/auth/resend-verification', { email: currentUser.email });
+                                    setCooldown(30);
+                                } catch (error) {
+                                    console.error('Failed to resend:', error);
+                                } finally {
+                                    setResending(false);
+                                }
+                            }}
+                            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-500 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                        >
+                            {resending ? 'Sending...' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Email'}
+                        </button>
+                    </div>
+                )}
 
                 <div className="space-y-8">
                     {/* Account */}

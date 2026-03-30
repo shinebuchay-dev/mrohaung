@@ -86,7 +86,7 @@ exports.register = async (req, res) => {
                     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 20px; background: white; text-align: center;">
                         <h1 style="color: #4f46e5; font-weight: 900; margin-bottom: 20px;">MROHAUNG</h1>
                         <h2 style="color: #1a1a1a; font-size: 20px; font-weight: 800;">Verify your identity</h2>
-                        <p style="color: #666; line-height: 1.6;">Welcome! Please check your email and click the button below to verify your account. <b>Unverified accounts cannot post or interact.</b></p>
+                        <p style="color: #666; line-height: 1.6;">Welcome! Please check your email and click the button below to verify your account.</p>
                         <div style="margin: 30px 0;">
                             <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 14px 30px; text-decoration: none; border-radius: 12px; font-weight: 800; display: inline-block; font-size: 14px; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);">Confirm Email Address</a>
                         </div>
@@ -120,7 +120,8 @@ exports.register = async (req, res) => {
                 username,
                 email,
                 displayName,
-                isVerified: false
+                isVerified: false,
+                isEmailVerified: false
             }
         });
     } catch (error) {
@@ -147,7 +148,7 @@ exports.verifyEmail = async (req, res) => {
         }
 
         await pool.execute(
-            'UPDATE User SET isVerified = true, verificationToken = NULL WHERE id = ?',
+            'UPDATE User SET verificationToken = NULL WHERE id = ?',
             [users[0].id]
         );
 
@@ -162,12 +163,17 @@ exports.login = async (req, res) => {
     console.log('--- LOGIN ATTEMPT ---');
     console.log('Body:', req.body);
     try {
-        const { email, password } = req.body;
+        const identifier = req.body.email || req.body.username;
+        const password = req.body.password;
+
+        if (!identifier || !password) {
+            return res.status(400).json({ message: 'Email/Username and password are required' });
+        }
 
         // Find user by either email or username
         const [users] = await pool.execute(
             'SELECT * FROM User WHERE email = ? OR username = ?',
-            [email, email]
+            [identifier, identifier]
         );
 
         const user = users[0];
@@ -215,7 +221,8 @@ exports.login = async (req, res) => {
                 email: user.email,
                 displayName: user.displayName,
                 avatarUrl: user.avatarUrl,
-                isVerified: !!user.isVerified
+                isVerified: !!user.isVerified,
+                isEmailVerified: !user.verificationToken
             }
         });
     } catch (error) {
@@ -227,7 +234,7 @@ exports.login = async (req, res) => {
 exports.me = async (req, res) => {
     try {
         const [users] = await pool.execute(
-            'SELECT id, username, email, displayName, avatarUrl, isVerified FROM User WHERE id = ?',
+            'SELECT id, username, email, displayName, avatarUrl, isVerified, verificationToken FROM User WHERE id = ?',
             [req.userId]
         );
 
@@ -249,6 +256,7 @@ exports.me = async (req, res) => {
         res.json({
             ...user,
             isVerified: !!user.isVerified,
+            isEmailVerified: !user.verificationToken,
             role
         });
     } catch (error) {
@@ -276,7 +284,7 @@ exports.resendVerification = async (req, res) => {
 
         const user = users[0];
 
-        if (user.isVerified) {
+        if (!user.verificationToken) {
             return res.status(400).json({ message: 'Email is already verified' });
         }
 
@@ -301,7 +309,7 @@ exports.resendVerification = async (req, res) => {
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 20px; background: white; text-align: center;">
                     <h2 style="color: #1a1a1a; font-size: 20px; font-weight: 800;">Resend: Verify your identity</h2>
-                    <p style="color: #666; line-height: 1.6;">Please confirm your account to continue. Unverified accounts cannot post or interact.</p>
+                    <p style="color: #666; line-height: 1.6;">Please confirm your account to continue.</p>
                     <div style="margin: 30px 0;">
                         <a href="${verifyUrl}" style="background-color: #4f46e5; color: white; padding: 14px 30px; text-decoration: none; border-radius: 12px; font-weight: 800; display: inline-block; font-size: 14px;">Verify Email Now</a>
                     </div>
