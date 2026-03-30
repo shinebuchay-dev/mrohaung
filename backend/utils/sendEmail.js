@@ -110,6 +110,16 @@ const sendEmail = async (options) => {
 
         const info = await transporter.sendMail(mailOptions);
         console.log(`[Email] ✅ Successfully sent to ${to}. MessageId: ${info.messageId}`);
+        
+        if (isDev) {
+            console.log(`[Email] [DEV MODE] Email was accepted by external server, but might be flagged as Spam.`);
+            // Always try to extract any obvious links from the HTML for easy clicking locally
+            const linkMatch = html.match(/href="([^"]+)"/);
+            if (linkMatch) {
+                console.log(`\n👉 VERIFICATION LINK: ${linkMatch[1]}\n`);
+            }
+        }
+        
         return true;
 
     } catch (err) {
