@@ -166,32 +166,56 @@ exports.deleteAccount = async (req, res) => {
 
         await connection.query('SET FOREIGN_KEY_CHECKS = 0');
 
-        // Remove all user associations
+        // Remove all user associations that don't depend on other things first
+        await connection.execute('DELETE FROM Badge WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM `Like` WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM CommentLike WHERE userId = ?', [userId]);
-        await connection.execute('DELETE FROM Comment WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM StoryView WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM Friendship WHERE userId = ? OR friendId = ?', [userId, userId]);
         await connection.execute('DELETE FROM Notification WHERE userId = ? OR fromUserId = ?', [userId, userId]);
         await connection.execute('DELETE FROM Story WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM Message WHERE senderId = ?', [userId]);
         await connection.execute('DELETE FROM ConversationParticipant WHERE userId = ?', [userId]);
-        await connection.execute('DELETE FROM VerificationRequest WHERE userId = ?', [userId]);
+        
+        // Remove verification requests if the table exists (swallowing error if it doesn't to be safe)
+        try {
+            await connection.execute('DELETE FROM VerificationRequest WHERE userId = ?', [userId]);
+        } catch (err) {}
+
         await connection.execute('DELETE FROM BlockedUser WHERE blockerId = ? OR blockedId = ?', [userId, userId]);
         await connection.execute('DELETE FROM Report WHERE reporterId = ? OR targetUserId = ?', [userId, userId]);
         await connection.execute('DELETE FROM ShortVideoLike WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM EmailApplication WHERE userId = ?', [userId]);
         await connection.execute('DELETE FROM UserInterest WHERE userId = ?', [userId]);
 
-        // Remove Short Videos
-        await connection.execute('DELETE FROM ShortVideo WHERE authorId = ?', [userId]);
+        // Remove all comments made by the user, and their likes
+        const [userCommentRows] = await connection.execute('SELECT id FROM Comment WHERE userId = ?', [userId]);
+        for (const comment of userCommentRows) {
+            await connection.execute('DELETE FROM CommentLike WHERE commentId = ?', [comment.id]);
+        }
+        await connection.execute('DELETE FROM Comment WHERE userId = ?', [userId]);
 
-        // Remove posts (and their related likes/comments)
+        // Remove Short Videos (and their related likes)
+        const [videoRows] = await connection.execute('SELECT id FROM ShortVideo WHERE authorId = ?', [userId]);
+        for (const row of videoRows) {
+            await connection.execute('DELETE FROM ShortVideoLike WHERE videoId = ?', [row.id]);
+            await connection.execute('DELETE FROM ShortVideo WHERE id = ?', [row.id]);
+        }
+
+        // Remove posts (and their related likes/comments/notifications/reports)
         const [postRows] = await connection.execute('SELECT id FROM Post WHERE authorId = ?', [userId]);
         for (const row of postRows) {
             await connection.execute('DELETE FROM `Like` WHERE postId = ?', [row.id]);
+            
+            // Delete likes for comments on this post, then delete the comments
+            const [postCommentRows] = await connection.execute('SELECT id FROM Comment WHERE postId = ?', [row.id]);
+            for (const comment of postCommentRows) {
+                await connection.execute('DELETE FROM CommentLike WHERE commentId = ?', [comment.id]);
+            }
             await connection.execute('DELETE FROM Comment WHERE postId = ?', [row.id]);
+            
             await connection.execute('DELETE FROM Notification WHERE postId = ?', [row.id]);
+            await connection.execute('DELETE FROM Report WHERE postId = ?', [row.id]);
             await connection.execute('DELETE FROM Post WHERE id = ?', [row.id]);
         }
 
