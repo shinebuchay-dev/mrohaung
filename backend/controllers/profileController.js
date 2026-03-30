@@ -159,53 +159,62 @@ exports.searchUsers = async (req, res) => {
 };
 
 exports.deleteAccount = async (req, res) => {
+    let connection;
     try {
         const userId = req.userId;
+        connection = await pool.getConnection();
 
-        // Remove content created by user
-        await pool.execute('DELETE FROM `Like` WHERE userId = ?', [userId]);
-        await pool.execute('DELETE FROM Comment WHERE userId = ?', [userId]);
-        await pool.execute('DELETE FROM StoryView WHERE userId = ?', [userId]);
+        await connection.query('SET FOREIGN_KEY_CHECKS = 0');
 
-        // Remove friendships
-        await pool.execute('DELETE FROM Friendship WHERE userId = ? OR friendId = ?', [userId, userId]);
+        // Remove all user associations
+        await connection.execute('DELETE FROM `Like` WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM CommentLike WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM Comment WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM StoryView WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM Friendship WHERE userId = ? OR friendId = ?', [userId, userId]);
+        await connection.execute('DELETE FROM Notification WHERE userId = ? OR fromUserId = ?', [userId, userId]);
+        await connection.execute('DELETE FROM Story WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM Message WHERE senderId = ?', [userId]);
+        await connection.execute('DELETE FROM ConversationParticipant WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM VerificationRequest WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM BlockedUser WHERE blockerId = ? OR blockedId = ?', [userId, userId]);
+        await connection.execute('DELETE FROM Report WHERE reporterId = ? OR targetUserId = ?', [userId, userId]);
+        await connection.execute('DELETE FROM ShortVideoLike WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM EmailApplication WHERE userId = ?', [userId]);
+        await connection.execute('DELETE FROM UserInterest WHERE userId = ?', [userId]);
 
-        // Remove notifications to/from user
-        await pool.execute('DELETE FROM Notification WHERE userId = ? OR fromUserId = ?', [userId, userId]);
-
-        // Remove stories
-        await pool.execute('DELETE FROM Story WHERE userId = ?', [userId]);
+        // Remove Short Videos
+        await connection.execute('DELETE FROM ShortVideo WHERE authorId = ?', [userId]);
 
         // Remove posts (and their related likes/comments)
-        const [postRows] = await pool.execute('SELECT id FROM Post WHERE authorId = ?', [userId]);
+        const [postRows] = await connection.execute('SELECT id FROM Post WHERE authorId = ?', [userId]);
         for (const row of postRows) {
-            await pool.execute('DELETE FROM `Like` WHERE postId = ?', [row.id]);
-            await pool.execute('DELETE FROM Comment WHERE postId = ?', [row.id]);
+            await connection.execute('DELETE FROM `Like` WHERE postId = ?', [row.id]);
+            await connection.execute('DELETE FROM Comment WHERE postId = ?', [row.id]);
+            await connection.execute('DELETE FROM Notification WHERE postId = ?', [row.id]);
+            await connection.execute('DELETE FROM Post WHERE id = ?', [row.id]);
         }
-        await pool.execute('DELETE FROM Post WHERE authorId = ?', [userId]);
 
-        // Remove messages sent by user
-        await pool.execute('DELETE FROM Message WHERE senderId = ?', [userId]);
-
-        // Remove conversation participation
-        await pool.execute('DELETE FROM ConversationParticipant WHERE userId = ?', [userId]);
-
-        // Cleanup empty conversations (no participants)
-        await pool.execute(
-            'DELETE FROM Conversation WHERE id NOT IN (SELECT DISTINCT conversationId FROM ConversationParticipant)',
-            []
-        );
+        // Cleanup empty conversations
+        await connection.execute('DELETE FROM Conversation WHERE id NOT IN (SELECT DISTINCT conversationId FROM ConversationParticipant)', []);
 
         // Finally remove user
-        const [result] = await pool.execute('DELETE FROM User WHERE id = ?', [userId]);
+        const [result] = await connection.execute('DELETE FROM User WHERE id = ?', [userId]);
+
+        await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+        connection.release();
 
         if (!result.affectedRows) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        res.json({ success: true });
+        res.json({ success: true, message: 'Account deleted permanently.' });
     } catch (error) {
-        console.error(error);
+        if (connection) {
+            await connection.query('SET FOREIGN_KEY_CHECKS = 1');
+            connection.release();
+        }
+        console.error('Delete Account Error:', error);
         res.status(500).json({ message: 'Failed to delete account' });
     }
 };

@@ -73,6 +73,7 @@ apiRouter.use('/profile', profileRoutes);
 
 // Bulletproof Direct PUT for Profile
 apiRouter.put('/profile', authMiddleware, upload.fields([{ name: 'avatar', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), profileController.updateProfile);
+apiRouter.delete('/profile', authMiddleware, profileController.deleteAccount);
 
 apiRouter.use('/posts', postRoutes);
 apiRouter.use('/comments', commentRoutes);
