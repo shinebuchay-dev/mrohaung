@@ -172,18 +172,18 @@ export default function SettingsPage() {
                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences</p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {/* Account */}
-                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-5 border-b border-slate-100 dark:border-white/5">
-                            <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <User className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Account
+                    <div className="bg-transparent">
+                        <div className="px-2 mb-3">
+                            <h2 className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Account
                             </h2>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-white/5">
+                        <div className="space-y-1">
                             <button
                                 onClick={() => router.push(currentUser?.username ? `/profile/${currentUser.username}` : '/login')}
-                                className="w-full px-5 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left flex items-center justify-between group"
+                                className="w-full px-4 py-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-left flex items-center justify-between group"
                             >
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Profile</p>
@@ -192,7 +192,7 @@ export default function SettingsPage() {
                                 <ArrowLeft className="w-5 h-5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 rotate-180 transition-colors" />
                             </button>
                             <button
-                                className="w-full px-5 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-left flex items-center justify-between group"
+                                className="w-full px-4 py-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-left flex items-center justify-between group"
                                 onClick={() => alert('Change password coming soon!')}
                             >
                                 <div>
@@ -208,14 +208,14 @@ export default function SettingsPage() {
 
 
                     {/* Notifications */}
-                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-5 border-b border-slate-100 dark:border-white/5">
-                            <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Bell className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Notifications
+                    <div className="bg-transparent">
+                        <div className="px-2 mb-3">
+                            <h2 className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <Bell className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Notifications
                             </h2>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-white/5">
-                            <div className="px-5 py-4 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <div className="px-4 py-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center justify-between">
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white">Push Notifications</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Receive notifications on your device</p>
@@ -229,14 +229,14 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Privacy & Security */}
-                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-5 border-b border-slate-100 dark:border-white/5">
-                            <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Privacy & Security
+                    <div className="bg-transparent">
+                        <div className="px-2 mb-3">
+                            <h2 className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Privacy & Security
                             </h2>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-white/5">
-                            <div className="px-5 py-4 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <div className="px-4 py-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center justify-between">
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white">Dark Mode</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Toggle application theme</p>
@@ -246,7 +246,7 @@ export default function SettingsPage() {
                                     <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
-                            <div className="px-5 py-4 flex items-center justify-between">
+                            <div className="px-4 py-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors flex items-center justify-between">
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white">Private Account</p>
                                     <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                                     <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                                 </label>
                             </div>
-                            <div className="px-5 py-5">
+                            <div className="px-4 py-3.5 rounded-2xl">
                                 <p className="font-bold text-slate-900 dark:text-white mb-1">Blocked Users</p>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
                                     {blockedUsers.length} user{blockedUsers.length !== 1 ? 's' : ''} blocked
@@ -266,7 +266,7 @@ export default function SettingsPage() {
                                 {blockedUsers.length > 0 && (
                                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                                         {blockedUsers.map((user) => (
-                                            <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                                            <div key={user.id} className="flex items-center justify-between p-3 bg-slate-100 dark:bg-white/5 rounded-xl">
                                                 <div className="flex items-center gap-3">
                                                     {user.avatarUrl ? (
                                                         <img src={user.avatarUrl} alt={user.displayName || user.username || ''} className="w-10 h-10 rounded-full object-cover" />
@@ -279,7 +279,7 @@ export default function SettingsPage() {
                                                 </div>
                                                 <button
                                                     onClick={() => handleUnblock(user.id)}
-                                                    className="px-4 py-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 text-sm font-bold rounded-xl transition-colors"
+                                                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 text-slate-700 dark:text-white text-sm font-bold rounded-xl transition-colors"
                                                 >
                                                     Unblock
                                                 </button>
@@ -292,71 +292,67 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Verification */}
-                    <div className="bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-5 border-b border-slate-100 dark:border-white/5">
-                            <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" /> Verification
+                    <div className="bg-transparent">
+                        <div className="px-2 mb-3">
+                            <h2 className="font-bold text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Verification
                             </h2>
                         </div>
-                        <div className="p-5">
+                        <div className="px-4 py-3.5">
                             {isVerifying ? (
-                                <div className="flex flex-col items-center justify-center py-10">
-                                    <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-3" />
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Loading your status...</p>
+                                <div className="flex flex-col items-center justify-center py-6">
+                                    <Loader2 className="w-6 h-6 text-slate-400 animate-spin mb-2" />
+                                    <p className="text-xs font-medium text-slate-500">Loading status...</p>
                                 </div>
                             ) : verificationStatus?.request?.status === 'pending' ? (
-                                <div className="bg-blue-50 dark:bg-blue-500/10 p-5 rounded-2xl border border-blue-100 dark:border-blue-500/20">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600">
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        </div>
-                                        <p className="font-bold text-blue-700 dark:text-blue-400">Verification Under Review</p>
+                                <div className="bg-blue-50 dark:bg-blue-500/10 p-4 rounded-2xl">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                                        <p className="font-bold text-sm text-blue-700 dark:text-blue-400">Under Review</p>
                                     </div>
-                                    <p className="text-sm text-blue-600 dark:text-blue-500 font-medium leading-relaxed">
+                                    <p className="text-xs text-blue-600/80 dark:text-blue-400/80 font-medium leading-relaxed">
                                         Your request is currently being reviewed by our team.
                                     </p>
                                 </div>
                             ) : verificationStatus?.isVerified ? (
-                                <div className="bg-amber-50 dark:bg-amber-500/10 p-5 rounded-2xl border border-amber-100 dark:border-amber-500/20 flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-lg shadow-amber-500/20">
-                                        <Check className="w-7 h-7 font-black" />
+                                <div className="bg-amber-50 dark:bg-amber-500/10 p-4 rounded-2xl flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center text-white shrink-0 shadow-sm shadow-amber-500/20">
+                                        <Check className="w-5 h-5 font-black" />
                                     </div>
                                     <div>
-                                        <p className="font-black text-amber-700 dark:text-amber-400 text-lg">Account Verified</p>
-                                        <p className="text-sm text-amber-600 dark:text-amber-500 mt-0.5 font-medium">Your account has the Royal Gold badge.</p>
+                                        <p className="font-black text-amber-700 dark:text-amber-400 text-base">Account Verified</p>
+                                        <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mt-0.5 font-medium">You have the Royal Gold badge.</p>
                                     </div>
                                 </div>
                             ) : verificationStatus?.request?.status === 'rejected' ? (
-                                <div className="space-y-4">
-                                    <div className="bg-red-50 dark:bg-red-500/10 p-5 rounded-2xl border border-red-100 dark:border-red-500/20">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shrink-0">
-                                                <X className="w-4 h-4" />
-                                            </div>
-                                            <p className="font-bold text-red-700 dark:text-red-400">Request Denied</p>
+                                <div className="space-y-3">
+                                    <div className="bg-red-50 dark:bg-red-500/10 p-4 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                                            <p className="font-bold text-sm text-red-700 dark:text-red-400">Request Denied</p>
                                         </div>
-                                        <p className="text-sm text-red-600 dark:text-red-500 font-medium">Your verification request has been declined.</p>
+                                        <p className="text-xs text-red-600/80 dark:text-red-400/80 font-medium">Your verification request was declined.</p>
                                     </div>
-                                    <button onClick={() => setShowVerifyForm(true)} className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95">
+                                    <button onClick={() => setShowVerifyForm(true)} className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl text-sm transition-all active:scale-95">
                                         Apply Again
                                     </button>
                                 </div>
                             ) : showVerifyForm ? (
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Why should you be verified?</label>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Reason for verification</label>
                                         <textarea
                                             value={reason}
                                             onChange={(e) => setReason(e.target.value)}
                                             placeholder="Provide a detailed reason..."
-                                            className="w-full h-32 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                                            className="w-full h-24 bg-slate-100 dark:bg-white/5 border-none rounded-2xl p-4 text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none transition-all"
                                         />
                                     </div>
-                                    <div className="flex gap-3">
-                                        <button onClick={handleRequestVerification} disabled={requesting || reason.trim().length < 10} className="flex-1 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all">
-                                            {requesting ? 'Submitting...' : 'Submit Application'}
+                                    <div className="flex gap-2">
+                                        <button onClick={handleRequestVerification} disabled={requesting || reason.trim().length < 10} className="flex-1 px-5 py-2.5 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-200 disabled:opacity-50 text-white dark:text-slate-900 font-bold rounded-xl text-sm transition-all">
+                                            {requesting ? 'Submitting...' : 'Submit'}
                                         </button>
-                                        <button onClick={() => setShowVerifyForm(false)} className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl text-sm">
+                                        <button onClick={() => setShowVerifyForm(false)} className="px-5 py-2.5 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-700 dark:text-white font-bold rounded-xl text-sm transition-all">
                                             Cancel
                                         </button>
                                     </div>
@@ -364,10 +360,10 @@ export default function SettingsPage() {
                             ) : (
                                 <div>
                                     <p className="font-bold text-slate-900 dark:text-white mb-1">Apply for Royal Gold Badge</p>
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-                                        Verified accounts have a Royal Gold badge next to their names.
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                                        Verified accounts get a Royal Gold badge next to their names.
                                     </p>
-                                    <button onClick={() => setShowVerifyForm(true)} className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all active:scale-95">
+                                    <button onClick={() => setShowVerifyForm(true)} className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 font-bold rounded-xl text-sm transition-all active:scale-95">
                                         Get Started
                                     </button>
                                 </div>
@@ -376,23 +372,23 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Danger Zone */}
-                    <div className="bg-white dark:bg-[#1e293b] border border-red-200 dark:border-red-500/20 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-5 border-b border-red-100 dark:border-red-500/10">
-                            <h2 className="font-bold text-red-500 flex items-center gap-2">
-                                <Trash2 className="w-5 h-5" /> Danger Zone
+                    <div className="bg-transparent mt-10">
+                        <div className="px-2 mb-3">
+                            <h2 className="font-bold text-red-500/80 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <Trash2 className="w-4 h-4" /> Danger Zone
                             </h2>
                         </div>
-                        <div className="divide-y divide-red-100 dark:divide-red-500/10">
-                            <button onClick={handleLogout} className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left flex items-center justify-between group">
+                        <div className="space-y-1">
+                            <button onClick={handleLogout} className="w-full px-4 py-3.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left flex items-center justify-between group">
                                 <div>
-                                    <p className="font-bold text-slate-900 dark:text-white group-hover:text-red-500 transition-colors">Logout</p>
-                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sign out of your account</p>
+                                    <p className="font-bold text-red-600 dark:text-red-500">Logout</p>
+                                    <p className="text-sm font-medium text-red-500/70 dark:text-red-400/70">Sign out of your account</p>
                                 </div>
-                                <LogOut className="w-5 h-5 text-slate-400 group-hover:text-red-500 transition-colors" />
+                                <LogOut className="w-5 h-5 text-red-300 dark:text-red-500/50 group-hover:text-red-500 transition-colors" />
                             </button>
-                            <button className="w-full px-5 py-4 hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left group" onClick={handleDeleteAccount}>
-                                <p className="font-bold text-red-500 dark:text-red-400">Delete Account</p>
-                                <p className="text-sm font-medium text-red-400 dark:text-red-400/70">Permanently delete your account and data</p>
+                            <button className="w-full px-4 py-3.5 rounded-2xl hover:bg-red-50 dark:hover:bg-red-500/5 transition-colors text-left group" onClick={handleDeleteAccount}>
+                                <p className="font-bold text-red-600 dark:text-red-500">Delete Account</p>
+                                <p className="text-sm font-medium text-red-500/70 dark:text-red-400/70">Permanently delete your account and data</p>
                             </button>
                         </div>
                     </div>
