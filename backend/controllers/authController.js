@@ -247,6 +247,7 @@ exports.me = async (req, res) => {
 
         res.json({
             ...user,
+            isVerified: !!user.isVerified,
             role
         });
     } catch (error) {
