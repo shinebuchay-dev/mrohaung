@@ -410,10 +410,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <button
                         title="Upload Video"
                         onClick={() => window.dispatchEvent(new Event('open-short-video-upload'))}
-                        className="flex-1 h-full flex items-center justify-center relative z-20"
+                        className="flex-1 h-full flex items-center justify-center relative z-20 group"
                     >
-                        <div className="w-12 h-12 -translate-y-4 bg-gradient-to-tr from-blue-600 to-indigo-500 text-white rounded-full shadow-[0_8px_20px_rgba(37,99,235,0.4)] border-4 border-white dark:border-[#0f172a] flex items-center justify-center active:scale-90 transition-transform">
-                            <Plus className="w-7 h-7 stroke-[3]" />
+                        <div className="w-12 h-12 -translate-y-4 bg-gradient-to-tr from-blue-400 via-indigo-500 to-purple-600 p-[3px] rounded-full shadow-[0_5px_15px_rgba(99,102,241,0.4)] transition-all duration-300 group-hover:scale-110 active:scale-90">
+                            <div className="w-full h-full bg-white dark:bg-[#0f172a] rounded-full flex items-center justify-center">
+                                <Plus className="w-6 h-6 text-indigo-600 dark:text-blue-400 stroke-[3.5]" />
+                            </div>
                         </div>
                     </button>
                 )}
