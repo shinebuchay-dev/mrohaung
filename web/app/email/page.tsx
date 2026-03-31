@@ -89,26 +89,26 @@ function NativeWebmailUI({
     }, [activeTab]);
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col h-[calc(100dvh-150px)] md:h-auto overflow-hidden">
             {/* Header Area — Typography focus */}
-            <div className="flex items-center justify-between mb-8 px-1">
+            <div className="flex items-center justify-between mb-4 md:mb-8 px-1 shrink-0">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                        <div className="w-2 h-8 bg-blue-600 rounded-full" />
+                    <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                        <div className="w-1.5 h-6 md:w-2 md:h-8 bg-blue-600 rounded-full" />
                         Webmail
                     </h1>
-                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mt-1 ml-4">{emailApp.fullEmail}</p>
+                    <p className="text-[10px] md:text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mt-0.5 ml-3 md:ml-4">{emailApp.fullEmail}</p>
                 </div>
                 <button
                     onClick={fetchMails}
                     className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-slate-400 hover:text-blue-600"
                 >
-                    <RefreshCw className={`w-5 h-5 ${loadingMails ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 md:w-5 md:h-5 ${loadingMails ? 'animate-spin' : ''}`} />
                 </button>
             </div>
 
             {/* Tab Bar — minimalist text labels */}
-            <div className="flex gap-6 mb-8 px-1 border-b border-slate-100 dark:border-white/5 overflow-x-auto no-scrollbar">
+            <div className="flex gap-5 md:gap-6 mb-4 md:mb-8 px-1 border-b border-slate-100 dark:border-white/5 overflow-x-auto no-scrollbar shrink-0">
                 {[
                     { id: 'inbox', label: 'Inbox', count: inboxMails.length },
                     { id: 'sent', label: 'Sent', count: sentMails.length },
@@ -119,24 +119,24 @@ function NativeWebmailUI({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`pb-4 text-[13px] font-black uppercase tracking-widest transition-all relative ${activeTab === tab.id
+                        className={`pb-3 md:pb-4 text-[12px] md:text-[13px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${activeTab === tab.id
                                 ? 'text-blue-600'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-600'
                             }`}
                     >
                         {tab.label}
                         {tab.count !== undefined && tab.count > 0 && (
-                            <span className="ml-1.5 opacity-50">{tab.count}</span>
+                            <span className="ml-1 opacity-50">{tab.count}</span>
                         )}
                         {activeTab === tab.id && (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-t-full animate-in fade-in slide-in-from-bottom-1" />
+                            <div className="absolute bottom-0 left-0 right-0 h-0.5 md:h-1 bg-blue-600 rounded-t-full" />
                         )}
                     </button>
                 ))}
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1">
+            {/* Content Area — Dynamic Internal Scroll */}
+            <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
                 {['inbox', 'sent', 'archived', 'trash'].includes(activeTab) && (
                     <div className="relative">
                         {/* Detail Overlay - Fully Seamless */}
