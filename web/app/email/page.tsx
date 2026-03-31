@@ -160,26 +160,38 @@ function NativeWebmailUI({
                                     <div className="space-y-4">
                                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{selectedMail.subject}</h1>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm transition-all">
-                                                {activeTab === 'sent' && currentUser?.profilePic ? (
-                                                    <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <img 
-                                                        src={selectedMail.fromAddress.endsWith('@gmail.com')
-                                                            ? `https://www.google.com/s2/photos/profile/${selectedMail.fromAddress}?sz=150`
-                                                            : '/placeholder-avatar.png'
-                                                        } 
-                                                        alt="" 
-                                                        className="w-full h-full object-cover bg-blue-600/5"
-                                                        onError={(e: any) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.nextSibling.style.display = 'flex';
-                                                        }}
-                                                    />
-                                                )}
-                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 font-black text-xl uppercase hidden">
-                                                    {(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}
-                                                </div>
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm relative">
+                                                {(() => {
+                                                    const internalPic = activeTab === 'sent' ? selectedMail.recipientProfilePic : selectedMail.senderProfilePic;
+                                                    const email = activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress;
+
+                                                    if (internalPic) {
+                                                        return <img src={internalPic} alt="" className="w-full h-full object-cover" />;
+                                                    }
+                                                    if (activeTab === 'sent' && currentUser?.profilePic) {
+                                                        return <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />;
+                                                    }
+                                                    
+                                                    return (
+                                                        <>
+                                                            <img 
+                                                                src={email.endsWith('@gmail.com')
+                                                                    ? `https://www.google.com/s2/photos/profile/${email}?sz=150`
+                                                                    : `https://unavatar.io/${email}?fallback=false`
+                                                                } 
+                                                                alt="" 
+                                                                className="w-full h-full object-cover bg-blue-600/5"
+                                                                onError={(e: any) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'flex';
+                                                                }}
+                                                            />
+                                                            <div className="w-full h-full hidden items-center justify-center bg-blue-600/10 text-blue-600 font-black text-xl uppercase">
+                                                                {email[0]}
+                                                            </div>
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white truncate">{selectedMail.fromAddress}</p>
@@ -243,27 +255,39 @@ function NativeWebmailUI({
                                             onClick={() => setSelectedMail(m)}
                                             className="w-full flex items-start p-4 gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer group"
                                         >
-                                            {/* Direct Google Profile Icon Fetcher (No Intermediaries) */}
-                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-600">
-                                                {activeTab === 'sent' && currentUser?.profilePic ? (
-                                                    <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <img 
-                                                        src={(activeTab === 'inbox' ? m.fromAddress : m.toAddress).endsWith('@gmail.com')
-                                                            ? `https://www.google.com/s2/photos/profile/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?sz=150`
-                                                            : '/placeholder-avatar.png' // Non-gmail fallback
-                                                        } 
-                                                        alt="" 
-                                                        className="w-full h-full object-cover bg-blue-600/5"
-                                                        onError={(e: any) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.nextSibling.style.display = 'flex';
-                                                        }}
-                                                    />
-                                                )}
-                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 font-black text-sm uppercase">
-                                                    {(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}
-                                                </div>
+                                            {/* Smart Profile Icon Fetcher (Domestic & International) */}
+                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm relative">
+                                                {(() => {
+                                                    const internalPic = activeTab === 'sent' ? m.recipientProfilePic : m.senderProfilePic;
+                                                    const email = activeTab === 'inbox' ? m.fromAddress : m.toAddress;
+
+                                                    if (internalPic) {
+                                                        return <img src={internalPic} alt="" className="w-full h-full object-cover" />;
+                                                    }
+                                                    if (activeTab === 'sent' && currentUser?.profilePic) {
+                                                        return <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />;
+                                                    }
+                                                    
+                                                    return (
+                                                        <>
+                                                            <img 
+                                                                src={email.endsWith('@gmail.com')
+                                                                    ? `https://www.google.com/s2/photos/profile/${email}?sz=150`
+                                                                    : `https://unavatar.io/${email}?fallback=false`
+                                                                } 
+                                                                alt="" 
+                                                                className="w-full h-full object-cover bg-blue-600/5"
+                                                                onError={(e: any) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'flex';
+                                                                }}
+                                                            />
+                                                            <div className="w-full h-full hidden items-center justify-center bg-blue-600/10 text-blue-600 font-black text-sm uppercase">
+                                                                {email[0]}
+                                                            </div>
+                                                        </>
+                                                    );
+                                                })()}
                                             </div>
                                             
                                             <div className="flex-1 min-w-0">

@@ -308,7 +308,12 @@ exports.getInbox = async (req, res) => {
         if (!app) return res.status(403).json({ message: 'No approved email account.' });
 
         const [emails] = await pool.execute(
-            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = "inbox" ORDER BY createdAt DESC',
+            `SELECT em.*, u.profilePic as senderProfilePic 
+             FROM EmailMessage em
+             LEFT JOIN EmailApplication ea ON LOWER(em.fromAddress) = LOWER(ea.fullEmail)
+             LEFT JOIN User u ON ea.userId = u.id
+             WHERE em.ownerEmail = ? AND em.folder = "inbox" 
+             ORDER BY em.createdAt DESC`,
             [app.fullEmail]
         );
         res.json({ emails });
@@ -324,8 +329,14 @@ exports.getSent = async (req, res) => {
         const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE userId = ? AND status = "approved"', [req.userId]);
         if (!app) return res.status(403).json({ message: 'No approved email account.' });
 
+        // For sent items, the recipient might be an internal user. Let's try to get their profile pic.
         const [emails] = await pool.execute(
-            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = "sent" ORDER BY createdAt DESC',
+            `SELECT em.*, u.profilePic as recipientProfilePic 
+             FROM EmailMessage em
+             LEFT JOIN EmailApplication ea ON LOWER(em.toAddress) = LOWER(ea.fullEmail)
+             LEFT JOIN User u ON ea.userId = u.id
+             WHERE em.ownerEmail = ? AND em.folder = "sent" 
+             ORDER BY em.createdAt DESC`,
             [app.fullEmail]
         );
         res.json({ emails });
@@ -345,7 +356,12 @@ exports.getFolderEmails = async (req, res) => {
         if (!app) return res.status(403).json({ message: 'No approved email account.' });
 
         const [emails] = await pool.execute(
-            'SELECT * FROM EmailMessage WHERE ownerEmail = ? AND folder = ? ORDER BY createdAt DESC',
+            `SELECT em.*, u.profilePic as senderProfilePic 
+             FROM EmailMessage em
+             LEFT JOIN EmailApplication ea ON LOWER(em.fromAddress) = LOWER(ea.fullEmail)
+             LEFT JOIN User u ON ea.userId = u.id
+             WHERE em.ownerEmail = ? AND em.folder = ? 
+             ORDER BY em.createdAt DESC`,
             [app.fullEmail, folderName]
         );
         res.json({ emails });
