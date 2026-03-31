@@ -160,14 +160,23 @@ function NativeWebmailUI({
                                     <div className="space-y-4">
                                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{selectedMail.subject}</h1>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-50 dark:border-white/5">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600">
-                                                        <span className="font-black text-xl uppercase">{(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}</span>
-                                                    </div>
+                                                    <img 
+                                                        src={`https://unavatar.io/${selectedMail.fromAddress}?fallback=false`} 
+                                                        alt="" 
+                                                        className="w-full h-full object-cover bg-blue-600/10"
+                                                        onError={(e: any) => {
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
+                                                        }}
+                                                    />
                                                 )}
+                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 hidden">
+                                                    <span className="font-black text-xl uppercase">{(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}</span>
+                                                </div>
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white truncate">{selectedMail.fromAddress}</p>
@@ -231,15 +240,24 @@ function NativeWebmailUI({
                                             onClick={() => setSelectedMail(m)}
                                             className="w-full flex items-start p-4 gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer group"
                                         >
-                                            {/* Profile Icon / Image */}
-                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
+                                            {/* Advanced Profile Icon Fetcher */}
+                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-50 dark:border-white/5">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600">
-                                                        <span className="font-black text-sm uppercase">{(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}</span>
-                                                    </div>
+                                                    <img 
+                                                        src={`https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`} 
+                                                        alt="" 
+                                                        className="w-full h-full object-cover bg-blue-600/10"
+                                                        onError={(e: any) => {
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
+                                                        }}
+                                                    />
                                                 )}
+                                                <div className="w-full h-full hidden items-center justify-center bg-blue-600/10 text-blue-600">
+                                                    <span className="font-black text-sm uppercase">{(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}</span>
+                                                </div>
                                             </div>
                                             
                                             <div className="flex-1 min-w-0">
