@@ -51,7 +51,14 @@ export default function NotificationsPage() {
                 ]);
                 setNotifications(notifRes.data.notifications);
                 setUnreadCount(notifRes.data.unreadCount);
-                setSuggestedFriends(suggestRes.data.suggestions || []);
+                
+                let suggestions = suggestRes.data || [];
+                // Fallback to random if no mutual friends suggestions found
+                if (suggestions.length === 0) {
+                    const randomRes = await api.get('/suggestions/random?limit=8');
+                    suggestions = randomRes.data || [];
+                }
+                setSuggestedFriends(suggestions);
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
