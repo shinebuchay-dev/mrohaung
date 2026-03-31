@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bell, Check, Trash2, UserPlus, Heart, MessageSquare, ShieldCheck, ChevronLeft } from 'lucide-react';
+import { Bell, Check, Trash2, UserPlus, Heart, MessageSquare, ShieldCheck, ChevronLeft, Plus } from 'lucide-react';
 import { useSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
@@ -51,7 +51,7 @@ export default function NotificationsPage() {
                 ]);
                 setNotifications(notifRes.data.notifications);
                 setUnreadCount(notifRes.data.unreadCount);
-                
+
                 let suggestions = suggestRes.data || [];
                 // Fallback to random if no mutual friends suggestions found
                 if (suggestions.length === 0) {
@@ -119,44 +119,56 @@ export default function NotificationsPage() {
 
     return (
         <div className="flex flex-col min-h-screen relative pb-32">
-            {/* Suggested Friends Section - Seamless UI */}
+            {/* Suggested Friends Section - Social Stories Style */}
             {suggestedFriends.length > 0 && (
                 <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center justify-between px-1 mb-4">
-                        <h2 className="text-[12px] font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 uppercase">Suggested For You</h2>
+                    <div className="flex items-center justify-between px-2 mb-4">
+                        <div className="flex flex-col">
+                            <h2 className="text-[14px] font-black tracking-tight text-slate-900 dark:text-white leading-none">Discover People</h2>
+                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1">Suggested based on mutual friends</span>
+                        </div>
                         <Link 
                             href="/friends" 
-                            className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                            className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1.5 rounded-full hover:scale-105 transition-all"
                         >
-                            Explore <ChevronLeft className="w-3 h-3 rotate-180" />
+                            Explore All
                         </Link>
                     </div>
-                    <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
-                        {suggestedFriends.slice(0, 10).map((user) => (
+                    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
+                        {suggestedFriends.slice(0, 12).map((user) => (
                             <Link
                                 key={user.id}
                                 href={`/profile/${user.username}`}
-                                className="flex-shrink-0 w-[85px] sm:w-[100px] flex flex-col items-center group transition-all duration-300"
+                                className="flex-shrink-0 w-[80px] sm:w-[90px] flex flex-col items-center group"
                             >
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 relative group-hover:ring-4 ring-blue-500/10 transition-all duration-500">
-                                    {user.avatarUrl ? (
-                                        <img src={fixUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500" />
-                                    ) : (
-                                        <div className="w-full h-full bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center text-slate-400 font-bold text-2xl uppercase">
-                                            {user.username[0]}
+                                <div className="relative mb-2">
+                                    {/* Gradient Ring Wrapper */}
+                                    <div className="w-16 h-16 sm:w-18 sm:h-18 p-[2.5px] rounded-full bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-500 group-hover:rotate-180 transition-all duration-700">
+                                        <div className="w-full h-full rounded-full border-[2.5px] border-white dark:border-[#0f172a] overflow-hidden bg-slate-100 dark:bg-white/5">
+                                            {user.avatarUrl ? (
+                                                <img 
+                                                    src={fixUrl(user.avatarUrl)} 
+                                                    alt={user.username} 
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xl uppercase">
+                                                    {user.username[0]}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    </div>
+                                    {/* Mini Add Button */}
+                                    <div className="absolute bottom-0 right-0 w-5 h-5 bg-blue-600 rounded-full border-2 border-white dark:border-[#0f172a] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                        <Plus className="w-3 h-3 text-white stroke-[4]" />
+                                    </div>
                                 </div>
-                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full text-center group-hover:text-blue-600 transition-colors">
+                                <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 truncate w-full text-center group-hover:text-blue-600 transition-colors">
                                     {user.displayName || user.username}
-                                </span>
-                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 truncate w-full text-center mt-0.5">
-                                    @{user.username}
                                 </span>
                             </Link>
                         ))}
                     </div>
-                    <div className="h-px w-full bg-slate-200/50 dark:bg-white/5 mt-4" />
                 </div>
             )}
 
@@ -169,8 +181,8 @@ export default function NotificationsPage() {
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
                                 className={`w-full group flex items-start gap-3 sm:gap-4 p-4 transition-all text-left relative rounded-2xl sm:rounded-3xl border border-transparent
-                                    ${!notification.read 
-                                        ? 'bg-blue-50/40 dark:bg-blue-500/5 backdrop-blur-[2px]' 
+                                    ${!notification.read
+                                        ? 'bg-blue-50/40 dark:bg-blue-500/5 backdrop-blur-[2px]'
                                         : 'hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'}
                                     hover:border-slate-200/50 dark:hover:border-white/5`}
                             >
@@ -192,7 +204,7 @@ export default function NotificationsPage() {
                                         <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-blue-600 rounded-full border-2 border-white dark:border-[#0f172a] shadow-sm animate-pulse" />
                                     )}
                                 </div>
-                                
+
                                 <div className="flex-1 min-w-0 py-0.5">
                                     <div className="text-[13px] sm:text-[14px] text-slate-800 dark:text-slate-200 leading-normal">
                                         <span className="inline-flex items-center gap-1 font-bold dark:text-white hover:underline decoration-blue-500/30">
@@ -232,8 +244,8 @@ export default function NotificationsPage() {
             {/* Floating Action Button at Bottom */}
             {unreadCount > 0 && (
                 <div className="fixed bottom-20 md:bottom-10 left-12 md:left-auto md:right-10 z-[100] animate-in fade-in zoom-in slide-in-from-bottom-10 duration-500">
-                    <button 
-                        onClick={markAllAsRead} 
+                    <button
+                        onClick={markAllAsRead}
                         className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-full shadow-[0_10px_30px_rgba(37,99,235,0.3)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.4)] transition-all active:scale-95"
                     >
                         <Check className="w-4 h-4 group-hover:scale-110 transition-transform" />
