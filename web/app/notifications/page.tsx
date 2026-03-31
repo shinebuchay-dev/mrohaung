@@ -110,9 +110,25 @@ export default function NotificationsPage() {
 
     if (loading) {
         return (
-            <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center p-4">
-                <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-slate-500 font-medium animate-pulse">Loading notifications...</p>
+            <div className="flex flex-col gap-8 animate-pulse">
+                {/* Skeleton for Suggested Friends */}
+                <div className="space-y-4">
+                    <div className="h-4 w-32 bg-slate-200 dark:bg-white/5 rounded-full" />
+                    <div className="flex gap-4 overflow-hidden">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2">
+                                <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-slate-100 dark:bg-white/5" />
+                                <div className="h-2 w-12 bg-slate-100 dark:bg-white/5 rounded-full" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                {/* Skeleton for Notifications List */}
+                <div className="space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-full h-20 rounded-3xl bg-slate-50 dark:bg-white/[0.02]" />
+                    ))}
+                </div>
             </div>
         );
     }
