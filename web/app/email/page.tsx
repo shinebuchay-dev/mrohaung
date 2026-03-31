@@ -8,7 +8,8 @@ import api from '@/lib/api';
 function NativeWebmailUI({
     emailApp, copyToClipboard, copiedField,
     sendMessage, setSendMessage, sendSubject, setSendSubject, sendTo, setSendTo,
-    handleSendEmail, sending, sendSuccess, sendError
+    handleSendEmail, sending, sendSuccess, sendError,
+    currentUser
 }: any) {
     const [activeTab, setActiveTab] = useState('inbox');
     const [inboxMails, setInboxMails] = useState<any[]>([]);
@@ -159,7 +160,15 @@ function NativeWebmailUI({
                                     <div className="space-y-4">
                                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{selectedMail.subject}</h1>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-blue-600/10 dark:bg-blue-600/20 flex items-center justify-center text-blue-600 font-black text-lg">{selectedMail.fromAddress[0].toUpperCase()}</div>
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                                                {activeTab === 'sent' && currentUser?.profilePic ? (
+                                                    <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600">
+                                                        <span className="font-black text-xl uppercase">{(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black text-slate-900 dark:text-white truncate">{selectedMail.fromAddress}</p>
                                                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{new Date(selectedMail.createdAt).toLocaleString()}</p>
@@ -204,7 +213,7 @@ function NativeWebmailUI({
                             </div>
                         )}
 
-                        {/* List Items - Linear & Clean */}
+                        {/* List Items - Linear & Clean with Profile Icons */}
                         {!selectedMail && (
                             <div className="divide-y divide-slate-100 dark:divide-white/5 animate-in fade-in duration-500">
                                 {(() => {
@@ -222,12 +231,20 @@ function NativeWebmailUI({
                                             onClick={() => setSelectedMail(m)}
                                             className="w-full flex items-start p-4 gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer group"
                                         >
-                                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5">
-                                                <span className="font-black text-slate-400 text-sm">{(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0].toUpperCase()}</span>
+                                            {/* Profile Icon / Image */}
+                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
+                                                {activeTab === 'sent' && currentUser?.profilePic ? (
+                                                    <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600">
+                                                        <span className="font-black text-sm uppercase">{(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}</span>
+                                                    </div>
+                                                )}
                                             </div>
+                                            
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-baseline mb-0.5">
-                                                    <p className={`text-sm font-black truncate pr-4 ${selectedMail?.id === m.id ? 'text-blue-600' : 'text-slate-900 dark:text-white'}`}>
+                                                    <p className={`text-[14px] font-black truncate pr-4 ${selectedMail?.id === m.id ? 'text-blue-600' : 'text-slate-900 dark:text-white'}`}>
                                                         {activeTab === 'inbox' ? m.fromAddress : m.toAddress}
                                                     </p>
                                                     <p className="text-[10px] font-black text-slate-400 dark:text-white/20 uppercase whitespace-nowrap">
@@ -451,6 +468,7 @@ export default function EmailPage() {
                         sending={sending}
                         sendSuccess={sendSuccess}
                         sendError={sendError}
+                        currentUser={currentUser}
                     />
                 </div>
             </ProtectedRoute>
