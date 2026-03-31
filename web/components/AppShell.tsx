@@ -206,7 +206,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className={`min-h-[100dvh] transition-colors duration-300 ${isShortVideoPage ? 'bg-black text-white' : 'bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50'}`}>
+        <div className={`min-h-[100dvh] transition-colors duration-300 ${isShortVideoPage ? 'bg-black text-white md:bg-slate-50 md:dark:bg-[#0f172a] md:text-slate-900 md:dark:text-slate-50' : 'bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50'}`}>
             <nav className={`fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 ${isShortVideoPage ? 'hidden md:block' : ''}`}>
                 <div className="max-w-5xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between transition-all duration-300">
                     <div className="flex items-center gap-6">
