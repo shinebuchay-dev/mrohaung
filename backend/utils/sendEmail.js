@@ -129,13 +129,24 @@ const sendEmail = async (options) => {
                 console.warn('[Email] DKIM key not found/readable, sending without signing.');
             }
 
+            // FORCE IPv4 to avoid Gmail IPv6 PTR record rejection block
+            try {
+                const ipv4Records = await dns.resolve4(targetMX);
+                if (ipv4Records && ipv4Records.length > 0) {
+                    debugLog(`Forcing IPv4 Connection to MX: ${ipv4Records[0]} (Original: ${targetMX})`);
+                    targetMX = ipv4Records[0];
+                }
+            } catch (resolveErr) {
+                console.warn(`[Email] Could not resolve IPv4 for ${targetMX}, falling back to original hostname.`);
+            }
+
             transporter = nodemailer.createTransport({
                 host: targetMX,
                 port: 25,
                 secure: false,
-                tls: { rejectUnauthorized: false },
+                tls: { rejectUnauthorized: false }, // Critical when connecting directly by IP
                 dkim: dkimOptions,
-                family: 4 // Preferred IPv4
+                family: 4 // Ensure IPv4 socket preference if possible
             });
         }
 
