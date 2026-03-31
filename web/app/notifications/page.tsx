@@ -116,7 +116,7 @@ export default function NotificationsPage() {
                     >
                         <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
-                    <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Notifications</h1>
+
                 </div>
                 {unreadCount > 0 && (
                     <button onClick={markAllAsRead} className="text-xs font-bold text-blue-600 dark:text-blue-400 py-1.5 px-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
