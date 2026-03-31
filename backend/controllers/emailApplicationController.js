@@ -252,7 +252,7 @@ exports.sendEmail = async (req, res) => {
         } else {
             debugLog(`Calling sendEmailUtil for external recipient...`);
             await sendEmailUtil({
-                email: to,
+                email: targetEmail,
                 from: app.fullEmail,
                 fromName: app.displayName,
                 subject: subject,

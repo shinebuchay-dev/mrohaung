@@ -37,7 +37,10 @@ function NativeWebmailUI({
     };
 
     useEffect(() => {
-        if (sendSuccess) setIsInlineCompose(false);
+        if (sendSuccess) {
+            const timer = setTimeout(() => setIsInlineCompose(false), 1500);
+            return () => clearTimeout(timer);
+        }
     }, [sendSuccess]);
 
     useEffect(() => {
@@ -320,6 +323,12 @@ function NativeWebmailUI({
                                             <button onClick={() => setIsInlineCompose(false)} className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase">Cancel</button>
                                         </div>
                                         <div className="space-y-3">
+                                            {sendSuccess && (
+                                                <div className="text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 p-2 text-[11px] font-bold rounded-lg flex items-center gap-1.5"><Check className="w-3.5 h-3.5"/> {sendSuccess}</div>
+                                            )}
+                                            {sendError && (
+                                                <div className="text-red-500 bg-red-50 dark:bg-red-500/10 p-2 text-[11px] font-bold rounded-lg flex items-center gap-1.5"><XCircle className="w-3.5 h-3.5"/> {sendError}</div>
+                                            )}
                                             {inlineMode === 'forward' && (
                                                 <input 
                                                     type="text" 
