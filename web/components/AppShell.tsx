@@ -189,6 +189,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         pathname?.startsWith('/login') || pathname?.startsWith('/register');
 
     const isMessagesPage = pathname === '/messages' || pathname?.startsWith('/messages/');
+    const isShortVideoPage = pathname === '/short-video' || pathname?.startsWith('/short-video/');
 
     // On auth pages, render without shell
     if (isAuthPage) {
@@ -205,8 +206,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50 transition-colors duration-300">
-            <nav className="fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
+        <div className={`min-h-[100dvh] transition-colors duration-300 ${isShortVideoPage ? 'bg-black text-white' : 'bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-50'}`}>
+            <nav className={`fixed top-0 w-full z-[100] bg-white/80 dark:bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 ${isShortVideoPage ? 'hidden md:block' : ''}`}>
                 <div className="max-w-5xl mx-auto px-2 sm:px-4 h-16 flex items-center justify-between transition-all duration-300">
                     <div className="flex items-center gap-6">
                         <Link
@@ -313,9 +314,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 </div>
             </nav>
 
-            <div className="max-w-5xl mx-auto px-2 sm:px-4 pt-[76px] sm:pt-20">
-                <div className="flex gap-4 lg:gap-6 transition-all duration-300">
-                    <aside className="hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-20 transition-all duration-300 shrink-0">
+            <div className={`mx-auto w-full ${isShortVideoPage ? 'max-w-full px-0 pt-0 md:max-w-5xl md:px-4 md:pt-[76px]' : 'max-w-5xl px-2 sm:px-4 pt-[76px] sm:pt-20'}`}>
+                <div className="flex gap-4 lg:gap-6 transition-all duration-300 w-full">
+                    <aside className={`hidden md:block w-fit h-[calc(100vh-8rem)] sticky top-20 transition-all duration-300 shrink-0 ${isShortVideoPage ? 'md:block' : ''}`}>
                         <div className="h-full flex flex-col justify-between">
                             <ul className="space-y-1">
                                 {navItems.map((item: any) => {
@@ -379,46 +380,50 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 />
             )}
 
-            {/* Mobile Floating Nav - Left Aligned Vertical Stack */}
-            <div className="md:hidden fixed bottom-6 left-4 z-[110] flex flex-col gap-3">
-                {/* Message (Top) - Links to Messages Page */}
+            {/* Mobile Bottom Menu Bar (TikTok Style) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-[110] flex flex-row items-center justify-around bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-200 dark:border-white/10 h-14 pb-[env(safe-area-inset-bottom)]">
+                {/* News / Home */}
                 <Link
-                    href="/messages"
-                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/messages') 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
-                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                    href="/"
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/') 
+                        ? 'text-blue-600 dark:text-blue-400' 
+                        : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                    <MessageCircle className="w-5 h-5" />
+                    <Home className={`w-6 h-6 ${isActive('/') ? 'fill-current' : ''}`} />
+                    <span className="text-[10px] font-medium mt-0.5">Home</span>
                 </Link>
 
-                {/* Short Video (Middle) */}
+                {/* Short Video */}
                 <Link
                     href="/short-video"
-                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/short-video') 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
-                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/short-video') 
+                        ? 'text-blue-600 dark:text-blue-400' 
+                        : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                    <Play className="w-5 h-5 fill-current" />
+                    <Play className={`w-6 h-6 ${isActive('/short-video') ? 'fill-current' : ''}`} />
+                    <span className="text-[10px] font-medium mt-0.5">Shorts</span>
                 </Link>
 
                 {/* Email */}
                 <Link
                     href="/email"
-                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/email') 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
-                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/email') 
+                        ? 'text-blue-600 dark:text-blue-400' 
+                        : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                    <Mail className="w-5 h-5" />
+                    <Mail className={`w-6 h-6 ${isActive('/email') ? 'fill-current' : ''}`} />
+                    <span className="text-[10px] font-medium mt-0.5">Mail</span>
                 </Link>
 
-                {/* News / Home (Bottom) */}
+                {/* Message */}
                 <Link
-                    href="/"
-                    className={`w-12 h-12 flex items-center justify-center rounded-full transition-all duration-300 ${isActive('/') 
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40 scale-105' 
-                        : 'bg-white/90 dark:bg-[#1e293b]/90 text-slate-500 dark:text-slate-400 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-sm'}`}
+                    href="/messages"
+                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/messages') 
+                        ? 'text-blue-600 dark:text-blue-400' 
+                        : 'text-slate-500 dark:text-slate-400'}`}
                 >
-                    <Home className="w-5 h-5" />
+                    <MessageCircle className={`w-6 h-6 ${isActive('/messages') ? 'fill-current' : ''}`} />
+                    <span className="text-[10px] font-medium mt-0.5">Messages</span>
                 </Link>
             </div>
         </div>

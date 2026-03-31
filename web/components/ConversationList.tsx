@@ -43,9 +43,7 @@ export default function ConversationList({ conversations, selectedId, onSelect, 
         <div className="flex flex-col h-full bg-transparent">
             {/* ── SOFT HEADER ── */}
             <div className="pb-4 pt-2">
-                <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-5 tracking-tight flex items-center justify-between">
-                    Messages
-                </h1>
+
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     <input

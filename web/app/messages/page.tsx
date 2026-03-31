@@ -220,9 +220,9 @@ function MessagesContent() {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] -mt-6 flex bg-transparent">
+        <div className="h-[calc(100vh-5rem)] flex bg-transparent">
             {/* Left Sidebar - Conversation List */}
-            <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-[320px] lg:w-[360px] h-[calc(100vh-6rem)] border-r border-slate-200 dark:border-slate-800/60 pr-2 md:pr-4`}>
+            <div className={`${selectedConversation ? 'hidden md:block' : 'block'} w-full md:w-[320px] lg:w-[360px] h-full border-r border-slate-200 dark:border-slate-800/60 pr-2 md:pr-4`}>
                 <ConversationList
                     conversations={conversations}
                     selectedId={selectedConversation?.id}
@@ -232,7 +232,7 @@ function MessagesContent() {
             </div>
 
             {/* Right Side - Chat Window */}
-            <main className={`${selectedConversation ? 'block' : 'hidden md:flex'} flex-1 h-[calc(100vh-6rem)] pl-2 md:pl-6 bg-transparent`}>
+            <main className={`${selectedConversation ? 'block' : 'hidden md:flex'} flex-1 h-full pl-2 md:pl-6 bg-transparent`}>
                 <AnimatePresence mode="wait">
                     {selectedConversation ? (
                         <motion.div
@@ -264,7 +264,6 @@ function MessagesContent() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.827-1.213L3 21l1.657-4.582A13.854 13.854 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
                             </div>
-                            <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-1.5">Your Messages</h2>
                             <p className="text-[14px] text-slate-500 font-medium">
                                 Select a conversation or start a new one to begin messaging.
                             </p>

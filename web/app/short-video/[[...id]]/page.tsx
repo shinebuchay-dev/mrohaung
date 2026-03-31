@@ -76,7 +76,7 @@ export default function ShortVideoPage() {
     const fetchFeed = async () => {
         try {
             setLoading(true);
-            
+
             // If we have a specific ID from the URL, try to fetch it first to make sure it's at the top
             let initialVideos: ShortVideo[] = [];
             if (urlId) {
@@ -93,11 +93,11 @@ export default function ShortVideoPage() {
 
             const res = await api.get('/short-videos/feed?limit=20');
             const feedVideos = res.data.videos || [];
-            
+
             // Filter out the initial video if it's already in the feed to avoid duplicates
             const filteredFeed = feedVideos.filter((v: ShortVideo) => v.id !== urlId);
             const combined = [...initialVideos, ...filteredFeed];
-            
+
             setVideos(combined);
             if (!activeVideoId && combined.length > 0) {
                 setActiveVideoId(combined[0].id);
@@ -141,14 +141,14 @@ export default function ShortVideoPage() {
     };
 
     return (
-        <div className="flex flex-row h-[calc(100vh-96px)] w-full overflow-visible bg-transparent">
-            
+        <div className="flex flex-row h-[calc(100dvh-56px)] md:h-[calc(100vh-96px)] w-full overflow-hidden bg-black md:bg-transparent -mt-1 md:mt-0">
+
             {/* MAIN VIDEO AREA */}
             <div className="flex-1 min-w-0 relative h-full flex justify-center overflow-visible">
 
                 {/* DYNAMIC LEFT ACTION COLUMN: ... options at top, Upload + Arrows at bottom */}
                 <div className="hidden lg:flex flex-col items-center absolute inset-y-0 z-50 pointer-events-auto justify-between pb-6"
-                     style={{ left: "calc(50% - ((100vh - 96px) * 9 / 32) - 64px)" }}>
+                    style={{ left: "calc(50% - ((100vh - 96px) * 9 / 32) - 64px)" }}>
 
                     {/* ⋯ Options button — top of column, same size as arrows */}
                     <div className="relative">
@@ -240,9 +240,9 @@ export default function ShortVideoPage() {
 
                     {videos.map((video) => (
                         <div key={video.id} id={`video-${video.id}`} className="w-full h-full shrink-0">
-                            <VideoItem 
-                                video={video} 
-                                isActive={activeVideoId === video.id} 
+                            <VideoItem
+                                video={video}
+                                isActive={activeVideoId === video.id}
                                 onIntersect={(isIntersecting) => handleVideoInView(video.id, isIntersecting)}
                                 onOpenComments={() => setCommentVideoId(prev => prev === video.id ? null : video.id)}
                             />
@@ -254,7 +254,7 @@ export default function ShortVideoPage() {
                 {user && (
                     <button
                         onClick={() => setIsUploadOpen(true)}
-                        className="lg:hidden absolute bottom-10 right-6 w-12 h-12 bg-black/40 dark:bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:text-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-30 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
+                        className="lg:hidden absolute top-4 right-4 w-12 h-12 bg-black/40 dark:bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:text-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-30 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
                     >
                         <Plus className="w-6 h-6 stroke-[2.5]" />
                     </button>
@@ -272,9 +272,9 @@ export default function ShortVideoPage() {
                         className="hidden lg:block shrink-0 h-full bg-transparent overflow-hidden"
                     >
                         <div className="w-[360px] h-full flex flex-col">
-                            <CommentsContent 
-                                videoId={commentVideoId} 
-                                onClose={() => setCommentVideoId(null)} 
+                            <CommentsContent
+                                videoId={commentVideoId}
+                                onClose={() => setCommentVideoId(null)}
                             />
                         </div>
                     </motion.div>
@@ -284,9 +284,9 @@ export default function ShortVideoPage() {
             {/* MOBILE BOTTOM SHEET OVERLAY */}
             <AnimatePresence>
                 {commentVideoId && (
-                    <MobileCommentsOverlay 
-                        videoId={commentVideoId} 
-                        onClose={() => setCommentVideoId(null)} 
+                    <MobileCommentsOverlay
+                        videoId={commentVideoId}
+                        onClose={() => setCommentVideoId(null)}
                     />
                 )}
             </AnimatePresence>
@@ -294,8 +294,8 @@ export default function ShortVideoPage() {
             {/* Upload Modal overlay */}
             <AnimatePresence>
                 {isUploadOpen && (
-                    <UploadModal 
-                        onClose={() => setIsUploadOpen(false)} 
+                    <UploadModal
+                        onClose={() => setIsUploadOpen(false)}
                         onSuccess={() => {
                             setIsUploadOpen(false);
                             fetchFeed();
@@ -329,7 +329,7 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
 
     useEffect(() => {
         if (!videoRef.current) return;
-        
+
         if (isActive) {
             videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
             if (videoRef.current.currentTime === videoRef.current.duration) {
@@ -369,7 +369,7 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
         try {
             await api.post(`/short-videos/${video.id}/like`);
         } catch (err) {
-             setLikeData({ isLiked: video.isLiked, count: video.likeCount });
+            setLikeData({ isLiked: video.isLiked, count: video.likeCount });
         }
     };
 
@@ -402,86 +402,86 @@ function VideoItem({ video, isActive, onIntersect, onOpenComments }: { video: Sh
 
             {/* Strict 9:16 aspect ratio layout scaling correctly with height */}
             <div className="relative w-full h-full md:w-auto md:aspect-[9/16]">
-                
+
                 {/* The actual video box constrained cleanly, fully integrated, absolutely no standalone background/borders */}
                 <div className="relative w-full h-full bg-transparent overflow-hidden rounded-none">
                     <video
                         ref={videoRef}
                         src={fixUrl(video.videoUrl)}
-                    className="w-full h-full object-cover cursor-pointer"
-                    loop
-                    playsInline
-                    muted={isMuted}
-                    onClick={togglePlay}
-                />
+                        className="w-full h-full object-cover cursor-pointer"
+                        loop
+                        playsInline
+                        muted={isMuted}
+                        onClick={togglePlay}
+                    />
 
-                <AnimatePresence>
-                    {!isPlaying && (
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.1 }}
-                            className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
-                        >
-                            <Play className="w-16 h-16 text-white/50 fill-white/30 ml-2" />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Pure text/icon transparent overlay */}
-                <button 
-                    onClick={toggleMute}
-                    className="absolute top-6 right-6 z-20 transition-all text-white/80 hover:text-white drop-shadow-md"
-                >
-                    {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-                </button>
-
-                <div className="absolute bottom-0 left-0 w-full p-6 pt-32 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none flex items-end justify-between z-20">
-                    
-                    <div className="flex-1 min-w-0 pr-6 pointer-events-auto">
-                        <div className="flex items-center gap-2 mb-3">
-                            {video.author.avatarUrl ? (
-                                <img src={fixUrl(video.author.avatarUrl)} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-white/20" />
-                            ) : (
-                                <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs ring-1 ring-white/20">
-                                    {(video.author.displayName || video.author.username)[0].toUpperCase()}
-                                </div>
-                            )}
-                            <div className="flex flex-col justify-center min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                    <h3 className="text-white font-bold text-[15px] tracking-wide drop-shadow-md select-none leading-tight truncate">
-                                        {video.author.displayName || video.author.username}
-                                    </h3>
-                                    {video.author.isVerified && (
-                                        <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[13px] h-[13px] mt-0.5">
-                                            <Check className="w-[7px] h-[7px] text-white" strokeWidth={6} />
-                                        </div>
-                                    )}
-                                </div>
-                                <span className="text-white/80 text-[11px] font-semibold tracking-wide drop-shadow-sm leading-tight truncate">@{video.author.username}</span>
-                            </div>
-                        </div>
-                        <h2 className="text-white text-sm font-semibold mb-1 line-clamp-2 drop-shadow-md">{video.title}</h2>
-                        {video.description && (
-                            <p className="text-white/80 text-xs font-medium line-clamp-2 drop-shadow-sm">{video.description}</p>
+                    <AnimatePresence>
+                        {!isPlaying && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 1.1 }}
+                                className="absolute inset-0 flex items-center justify-center pointer-events-none z-10"
+                            >
+                                <Play className="w-16 h-16 text-white/50 fill-white/30 ml-2" />
+                            </motion.div>
                         )}
-                    </div>
+                    </AnimatePresence>
 
-                    <div className="flex flex-col items-center gap-6 pointer-events-auto pb-2">
-                        <button onClick={handleLike} className="flex flex-col items-center gap-1.5 group">
-                            <Heart className={`w-6 h-6 transition-all active:scale-90 ${likeData.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white drop-shadow-md group-hover:scale-110'}`} />
-                            <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">{likeData.count}</span>
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); onOpenComments(); }} className="flex flex-col items-center gap-1.5 group">
-                            <MessageCircle className="w-6 h-6 text-white drop-shadow-md group-hover:scale-110 active:scale-90 transition-all" />
-                            <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">{video.commentCount || 0}</span>
-                        </button>
-                        <button onClick={handleShare} className="flex flex-col items-center gap-1.5 group">
-                            <Share2 className="w-6 h-6 text-white drop-shadow-md group-hover:scale-110 active:scale-90 transition-all" />
-                            <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">Share</span>
-                        </button>
+                    {/* Pure text/icon transparent overlay */}
+                    <button
+                        onClick={toggleMute}
+                        className="absolute top-6 right-6 z-20 transition-all text-white/80 hover:text-white drop-shadow-md"
+                    >
+                        {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                    </button>
+
+                    <div className="absolute bottom-0 left-0 w-full p-6 pt-32 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none flex items-end justify-between z-20">
+
+                        <div className="flex-1 min-w-0 pr-6 pointer-events-auto">
+                            <div className="flex items-center gap-2 mb-3">
+                                {video.author.avatarUrl ? (
+                                    <img src={fixUrl(video.author.avatarUrl)} alt="" className="w-9 h-9 rounded-full object-cover border-2 border-white/20" />
+                                ) : (
+                                    <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs ring-1 ring-white/20">
+                                        {(video.author.displayName || video.author.username)[0].toUpperCase()}
+                                    </div>
+                                )}
+                                <div className="flex flex-col justify-center min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                        <h3 className="text-white font-bold text-[15px] tracking-wide drop-shadow-md select-none leading-tight truncate">
+                                            {video.author.displayName || video.author.username}
+                                        </h3>
+                                        {video.author.isVerified && (
+                                            <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[13px] h-[13px] mt-0.5">
+                                                <Check className="w-[7px] h-[7px] text-white" strokeWidth={6} />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="text-white/80 text-[11px] font-semibold tracking-wide drop-shadow-sm leading-tight truncate">@{video.author.username}</span>
+                                </div>
+                            </div>
+                            <h2 className="text-white text-sm font-semibold mb-1 line-clamp-2 drop-shadow-md">{video.title}</h2>
+                            {video.description && (
+                                <p className="text-white/80 text-xs font-medium line-clamp-2 drop-shadow-sm">{video.description}</p>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col items-center gap-6 pointer-events-auto pb-2">
+                            <button onClick={handleLike} className="flex flex-col items-center gap-1.5 group">
+                                <Heart className={`w-6 h-6 transition-all active:scale-90 ${likeData.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white drop-shadow-md group-hover:scale-110'}`} />
+                                <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">{likeData.count}</span>
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); onOpenComments(); }} className="flex flex-col items-center gap-1.5 group">
+                                <MessageCircle className="w-6 h-6 text-white drop-shadow-md group-hover:scale-110 active:scale-90 transition-all" />
+                                <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">{video.commentCount || 0}</span>
+                            </button>
+                            <button onClick={handleShare} className="flex flex-col items-center gap-1.5 group">
+                                <Share2 className="w-6 h-6 text-white drop-shadow-md group-hover:scale-110 active:scale-90 transition-all" />
+                                <span className="text-white font-bold text-[11px] drop-shadow-md tracking-wider">Share</span>
+                            </button>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
@@ -519,7 +519,7 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
             if (!inputText.trim() || submitting) return;
             try {
                 setSubmitting(true);
-                const res = await api.post(`/short-videos/${videoId}/comments`, { 
+                const res = await api.post(`/short-videos/${videoId}/comments`, {
                     content: inputText.trim(),
                     parentId: replyingTo?.id || null
                 });
@@ -611,14 +611,14 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                                             {comment.content}
                                         </p>
                                         <div className="flex items-center gap-4 mt-2">
-                                            <button 
+                                            <button
                                                 onClick={() => handleLikeComment(comment.id)}
                                                 className={`flex items-center gap-1 text-[11px] font-bold transition-colors ${comment.isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
                                             >
                                                 <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? 'fill-rose-500' : ''}`} />
                                                 <span>{comment.likeCount || 0}</span>
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => startReply(comment)}
                                                 className="text-[11px] font-bold text-slate-400 hover:text-blue-500 transition-colors"
                                             >
@@ -627,7 +627,7 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Nested Replies */}
                                 {comments.filter(r => r.parentId === comment.id).map(reply => (
                                     <div key={reply.id} className="ml-12 p-3 pr-6 flex gap-3 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group">
@@ -655,15 +655,15 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                                                 {reply.content}
                                             </p>
                                             <div className="flex items-center gap-4 mt-1.5">
-                                                <button 
+                                                <button
                                                     onClick={() => handleLikeComment(reply.id)}
                                                     className={`flex items-center gap-1 text-[10px] font-bold transition-colors ${reply.isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
                                                 >
                                                     <Heart className={`w-3 h-3 ${reply.isLiked ? 'fill-rose-500' : ''}`} />
                                                     <span>{reply.likeCount || 0}</span>
                                                 </button>
-                                                <button 
-                                                    onClick={() => startReply(comment)} 
+                                                <button
+                                                    onClick={() => startReply(comment)}
                                                     className="text-[10px] font-bold text-slate-400 hover:text-blue-500 transition-colors"
                                                 >
                                                     Reply
@@ -686,10 +686,10 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
             {/* Input Area */}
             <div className="p-4 md:p-6 bg-transparent shrink-0">
                 <div className="flex items-center gap-3 bg-white/50 dark:bg-white/5 backdrop-blur-md rounded-full py-2.5 px-5 border border-slate-200/50 dark:border-white/10 focus-within:border-blue-500/50 dark:focus-within:border-blue-500/50 transition-colors shadow-sm">
-                    <input 
+                    <input
                         ref={inputRef}
-                        type="text" 
-                        placeholder={replyingTo ? `Reply to ${replyingTo.user?.displayName || replyingTo.user?.username}...` : "Add a comment..."} 
+                        type="text"
+                        placeholder={replyingTo ? `Reply to ${replyingTo.user?.displayName || replyingTo.user?.username}...` : "Add a comment..."}
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handlePost()}
@@ -698,7 +698,7 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
                     {replyingTo && (
                         <button onClick={() => setReplyingTo(null)} className="text-[10px] text-slate-400 hover:text-slate-600 px-2 font-bold uppercase transition-colors">Cancel</button>
                     )}
-                    <button 
+                    <button
                         onClick={handlePost}
                         disabled={!inputText.trim() || submitting}
                         className="text-blue-600 dark:text-blue-400 font-bold tracking-wide text-sm px-2 hover:opacity-80 transition-opacity disabled:opacity-40"
@@ -715,12 +715,12 @@ function CommentsContent({ videoId, onClose }: { videoId: string, onClose: () =>
 function MobileCommentsOverlay({ videoId, onClose }: { videoId: string, onClose: () => void }) {
     return (
         <React.Fragment>
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={onClose}
                 className="lg:hidden absolute inset-0 z-40 bg-black/10 dark:bg-black/50 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, y: '100%' }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: '100%' }}
@@ -795,22 +795,22 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={!loading ? onClose : undefined}
                 className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm"
             />
 
-            <motion.div 
-                initial={{ opacity: 0, y: 20, scale: 0.97 }} 
-                animate={{ opacity: 1, y: 0, scale: 1 }} 
+            <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 20, scale: 0.97 }}
                 className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl flex flex-col p-6 md:p-8 max-h-[90vh] overflow-y-auto"
             >
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">New Short Video</h2>
-                    <button 
-                        onClick={onClose} 
+                    <button
+                        onClick={onClose}
                         disabled={loading}
                         className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                     >
@@ -828,7 +828,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: (
                     {/* File picker */}
                     <div>
                         <input type="file" id="video-upload" accept="video/mp4,video/quicktime,video/x-quicktime,video/mov,video/webm,.mov" className="hidden" onChange={handleFileChange} disabled={loading} />
-                        <label 
+                        <label
                             htmlFor="video-upload"
                             className="flex flex-col items-center justify-center w-full py-10 cursor-pointer rounded-xl border-2 border-dashed border-slate-200 dark:border-white/10 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-500/5 transition-all"
                         >
