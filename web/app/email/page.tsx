@@ -168,8 +168,8 @@ function NativeWebmailUI({
                                                     if (internalPic) {
                                                         return <img src={internalPic} alt="" className="w-full h-full object-cover" />;
                                                     }
-                                                    if (activeTab === 'sent' && currentUser?.profilePic) {
-                                                        return <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />;
+                                                    if (activeTab === 'sent' && currentUser?.avatarUrl) {
+                                                        return <img src={currentUser.avatarUrl} alt="Me" className="w-full h-full object-cover" />;
                                                     }
                                                     
                                                     return (
@@ -264,8 +264,8 @@ function NativeWebmailUI({
                                                     if (internalPic) {
                                                         return <img src={internalPic} alt="" className="w-full h-full object-cover" />;
                                                     }
-                                                    if (activeTab === 'sent' && currentUser?.profilePic) {
-                                                        return <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />;
+                                                    if (activeTab === 'sent' && currentUser?.avatarUrl) {
+                                                        return <img src={currentUser.avatarUrl} alt="Me" className="w-full h-full object-cover" />;
                                                     }
                                                     
                                                     return (

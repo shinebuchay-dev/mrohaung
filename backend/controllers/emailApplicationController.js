@@ -308,7 +308,7 @@ exports.getInbox = async (req, res) => {
         if (!app) return res.status(403).json({ message: 'No approved email account.' });
 
         const [emails] = await pool.execute(
-            `SELECT em.*, u.profilePic as senderProfilePic 
+            `SELECT em.*, u.avatarUrl as senderProfilePic 
              FROM EmailMessage em
              LEFT JOIN EmailApplication ea ON LOWER(em.fromAddress) = LOWER(ea.fullEmail)
              LEFT JOIN User u ON ea.userId = u.id
@@ -331,7 +331,7 @@ exports.getSent = async (req, res) => {
 
         // For sent items, the recipient might be an internal user. Let's try to get their profile pic.
         const [emails] = await pool.execute(
-            `SELECT em.*, u.profilePic as recipientProfilePic 
+            `SELECT em.*, u.avatarUrl as recipientProfilePic 
              FROM EmailMessage em
              LEFT JOIN EmailApplication ea ON LOWER(em.toAddress) = LOWER(ea.fullEmail)
              LEFT JOIN User u ON ea.userId = u.id
@@ -356,7 +356,7 @@ exports.getFolderEmails = async (req, res) => {
         if (!app) return res.status(403).json({ message: 'No approved email account.' });
 
         const [emails] = await pool.execute(
-            `SELECT em.*, u.profilePic as senderProfilePic 
+            `SELECT em.*, u.avatarUrl as senderProfilePic 
              FROM EmailMessage em
              LEFT JOIN EmailApplication ea ON LOWER(em.fromAddress) = LOWER(ea.fullEmail)
              LEFT JOIN User u ON ea.userId = u.id
