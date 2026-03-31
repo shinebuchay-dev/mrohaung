@@ -160,30 +160,25 @@ function NativeWebmailUI({
                                     <div className="space-y-4">
                                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{selectedMail.subject}</h1>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100/50 dark:border-white/10 shadow-sm relative">
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm transition-all">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <img 
-                                                        src={
-                                                            selectedMail.fromAddress.endsWith('@gmail.com')
-                                                            ? `https://unavatar.io/google/${selectedMail.fromAddress}?fallback=false`
-                                                            : `https://unavatar.io/${selectedMail.fromAddress}?fallback=false`
+                                                        src={selectedMail.fromAddress.endsWith('@gmail.com')
+                                                            ? `https://www.google.com/s2/photos/profile/${selectedMail.fromAddress}?sz=150`
+                                                            : '/placeholder-avatar.png'
                                                         } 
                                                         alt="" 
-                                                        className="w-full h-full object-cover bg-blue-600/10"
+                                                        className="w-full h-full object-cover bg-blue-600/5"
                                                         onError={(e: any) => {
-                                                            if (e.target.src.includes('/google/')) {
-                                                                e.target.src = `https://unavatar.io/${selectedMail.fromAddress}?fallback=false`;
-                                                            } else {
-                                                                e.target.style.display = 'none';
-                                                                e.target.nextSibling.style.display = 'flex';
-                                                            }
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
                                                         }}
                                                     />
                                                 )}
-                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 hidden">
-                                                    <span className="font-black text-xl uppercase">{(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}</span>
+                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 font-black text-xl uppercase hidden">
+                                                    {(activeTab === 'inbox' ? selectedMail.fromAddress : selectedMail.toAddress)[0]}
                                                 </div>
                                             </div>
                                             <div className="min-w-0">
@@ -248,32 +243,26 @@ function NativeWebmailUI({
                                             onClick={() => setSelectedMail(m)}
                                             className="w-full flex items-start p-4 gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer group"
                                         >
-                                            {/* Advanced Gmail & Multi-Source Profile Icon Fetcher */}
-                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-100/50 dark:border-white/10 shadow-sm relative">
+                                            {/* Direct Google Profile Icon Fetcher (No Intermediaries) */}
+                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-100 dark:border-white/10 shadow-sm transition-all focus-within:ring-2 focus-within:ring-blue-600">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <img 
-                                                        src={
-                                                            (activeTab === 'inbox' ? m.fromAddress : m.toAddress).endsWith('@gmail.com')
-                                                            ? `https://unavatar.io/google/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`
-                                                            : `https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`
+                                                        src={(activeTab === 'inbox' ? m.fromAddress : m.toAddress).endsWith('@gmail.com')
+                                                            ? `https://www.google.com/s2/photos/profile/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?sz=150`
+                                                            : '/placeholder-avatar.png' // Non-gmail fallback
                                                         } 
                                                         alt="" 
-                                                        className="w-full h-full object-cover bg-blue-600/10"
+                                                        className="w-full h-full object-cover bg-blue-600/5"
                                                         onError={(e: any) => {
-                                                            // If Google provider fails, try general unavatar
-                                                            if (e.target.src.includes('/google/')) {
-                                                                e.target.src = `https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`;
-                                                            } else {
-                                                                e.target.style.display = 'none';
-                                                                e.target.nextSibling.style.display = 'flex';
-                                                            }
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
                                                         }}
                                                     />
                                                 )}
-                                                <div className="w-full h-full hidden items-center justify-center bg-blue-600/10 text-blue-600">
-                                                    <span className="font-black text-sm uppercase">{(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}</span>
+                                                <div className="w-full h-full flex items-center justify-center bg-blue-600/10 text-blue-600 font-black text-sm uppercase">
+                                                    {(activeTab === 'inbox' ? m.fromAddress : m.toAddress)[0]}
                                                 </div>
                                             </div>
                                             
