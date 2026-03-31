@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp, Play, Mail } from 'lucide-react';
+import { Home, MessageCircle, Users, User, Settings, LogOut, Shield, ChevronUp, Play, Mail, Plus } from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -381,11 +381,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             )}
 
             {/* Mobile Bottom Menu Bar (TikTok Style) */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-[110] flex flex-row items-center justify-around bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-200 dark:border-white/10 h-14 pb-[env(safe-area-inset-bottom)]">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-[110] flex flex-row items-center justify-between px-2 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-200 dark:border-white/10 h-14 pb-[env(safe-area-inset-bottom)]">
                 {/* News / Home */}
                 <Link
                     href="/"
-                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/') 
+                    className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 ${isActive('/') 
                         ? 'text-blue-600 dark:text-blue-400' 
                         : 'text-slate-500 dark:text-slate-400'}`}
                 >
@@ -396,7 +396,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 {/* Short Video */}
                 <Link
                     href="/short-video"
-                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/short-video') 
+                    className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 ${isActive('/short-video') 
                         ? 'text-blue-600 dark:text-blue-400' 
                         : 'text-slate-500 dark:text-slate-400'}`}
                 >
@@ -404,27 +404,49 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     <span className="text-[10px] font-medium mt-0.5">Shorts</span>
                 </Link>
 
-                {/* Email */}
-                <Link
-                    href="/email"
-                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/email') 
-                        ? 'text-blue-600 dark:text-blue-400' 
-                        : 'text-slate-500 dark:text-slate-400'}`}
-                >
-                    <Mail className={`w-6 h-6 ${isActive('/email') ? 'fill-current' : ''}`} />
-                    <span className="text-[10px] font-medium mt-0.5">Mail</span>
-                </Link>
+                {/* Center Upload Button strictly for Short Video Page */}
+                {isShortVideoPage && (
+                    <button
+                        title="Upload Video"
+                        onClick={() => window.dispatchEvent(new Event('open-short-video-upload'))}
+                        className="flex-1 h-full flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                    >
+                        <div className="w-11 h-7 bg-gradient-to-tr from-blue-600 to-indigo-500 text-white rounded-xl shadow-md flex items-center justify-center">
+                            <Plus className="w-5 h-5 stroke-[2.5]" />
+                        </div>
+                    </button>
+                )}
 
                 {/* Message */}
                 <Link
                     href="/messages"
-                    className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 ${isActive('/messages') 
+                    className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 ${isActive('/messages') 
                         ? 'text-blue-600 dark:text-blue-400' 
                         : 'text-slate-500 dark:text-slate-400'}`}
                 >
                     <MessageCircle className={`w-6 h-6 ${isActive('/messages') ? 'fill-current' : ''}`} />
-                    <span className="text-[10px] font-medium mt-0.5">Messages</span>
+                    <span className="text-[10px] font-medium mt-0.5">Alerts</span>
                 </Link>
+
+                {/* Email (Hidden if Short Video Page to keep perfectly centered) */}
+                {(!isShortVideoPage) && (
+                    <Link
+                        href="/email"
+                        className={`flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 ${isActive('/email') 
+                            ? 'text-blue-600 dark:text-blue-400' 
+                            : 'text-slate-500 dark:text-slate-400'}`}
+                    >
+                        <Mail className={`w-6 h-6 ${isActive('/email') ? 'fill-current' : ''}`} />
+                        <span className="text-[10px] font-medium mt-0.5">Mail</span>
+                    </Link>
+                )}
+
+                {/* Notification Dropdown wrapper built specifically for Bottom Nav styling */}
+                <div className="flex-1 h-full flex items-center justify-center">
+                    <div className="w-full h-full flex flex-col justify-center items-center">
+                        <NotificationDropdown />
+                    </div>
+                </div>
             </div>
         </div>
     );

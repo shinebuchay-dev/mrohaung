@@ -140,6 +140,12 @@ export default function ShortVideoPage() {
         if (container) container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
     };
 
+    useEffect(() => {
+        const handleOpenUpload = () => setIsUploadOpen(true);
+        window.addEventListener('open-short-video-upload', handleOpenUpload);
+        return () => window.removeEventListener('open-short-video-upload', handleOpenUpload);
+    }, []);
+
     return (
         <div className="flex flex-row h-[calc(100dvh-56px)] md:h-[calc(100vh-96px)] w-full overflow-hidden bg-black md:bg-transparent -mt-1 md:mt-0">
 
@@ -250,15 +256,6 @@ export default function ShortVideoPage() {
                     ))}
                 </div>
 
-                {/* Floating Upload Button (MOBILE FALLBACK ONLY) */}
-                {user && (
-                    <button
-                        onClick={() => setIsUploadOpen(true)}
-                        className="lg:hidden absolute top-4 right-4 w-12 h-12 bg-black/40 dark:bg-black/60 backdrop-blur-xl border border-white/10 rounded-full text-white hover:text-blue-400 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-30 shadow-[0_10px_40px_rgba(0,0,0,0.5)]"
-                    >
-                        <Plus className="w-6 h-6 stroke-[2.5]" />
-                    </button>
-                )}
             </div>
 
             {/* DESKTOP SIDE PANEL SIBLING - Seamless UI (no border, transparent background to match main theme) */}
