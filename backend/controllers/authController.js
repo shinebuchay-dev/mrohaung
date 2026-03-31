@@ -134,6 +134,26 @@ exports.verifyEmail = async (req, res) => {
             return res.status(400).json({ message: 'Invalid or expired verification token' });
         }
 
+        // 1. Manually check if user is logged in
+        const authHeader = req.header('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ message: 'Please login to your account first in order to verify this email address.' });
+        }
+
+        const jwtToken = authHeader.split(' ')[1];
+        let decodedUserId;
+        try {
+            const decoded = jwt.verify(jwtToken, process.env.JWT_SECRET);
+            decodedUserId = decoded.userId;
+        } catch (error) {
+            return res.status(401).json({ message: 'Session expired. Please login again to verify this email address.' });
+        }
+
+        // 2. Enforce the user check requested by client
+        if (users[0].id !== decodedUserId) {
+            return res.status(403).json({ message: 'Please login to the correct Profile to verify this Email Address. You are currently logged into a different account.' });
+        }
+
         await pool.execute(
             'UPDATE User SET verificationToken = NULL WHERE id = ?',
             [users[0].id]
