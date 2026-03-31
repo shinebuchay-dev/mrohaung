@@ -8,6 +8,7 @@ import SearchBar from '@/components/SearchBar';
 import NotificationDropdown from '@/components/NotificationDropdown';
 import ThemeToggle from '@/components/ThemeToggle';
 import MessageDropdown from '@/components/MessageDropdown';
+import NotificationMobileIcon from '@/components/NotificationMobileIcon';
 import api from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -441,12 +442,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     </Link>
                 )}
 
-                {/* Notification Dropdown wrapper built specifically for Bottom Nav styling */}
-                <div className="flex-1 h-full flex items-center justify-center">
-                    <div className="w-full h-full flex flex-col justify-center items-center">
-                        <NotificationDropdown />
-                    </div>
-                </div>
+                {/* Mobile Notification Icon using built-in /notification page routing */}
+                <NotificationMobileIcon />
             </div>
         </div>
     );

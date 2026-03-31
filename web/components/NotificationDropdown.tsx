@@ -108,12 +108,11 @@ export default function NotificationDropdown() {
         <div className="relative">
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className={`w-10 h-10 md:w-10 md:h-10 w-full h-full flex flex-col md:flex-row items-center justify-center rounded-full md:rounded-full transition-all relative ${showDropdown ? 'text-blue-600 dark:text-blue-400 md:bg-blue-600/10' : 'text-slate-500 dark:text-slate-400 md:hover:bg-slate-100 md:dark:hover:bg-white/5'}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-full transition-all relative ${showDropdown ? 'bg-blue-600/10 text-blue-600' : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-500 dark:text-slate-400'}`}
             >
-                <Bell className={`w-6 h-6 md:w-5 md:h-5 ${showDropdown ? 'fill-current' : ''}`} />
-                <span className="text-[10px] font-medium mt-0.5 md:hidden">Alerts</span>
+                <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute top-[8px] md:top-[8px] right-1/4 md:right-[8px] w-2.5 h-2.5 md:w-2 md:h-2 bg-blue-600 rounded-full border-2 border-white dark:border-[#0f172a] animate-pulse" />
+                    <span className="absolute top-[8px] right-[8px] w-2 h-2 bg-blue-600 rounded-full border-2 border-white dark:border-[#0b1120] animate-pulse" />
                 )}
             </button>
 
@@ -124,7 +123,7 @@ export default function NotificationDropdown() {
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="fixed bottom-[4.5rem] left-4 right-4 w-auto md:absolute md:bottom-auto md:top-full md:mt-3 md:left-auto md:right-0 md:w-80 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[100]"
+                            className="absolute right-0 mt-3 w-80 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-white/5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] overflow-hidden z-[100]"
                         >
                             <div className="px-5 py-4 flex items-center justify-between border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
                                 <h3 className="font-bold text-[15px] text-slate-900 dark:text-white">Notifications</h3>
