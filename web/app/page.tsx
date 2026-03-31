@@ -49,16 +49,25 @@ function FeedContent() {
           await api.post('/auth/verify', { token });
           setShowVerificationSuccess(true);
           await refreshUser();
+          
+          // Clean up URL only on success
+          const newUrl = window.location.pathname;
+          window.history.replaceState(null, '', newUrl);
         } catch (err: any) {
           console.error('In-page verification failed', err);
           setVerificationErrorMessage(err?.response?.data?.message || 'Invalid or expired verification link.');
           setShowVerificationError(true);
+          
+          // If the error is an authorization mismatch (401, 403), DO NOT remove the token,
+          // so the user can log into the correct account and try again.
+          const status = err?.response?.status;
+          if (status !== 401 && status !== 403) {
+              const newUrl = window.location.pathname;
+              window.history.replaceState(null, '', newUrl);
+          }
         }
       };
       verifyInPage();
-      // Clean up URL
-      const newUrl = window.location.pathname;
-      window.history.replaceState(null, '', newUrl);
     } else if (params.get('verified') === 'success') {
       setShowVerificationSuccess(true);
       refreshUser();
