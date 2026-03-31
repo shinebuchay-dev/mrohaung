@@ -106,18 +106,9 @@ export default function NotificationsPage() {
     }
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#0f172a] pb-[env(safe-area-inset-bottom)]">
+        <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#0f172a] pb-[env(safe-area-inset-bottom)] flex flex-col">
             {/* Header - Seamless Integration */}
-            <header className="sticky top-0 z-50 bg-slate-50/80 dark:bg-[#0f172a]/80 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-transparent transition-all group-scroll-header">
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={() => router.back()}
-                        className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center hover:bg-slate-200/50 dark:hover:bg-white/5 transition-colors"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                    </button>
-
-                </div>
+            <header className="sticky top-0 z-50 bg-slate-50/80 dark:bg-[#0f172a]/80 backdrop-blur-md px-4 h-14 flex items-center justify-end border-b border-transparent transition-all group-scroll-header">
                 {unreadCount > 0 && (
                     <button onClick={markAllAsRead} className="text-xs font-bold text-blue-600 dark:text-blue-400 py-1.5 px-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
                         Mark all read
@@ -126,7 +117,7 @@ export default function NotificationsPage() {
             </header>
 
             {/* List - Full-width Integrated Background */}
-            <div className="w-full">
+            <div className="flex-1 w-full">
                 {notifications.length > 0 ? (
                     <div className="flex flex-col">
                         {notifications.map((notification) => (
@@ -178,7 +169,7 @@ export default function NotificationsPage() {
                         <div className="h-20 w-full" />
                     </div>
                 ) : (
-                    <div className="py-24 px-6 text-center">
+                    <div className="h-[calc(100dvh-56px-env(safe-area-inset-bottom))] flex flex-col items-center justify-center px-6 text-center -mt-14">
                         <div className="w-14 h-14 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Bell className="w-7 h-7 text-slate-300 dark:text-slate-600" />
                         </div>
