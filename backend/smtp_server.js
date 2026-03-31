@@ -15,18 +15,19 @@ const startSMTPServer = () => {
                 }
 
                 try {
-                    // Look through all recipients
-                    const toAddresses = parsed.to ? parsed.to.value.map(addr => addr.address) : [];
-                    const fromAddress = parsed.from ? parsed.from.value[0].address : 'unknown';
-                    const subject = parsed.subject || 'No Subject';
+                    // Always use envelope addresses for actual routing (covers BCC, mailing lists, and direct)
+                    const toAddresses = session.envelope?.rcptTo ? session.envelope.rcptTo.map(r => r.address) : (parsed.to ? parsed.to.value.map(addr => addr.address) : []);
+                    const fromAddress = (session.envelope?.mailFrom && session.envelope.mailFrom.address) ? session.envelope.mailFrom.address : (parsed.from ? parsed.from.value[0].address : 'unknown');
+                    const subject = parsed.subject || '(No Subject)';
                     const bodyText = parsed.text || '';
                     const bodyHtml = parsed.html || `<p>${bodyText}</p>`;
 
                     console.log(`[SMTP] Incoming email from ${fromAddress} to ${toAddresses.join(', ')}`);
 
                     // Check if any recipient is registered in our database
-                    for (const emailAddr of toAddresses) {
+                    for (let emailAddr of toAddresses) {
                         if (!emailAddr) continue;
+                        emailAddr = emailAddr.trim().toLowerCase();
 
                         const [[app]] = await pool.execute('SELECT fullEmail FROM EmailApplication WHERE fullEmail = ? AND status = "approved"', [emailAddr]);
                         if (app) {

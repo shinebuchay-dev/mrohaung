@@ -396,7 +396,7 @@ const cleanEmail = (str) => {
 
 exports.webhookReceive = async (req, res) => {
     try {
-        const { secret, from, to, subject, bodyText, bodyHtml } = req.body;
+        const { secret, from, to, subject, bodyText, bodyHtml, rawEmail } = req.body;
 
         // Validate shared secret
         if (secret !== WEBHOOK_SECRET) {
@@ -410,6 +410,23 @@ exports.webhookReceive = async (req, res) => {
 
         if (!recipient) {
             return res.status(400).json({ message: 'Missing recipient' });
+        }
+
+        let finalBodyText = bodyText || '';
+        let finalBodyHtml = bodyHtml || `<p>${finalBodyText}</p>`;
+        let finalSubject = subject || '(No Subject)';
+
+        // If Cloudflare worker sent the raw MIME email, parse it properly
+        if (rawEmail) {
+            try {
+                const { simpleParser } = require('mailparser');
+                const parsed = await simpleParser(rawEmail);
+                if (parsed.text) finalBodyText = parsed.text;
+                if (parsed.html) finalBodyHtml = parsed.html;
+                if (parsed.subject) finalSubject = parsed.subject;
+            } catch (parseErr) {
+                console.error('[Webhook] Failed to parse rawEmail:', parseErr);
+            }
         }
 
         // Case-insensitive lookup for registered @mrohaung.com accounts
@@ -433,9 +450,9 @@ exports.webhookReceive = async (req, res) => {
             'inbox',
             from || 'unknown@external.com',
             app.fullEmail,
-            subject || '(No Subject)',
-            bodyText || '',
-            bodyHtml || `<p>${bodyText || ''}</p>`
+            finalSubject,
+            finalBodyText,
+            finalBodyHtml
         ]);
 
         console.log(`[Webhook] ✅ Email delivered to inbox: ${app.fullEmail} from ${from}`);
