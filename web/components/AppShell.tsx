@@ -426,7 +426,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                         : 'text-slate-500 dark:text-slate-400'}`}
                 >
                     <MessageCircle className={`w-6 h-6 ${isActive('/messages') ? 'fill-current' : ''}`} />
-                    <span className="text-[10px] font-medium mt-0.5">Alerts</span>
+                    <span className="text-[10px] font-medium mt-0.5">Messages</span>
                 </Link>
 
                 {/* Email (Hidden if Short Video Page to keep perfectly centered) */}

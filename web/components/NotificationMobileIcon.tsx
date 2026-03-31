@@ -51,7 +51,7 @@ export default function NotificationMobileIcon() {
                     <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white dark:border-[#0f172a] animate-pulse" />
                 )}
             </div>
-            <span className="text-[10px] font-medium mt-0.5">Alerts</span>
+            <span className="text-[10px] font-medium mt-0.5">Alert</span>
         </Link>
     );
 }
