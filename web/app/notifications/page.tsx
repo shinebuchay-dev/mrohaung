@@ -119,46 +119,44 @@ export default function NotificationsPage() {
 
     return (
         <div className="flex flex-col min-h-screen relative pb-32">
-            {/* Suggested Friends Section */}
+            {/* Suggested Friends Section - Seamless UI */}
             {suggestedFriends.length > 0 && (
-                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="flex items-center justify-between px-2 sm:px-0 mb-3">
-                        <h2 className="text-[14px] font-black tracking-tight text-slate-900 dark:text-white uppercase opacity-90">Suggested Friends</h2>
+                <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="flex items-center justify-between px-1 mb-4">
+                        <h2 className="text-[12px] font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 uppercase">Suggested For You</h2>
                         <Link 
                             href="/friends" 
                             className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
-                            Explore All <ChevronLeft className="w-3 h-3 rotate-180" />
+                            Explore <ChevronLeft className="w-3 h-3 rotate-180" />
                         </Link>
                     </div>
-                    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
-                        {suggestedFriends.slice(0, 8).map((user) => (
+                    <div className="flex gap-6 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
+                        {suggestedFriends.slice(0, 10).map((user) => (
                             <Link
                                 key={user.id}
                                 href={`/profile/${user.username}`}
-                                className="flex-shrink-0 w-[110px] sm:w-[120px] bg-white/40 dark:bg-white/[0.03] backdrop-blur-sm border border-slate-200/50 dark:border-white/5 rounded-[22px] p-3 flex flex-col items-center group hover:scale-[1.02] hover:bg-white dark:hover:bg-white/10 transition-all duration-300"
+                                className="flex-shrink-0 w-[85px] sm:w-[100px] flex flex-col items-center group transition-all duration-300"
                             >
-                                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden mb-2 relative ring-2 ring-transparent group-hover:ring-blue-500/20 transition-all">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-3 relative group-hover:ring-4 ring-blue-500/10 transition-all duration-500">
                                     {user.avatarUrl ? (
-                                        <img src={fixUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover" />
+                                        <img src={fixUrl(user.avatarUrl)} alt={user.username} className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-500" />
                                     ) : (
-                                        <div className="w-full h-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 font-bold text-xl uppercase">
+                                        <div className="w-full h-full bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center text-slate-400 font-bold text-2xl uppercase">
                                             {user.username[0]}
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate w-full text-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate w-full text-center group-hover:text-blue-600 transition-colors">
                                     {user.displayName || user.username}
                                 </span>
-                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 truncate w-full text-center">
+                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 truncate w-full text-center mt-0.5">
                                     @{user.username}
                                 </span>
-                                <div className="mt-2.5 w-full bg-blue-600/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase text-center py-1.5 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                    View
-                                </div>
                             </Link>
                         ))}
                     </div>
+                    <div className="h-px w-full bg-slate-200/50 dark:bg-white/5 mt-4" />
                 </div>
             )}
 
