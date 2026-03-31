@@ -160,17 +160,25 @@ function NativeWebmailUI({
                                     <div className="space-y-4">
                                         <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">{selectedMail.subject}</h1>
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-50 dark:border-white/5">
+                                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 overflow-hidden border border-slate-50 dark:border-white/5 shadow-sm">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <img 
-                                                        src={`https://unavatar.io/${selectedMail.fromAddress}?fallback=false`} 
+                                                        src={
+                                                            selectedMail.fromAddress.endsWith('@gmail.com')
+                                                            ? `https://www.google.com/s2/photos/profile/${selectedMail.fromAddress}?sz=128`
+                                                            : `https://unavatar.io/${selectedMail.fromAddress}?fallback=false`
+                                                        } 
                                                         alt="" 
                                                         className="w-full h-full object-cover bg-blue-600/10"
                                                         onError={(e: any) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.nextSibling.style.display = 'flex';
+                                                            if (e.target.src.includes('google.com')) {
+                                                                e.target.src = `https://unavatar.io/${selectedMail.fromAddress}?fallback=false`;
+                                                            } else {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'flex';
+                                                            }
                                                         }}
                                                     />
                                                 )}
@@ -240,18 +248,27 @@ function NativeWebmailUI({
                                             onClick={() => setSelectedMail(m)}
                                             className="w-full flex items-start p-4 gap-4 transition-all hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer group"
                                         >
-                                            {/* Advanced Profile Icon Fetcher */}
-                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-50 dark:border-white/5">
+                                            {/* Google & Multi-Source Profile Icon Fetcher */}
+                                            <div className="w-11 h-11 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-slate-50 dark:border-white/5 shadow-sm">
                                                 {activeTab === 'sent' && currentUser?.profilePic ? (
                                                     <img src={currentUser.profilePic} alt="Me" className="w-full h-full object-cover" />
                                                 ) : (
                                                     <img 
-                                                        src={`https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`} 
+                                                        src={
+                                                            (activeTab === 'inbox' ? m.fromAddress : m.toAddress).endsWith('@gmail.com')
+                                                            ? `https://www.google.com/s2/photos/profile/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?sz=128`
+                                                            : `https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`
+                                                        } 
                                                         alt="" 
                                                         className="w-full h-full object-cover bg-blue-600/10"
                                                         onError={(e: any) => {
-                                                            e.target.style.display = 'none';
-                                                            e.target.nextSibling.style.display = 'flex';
+                                                            // If Google s2 fails, try unavatar as secondary
+                                                            if (e.target.src.includes('google.com')) {
+                                                                e.target.src = `https://unavatar.io/${activeTab === 'inbox' ? m.fromAddress : m.toAddress}?fallback=false`;
+                                                            } else {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'flex';
+                                                            }
                                                         }}
                                                     />
                                                 )}
