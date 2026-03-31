@@ -106,23 +106,11 @@ export default function NotificationsPage() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
-            {/* Minimalist Top Action Bar */}
-            {unreadCount > 0 && (
-                <div className="flex justify-end px-2 sm:px-0 mb-4 sticky top-[76px] z-30">
-                    <button 
-                        onClick={markAllAsRead} 
-                        className="text-[10px] uppercase tracking-widest font-black text-blue-600 dark:text-blue-400 bg-white/50 dark:bg-white/5 backdrop-blur-md py-2 px-4 rounded-full border border-slate-200 dark:border-white/10 hover:scale-105 active:scale-95 transition-all shadow-sm"
-                    >
-                        Mark all as read
-                    </button>
-                </div>
-            )}
-
+        <div className="flex flex-col min-h-screen relative">
             {/* Content Area - Seamlessly integrated into parent background */}
             <div className="w-full">
                 {notifications.length > 0 ? (
-                    <div className="flex flex-col gap-1 pb-20 sm:pb-10">
+                    <div className="flex flex-col gap-1 pb-32 sm:pb-24">
                         {notifications.map((notification) => (
                             <button
                                 key={notification.id}
@@ -187,6 +175,19 @@ export default function NotificationsPage() {
                     </div>
                 )}
             </div>
+
+            {/* Floating Action Button at Bottom */}
+            {unreadCount > 0 && (
+                <div className="fixed bottom-20 md:bottom-10 left-12 md:left-auto md:right-10 z-[100] animate-in fade-in zoom-in slide-in-from-bottom-10 duration-500">
+                    <button 
+                        onClick={markAllAsRead} 
+                        className="group flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-full shadow-[0_10px_30px_rgba(37,99,235,0.3)] hover:shadow-[0_15px_40px_rgba(37,99,235,0.4)] transition-all active:scale-95"
+                    >
+                        <Check className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-black uppercase tracking-wider">Mark All Read</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
