@@ -107,80 +107,83 @@ export default function NotificationsPage() {
 
     return (
         <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#0f172a] pb-[env(safe-area-inset-bottom)]">
-            {/* Header */}
-            <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-4 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            {/* Header - Seamless Integration */}
+            <header className="sticky top-0 z-50 bg-slate-50/80 dark:bg-[#0f172a]/80 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-transparent transition-all group-scroll-header">
+                <div className="flex items-center gap-2">
                     <button 
                         onClick={() => router.back()}
-                        className="w-10 h-10 -ml-2 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+                        className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center hover:bg-slate-200/50 dark:hover:bg-white/5 transition-colors"
                     >
-                        <ChevronLeft className="w-6 h-6 text-slate-700 dark:text-slate-200" />
+                        <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
-                    <h1 className="text-xl font-bold text-slate-900 dark:text-white">Notifications</h1>
+                    <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">Notifications</h1>
                 </div>
                 {unreadCount > 0 && (
-                    <button onClick={markAllAsRead} className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                    <button onClick={markAllAsRead} className="text-xs font-bold text-blue-600 dark:text-blue-400 py-1.5 px-3 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors">
                         Mark all read
                     </button>
                 )}
             </header>
 
-            {/* List */}
-            <div className="w-full pb-20">
+            {/* List - Full-width Integrated Background */}
+            <div className="w-full">
                 {notifications.length > 0 ? (
-                    notifications.map((notification) => (
-                        <button
-                            key={notification.id}
-                            onClick={() => handleNotificationClick(notification)}
-                            className={`w-full flex items-start gap-4 p-4 transition-colors text-left relative border-b border-slate-200 dark:border-white/5 
-                                ${!notification.read ? 'bg-blue-50/50 dark:bg-white/[0.04]' : 'bg-white dark:bg-transparent'}`}
-                        >
-                            <div className="relative shrink-0">
-                                <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 dark:bg-white/5 ring-2 ring-white dark:ring-[#0f172a] shadow-sm">
-                                    {notification.from.avatarUrl ? (
-                                        <img
-                                            src={fixUrl(notification.from.avatarUrl)}
-                                            alt={notification.from.displayName || notification.from.username || ''}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800">
-                                            <span className="text-slate-500 dark:text-slate-300 font-bold text-lg">
+                    <div className="flex flex-col">
+                        {notifications.map((notification) => (
+                            <button
+                                key={notification.id}
+                                onClick={() => handleNotificationClick(notification)}
+                                className={`w-full flex items-start gap-4 p-4 transition-all text-left relative border-b border-slate-200/60 dark:border-white/5 
+                                    ${!notification.read ? 'bg-white/40 dark:bg-white/[0.02]' : 'bg-transparent'}
+                                    hover:bg-white/80 dark:hover:bg-white/[0.04]`}
+                            >
+                                <div className="relative shrink-0">
+                                    <div className="w-11 h-11 rounded-full overflow-hidden bg-slate-200 dark:bg-white/5 flex items-center justify-center">
+                                        {notification.from.avatarUrl ? (
+                                            <img
+                                                src={fixUrl(notification.from.avatarUrl)}
+                                                alt={notification.from.displayName || notification.from.username || ''}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-slate-500 dark:text-slate-400 font-bold text-base">
                                                 {(notification.from.displayName || notification.from.username)?.[0]?.toUpperCase()}
                                             </span>
-                                        </div>
+                                        )}
+                                    </div>
+                                    {!notification.read && (
+                                        <div className="absolute top-0 right-0 w-3 h-3 bg-blue-600 rounded-full border-2 border-slate-50 dark:border-[#0f172a]" />
                                     )}
                                 </div>
-                                {!notification.read && (
-                                    <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-blue-600 rounded-full border-[3px] border-white dark:border-[#0f172a]" />
-                                )}
-                            </div>
-                            
-                            <div className="flex-1 min-w-0 pt-0.5">
-                                <div className="text-[14px] text-slate-800 dark:text-slate-200 leading-snug">
-                                    <span className="inline-flex items-center gap-1 font-bold dark:text-white">
-                                        {notification.from.displayName || notification.from.username}
-                                        {!!notification.from.isVerified && (
-                                            <div className="flex-shrink-0 ml-[2px] flex items-center justify-center bg-amber-500 rounded-full w-[12px] h-[12px]">
-                                                <Check className="w-[8px] h-[8px] text-white" strokeWidth={6} />
-                                            </div>
-                                        )}
-                                    </span>
-                                    <span className="ml-[5px] opacity-90 leading-tight inline-block">{notification.message}</span>
+                                
+                                <div className="flex-1 min-w-0 pt-0.5">
+                                    <div className="text-[13.5px] text-slate-800 dark:text-slate-200 leading-snug">
+                                        <span className="inline-flex items-center gap-1 font-bold dark:text-white">
+                                            {notification.from.displayName || notification.from.username}
+                                            {!!notification.from.isVerified && (
+                                                <div className="flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full w-[11px] h-[11px]">
+                                                    <Check className="w-[7px] h-[7px] text-white" strokeWidth={6} />
+                                                </div>
+                                            )}
+                                        </span>
+                                        <span className="ml-[4px] opacity-90 leading-tight inline-block">{notification.message}</span>
+                                    </div>
+                                    <p className={`text-[11px] font-bold mt-1 ${!notification.read ? 'text-blue-600 dark:text-blue-400/80' : 'text-slate-400'}`}>
+                                        {formatTimeRelative(notification.createdAt)}
+                                    </p>
                                 </div>
-                                <p className={`text-[12px] font-semibold mt-1.5 ${!notification.read ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
-                                    {formatTimeRelative(notification.createdAt)}
-                                </p>
-                            </div>
-                        </button>
-                    ))
+                            </button>
+                        ))}
+                        {/* Buffer for bottom nav */}
+                        <div className="h-20 w-full" />
+                    </div>
                 ) : (
-                    <div className="py-20 px-6 text-center">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Bell className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                    <div className="py-24 px-6 text-center">
+                        <div className="w-14 h-14 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Bell className="w-7 h-7 text-slate-300 dark:text-slate-600" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Caught up!</h3>
-                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">You don't have any notifications yet.</p>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">Caught up!</h3>
+                        <p className="text-xs font-medium text-slate-400 dark:text-slate-500">You don't have any notifications yet.</p>
                     </div>
                 )}
             </div>
