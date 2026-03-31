@@ -236,27 +236,58 @@ function NativeWebmailUI({
                     </div>
                 )}
 
-                {/* Compose Form */}
+                {/* Compose Form — Modern Integrated Design */}
                 {activeTab === 'compose' && (
-                    <div className="max-w-4xl mx-auto space-y-10 pt-4 animate-in slide-in-from-bottom-4 duration-500">
-                        {sendSuccess && <div className="text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/5 p-4 rounded-xl">{sendSuccess}</div>}
-                        <div className="space-y-6">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Recipient</label>
-                                <input value={sendTo} onChange={e => setSendTo(e.target.value)} placeholder="email@example.com" className="w-full bg-transparent border-b border-slate-100 dark:border-white/10 py-3 text-lg font-black text-slate-900 dark:text-white focus:outline-none focus:border-blue-600 transition-colors" />
+                    <div className="max-w-4xl mx-auto space-y-6 pt-2 animate-in slide-in-from-bottom-4 duration-500">
+                        {sendSuccess && <div className="text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/5 p-4 rounded-xl flex items-center gap-2"><Check className="w-5 h-5" /> {sendSuccess}</div>}
+                        
+                        <div className="flex flex-col gap-4">
+                            {/* To Recipient */}
+                            <div className="group transition-all">
+                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] px-4 py-3 rounded-2xl border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
+                                    <AtSign className="w-4 h-4 text-slate-400 group-focus-within:text-blue-600" />
+                                    <input 
+                                        value={sendTo} 
+                                        onChange={e => setSendTo(e.target.value)} 
+                                        placeholder="Recipient Address" 
+                                        className="flex-1 bg-transparent border-none p-0 text-sm font-black text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0" 
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Subject Line</label>
-                                <input value={sendSubject} onChange={e => setSendSubject(e.target.value)} placeholder="Brief description..." className="w-full bg-transparent border-b border-slate-100 dark:border-white/10 py-3 text-lg font-black text-slate-900 dark:text-white focus:outline-none focus:border-blue-600 transition-colors" />
+
+                            {/* Subject Line */}
+                            <div className="group transition-all">
+                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] px-4 py-3 rounded-2xl border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
+                                    <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-blue-600" />
+                                    <input 
+                                        value={sendSubject} 
+                                        onChange={e => setSendSubject(e.target.value)} 
+                                        placeholder="Subject Line" 
+                                        className="flex-1 bg-transparent border-none p-0 text-sm font-black text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0" 
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Email Body</label>
-                                <textarea value={sendMessage} onChange={e => setSendMessage(e.target.value)} placeholder="Write your message here..." rows={12} className="w-full bg-transparent text-[16px] font-medium text-slate-900 dark:text-white focus:outline-none leading-relaxed no-scrollbar pt-2" />
+
+                            {/* Message Body */}
+                            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-3xl p-4 min-h-[300px] flex flex-col border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
+                                <textarea 
+                                    value={sendMessage} 
+                                    onChange={e => setSendMessage(e.target.value)} 
+                                    placeholder="Write your message here..." 
+                                    className="flex-1 bg-transparent border-none p-0 text-[16px] font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0 resize-none leading-relaxed no-scrollbar" 
+                                />
                             </div>
                         </div>
-                        <div className="pb-24">
-                            <button onClick={handleSendEmail} disabled={sending} className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 transition-all active:scale-95">
-                                {sending ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />} {sending ? 'Sending...' : 'Send Message'}
+
+                        {/* Bottom Send Area */}
+                        <div className="pt-2 pb-20">
+                            <button 
+                                onClick={handleSendEmail} 
+                                disabled={sending} 
+                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3 transition-all active:scale-95"
+                            >
+                                {sending ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                                {sending ? 'Sending...' : 'Send Message'}
                             </button>
                         </div>
                     </div>
