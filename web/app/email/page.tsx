@@ -236,58 +236,61 @@ function NativeWebmailUI({
                     </div>
                 )}
 
-                {/* Compose Form — Modern Integrated Design */}
+                {/* Compose Form — Strictly Seamless & Transparent */}
                 {activeTab === 'compose' && (
-                    <div className="max-w-4xl mx-auto space-y-6 pt-2 animate-in slide-in-from-bottom-4 duration-500">
-                        {sendSuccess && <div className="text-emerald-500 font-bold bg-emerald-50 dark:bg-emerald-500/5 p-4 rounded-xl flex items-center gap-2"><Check className="w-5 h-5" /> {sendSuccess}</div>}
+                    <div className="max-w-4xl mx-auto space-y-8 pt-4 animate-in slide-in-from-bottom-4 duration-500">
+                        {sendSuccess && <div className="text-emerald-500 font-bold py-2 flex items-center gap-2"><Check className="w-5 h-5" /> {sendSuccess}</div>}
                         
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-6">
                             {/* To Recipient */}
-                            <div className="group transition-all">
-                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] px-4 py-3 rounded-2xl border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
-                                    <AtSign className="w-4 h-4 text-slate-400 group-focus-within:text-blue-600" />
+                            <div className="relative group">
+                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2 block ml-1">Recipient</label>
+                                <div className="flex items-center gap-3 bg-transparent border-b border-slate-100 dark:border-white/5 pb-3 transition-colors focus-within:border-blue-600">
+                                    <AtSign className="w-4 h-4 text-slate-400" />
                                     <input 
                                         value={sendTo} 
                                         onChange={e => setSendTo(e.target.value)} 
-                                        placeholder="Recipient Address" 
-                                        className="flex-1 bg-transparent border-none p-0 text-sm font-black text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0" 
+                                        placeholder="email@example.com" 
+                                        className="flex-1 bg-transparent border-none p-0 text-[15px] font-black text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-700 focus:ring-0" 
                                     />
                                 </div>
                             </div>
 
                             {/* Subject Line */}
-                            <div className="group transition-all">
-                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/[0.03] px-4 py-3 rounded-2xl border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
-                                    <Mail className="w-4 h-4 text-slate-400 group-focus-within:text-blue-600" />
+                            <div className="relative group">
+                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-2 block ml-1">Subject</label>
+                                <div className="flex items-center gap-3 bg-transparent border-b border-slate-100 dark:border-white/5 pb-3 transition-colors focus-within:border-blue-600">
+                                    <Mail className="w-4 h-4 text-slate-400" />
                                     <input 
                                         value={sendSubject} 
                                         onChange={e => setSendSubject(e.target.value)} 
-                                        placeholder="Subject Line" 
-                                        className="flex-1 bg-transparent border-none p-0 text-sm font-black text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0" 
+                                        placeholder="What is this about?" 
+                                        className="flex-1 bg-transparent border-none p-0 text-[15px] font-black text-slate-900 dark:text-white placeholder-slate-300 dark:placeholder-slate-700 focus:ring-0" 
                                     />
                                 </div>
                             </div>
 
                             {/* Message Body */}
-                            <div className="bg-slate-50 dark:bg-white/[0.03] rounded-3xl p-4 min-h-[300px] flex flex-col border border-transparent focus-within:border-blue-600/30 focus-within:bg-white dark:focus-within:bg-white/5 transition-all">
+                            <div className="relative pt-2">
+                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] mb-4 block ml-1">Message</label>
                                 <textarea 
                                     value={sendMessage} 
                                     onChange={e => setSendMessage(e.target.value)} 
-                                    placeholder="Write your message here..." 
-                                    className="flex-1 bg-transparent border-none p-0 text-[16px] font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:ring-0 resize-none leading-relaxed no-scrollbar" 
+                                    placeholder="Write from your heart..." 
+                                    className="w-full bg-transparent border-none p-0 text-[16px] font-medium text-slate-800 dark:text-slate-200 placeholder-slate-300 dark:placeholder-slate-700 focus:ring-0 resize-none leading-relaxed no-scrollbar pt-2 min-h-[350px]" 
                                 />
                             </div>
                         </div>
 
-                        {/* Bottom Send Area */}
-                        <div className="pt-2 pb-20">
+                        {/* Bottom Send Area — Flat & Minimal */}
+                        <div className="pt-4 pb-24 flex justify-end">
                             <button 
                                 onClick={handleSendEmail} 
                                 disabled={sending} 
-                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-blue-500/30 flex items-center justify-center gap-3 transition-all active:scale-95"
+                                className="w-full md:w-auto md:px-12 py-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-blue-500/30 flex items-center justify-center gap-3 transition-all active:scale-95"
                             >
                                 {sending ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-                                {sending ? 'Sending...' : 'Send Message'}
+                                {sending ? 'SENDING' : 'SEND MESSAGE'}
                             </button>
                         </div>
                     </div>
